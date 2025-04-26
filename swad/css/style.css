@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
+
+.main-container {
+    height: 100vh;
+    background: linear-gradient(#14041d, #400c4a, #74155d, #c32178);
+    /* background: linear-gradient(#a148aa, #dd743d, #fff837); */
+}
+
+.search-field-container {
+    text-align: center;
+    padding-top: 50px;
+}
+
+#game-search-header {
+    font-family: 'Tiny5', 'Gill Sans';
+    color: white;
+    font-size: 48pt;
+}
+
+#game-search-input {
+    font-family: 'Tiny5', 'Gill Sans';
+    font-size: 24pt;
+    width: 600px;
+    height: 40px;
+    box-shadow: 5px 5px 10px rgba(255, 255, 255, 1);
+    outline: none;
+    border: 0;
+}
+
+#game-search-input::before {
+    transition: background-color 0.3s ease, width 0.3s ease;
+}
+
+#game-search-submit {
+    font-family: 'Tiny5', 'Gill Sans';
+    font-size: 24pt;
+    width: 175px;
+    height: 40px;
+    background-color: white;
+    color: #14041d;
+    border: none;
+    cursor: pointer;
+    box-shadow: 5px 5px 10px rgba(255, 255, 255, 1);
+    transition: all .1s;
+}
+
+#game-search-submit:hover {
+    background-color: #c32178;
+    color: white;
+    font-family: 'Tiny5', 'Gill Sans';
+    transition: all .1s;
+    font-size: 25pt;
+    border: none;
+}
