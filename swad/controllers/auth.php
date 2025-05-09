@@ -51,7 +51,6 @@ function checkTelegramAuthorization($auth_data)
 // User authentication - function
 function userAuthentication($db, $auth_data)
 {
-    // Creating user - function
     function createNewUser($db, $auth_data)
     {
         // User not found, so create it
@@ -70,7 +69,6 @@ function userAuthentication($db, $auth_data)
         );
     }
 
-    // Updating user - function
     function updateExistedUser($db, $auth_data)
     {
         // User found, so update it
@@ -109,18 +107,14 @@ function userAuthentication($db, $auth_data)
             ]
         );
 
-        // Return true if the user exists in database
         if (!empty($isUser) && $isUser[0]['telegram_id'] === $target_id) {
             return TRUE;
         }
     }
 
-    // Check the user
     if (checkUserExists($db, $auth_data) == TRUE) {
-        // User found, so update it
         updateExistedUser($db, $auth_data);
     } else {
-        // User not found, so create it
         createNewUser($db, $auth_data);
     }
 
@@ -129,15 +123,12 @@ function userAuthentication($db, $auth_data)
         'logged-in' => TRUE,
         'telegram_id' => $auth_data['id']
     ];
+    $_SESSION['id'] = $auth_data['id'];
 }
 
-
-// Start the process
 try {
-    // Get the authorized user data from Telegram widget
     $auth_data = checkTelegramAuthorization($_GET);
 
-    // Authenticate the user
     userAuthentication($db, $auth_data);
 } catch (Exception $e) {
     // Display errors

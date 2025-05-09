@@ -2,15 +2,15 @@
 // Start the session
 session_start();
 
-
-// When the user is not logged in, go to the login page
-if (!isset($_SESSION['logged-in'])) {
+if (empty($_SESSION['logged-in'])) {
     die(header('Location: login'));
 }
 
 
 // Import database connection and class
 require('swad/config.php');
+
+$db = new Database();
 
 
 // Get current logged in user data with session
@@ -77,7 +77,6 @@ if (!is_null($telegramUsername)) {
 $HTML .= '
 <h2 class="user-data">Telegram ID: ' . $telegramID . '</h2>
 <h2 class="user-data">User ID: ' . $userID . '</h2>
-<a href="logout.php"><h2 class="logout">Logout</h2></a>
 ';
 
 
@@ -101,6 +100,17 @@ $HTML .= '
 <body>
     <div class="middle-center">
         <?= $HTML ?>
+        <input type="button" value="Выйти" onclick="
+        document.cookie = 'PHPSESSID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login';
+        " style="
+        padding: 10px 20px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        ">
     </div>
 </body>
 

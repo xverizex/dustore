@@ -1,8 +1,10 @@
 <?php
+session_start();
 require_once(ROOT_DIR . '/swad/config.php');
 require_once(ROOT_DIR . '/swad/controllers/user.php');
 
 $curr_user = new User();
+$db = new Database();
 
 // $curr_user->createUser("leo", "admin@admin.com", "123");
 ?>
@@ -117,10 +119,10 @@ $curr_user = new User();
             <div class="buttons-right">
                 <button class="button">0</button>
                 <button class="button" onclick="location.href='/login'">
-                    <?php if(!$curr_user->getUsername(1)){
-                        echo("Мой аккаунт");
+                    <?php if(empty($_SESSION['telegram_id'])){
+                        echo("Войти в аккаунт");
                         }else{
-                            echo($curr_user->getUsername(1) . " - 100₽");
+                            echo($curr_user->getUsername($_SESSION['telegram_id'])." - 100₽");
                         }
                     ?>
                 </button>
