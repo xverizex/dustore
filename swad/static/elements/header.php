@@ -116,7 +116,14 @@ $curr_user = new User();
         <div class="section right-section">
             <div class="buttons-right">
                 <button class="button">0</button>
-                <button class="button"><?= $curr_user->getUsername(1); ?> - 100₽</button>
+                <button class="button" onclick="location.href='/login'">
+                    <?php if(!$curr_user->getUsername(1)){
+                        echo("Мой аккаунт");
+                        }else{
+                            echo($curr_user->getUsername(1) . " - 100₽");
+                        }
+                    ?>
+                </button>
             </div>
         </div>
     </div>

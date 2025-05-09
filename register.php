@@ -1,57 +1,109 @@
+<!-- 10.11.2023 (c) Alexander Livanov -->
+<?php
+require_once('swad/config.php');
+
+if (!empty($_POST['register'])) {
+    $db = new Database();
+    $time = new Time();
+    $connect = $db->connect();
+    $local_datetime = $time->getServerTime();
+
+    $username = $_POST['username'];
+    $passwd = $_POST['passwd'];
+    $ref = $_POST['ref'];
+    $email = $_POST['email'];
+    $passwd_hash = password_hash($passwd, PASSWORD_BCRYPT);
+    $user_token = $username . $passwd;
+    $token = hash('sha256', $user_token);
+    $token_hash = hash('sha256', $token);
+
+    $query = $connect->prepare("SELECT * FROM users WHERE username=:username");
+    $query->bindParam("username", $username, PDO::PARAM_STR);
+    $query->execute();
+
+    if ($query->rowCount() > 0) {
+        echo ('<script>alert("Это имя пользователя занято. Придумайте другое");</script>');
+    }
+    if ($query->rowCount() == 0) {
+        $query = $connect->prepare("
+    INSERT INTO users(
+        username, 
+        passwd, 
+        email, 
+        reg_date, 
+        last_activity, 
+        token, 
+        invited_by, 
+        rating, 
+        role, 
+        ip
+    ) VALUES (
+        :username, 
+        :passwd_hash, 
+        :email, 
+        :local_datetime, 
+        :local_datetime, 
+        :token, 
+        :invited_by,
+        0.00, 
+        0, 
+        '0.0.0.0'
+    )
+");
+        $query->bindParam("username", $username, PDO::PARAM_STR);
+        $query->bindParam("passwd_hash", $passwd_hash, PDO::PARAM_STR);
+        $query->bindParam("email", $email, PDO::PARAM_STR);
+        $query->bindParam("local_datetime", $local_datetime, PDO::PARAM_STR);
+        $query->bindParam("local_datetime", $local_datetime, PDO::PARAM_STR);
+        $query->bindParam("token", $token_hash, PDO::PARAM_STR);
+        $query->bindParam(':invited_by', $ref, PDO::PARAM_INT);
+
+        $result = $query->execute();
+
+        if ($result) {
+            echo ('<p>ОК. Сейчас вы будете перенаправлены на страницу входа</p>');
+            // allocStorage($username);
+            // setDefaultAvatar($username);
+            setcookie("AUTH_TOKEN", $token, strtotime('+30 days'));
+            echo ("<script>setTimeout(function () { window.location.href = 'login.php'; }, 1000);</script>");
+        } else {
+            echo ('<script>alert("Проверьте форму ещё раз");</script>');
+        }
+    }
+}
+?>
+
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация</title>
-    <style>
-        .error {
-            color: red;
-        }
-
-        .success {
-            color: green;
-        }
-    </style>
+    <link rel="stylesheet" href="swad/css/login.css">
+    <title>Создать аккаунт - FotosWorld</title>
 </head>
 
 <body>
-    <h1>Регистрация</h1>
-
-    <?php if (isset($_GET['error'])): ?>
-        <p class="error">Ошибка регистрации: <?php echo htmlspecialchars($_GET['error']); ?></p>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['success'])): ?>
-        <p class="success">Регистрация успешна! <a href="login.html">Войти</a></p>
-    <?php endif; ?>
-
-    <form action="swad/controllers/register.php" method="POST">
-        <div>
-            <label for="username">Имя пользователя:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-
-        <div>
-            <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-
-        <div>
-            <label for="confirm_password">Подтвердите пароль:</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
-        </div>
-
-        <button type="submit">Зарегистрироваться</button>
-    </form>
-
-    <p>Уже есть аккаунт? <a href="login.php">Войти</a></p>
+    <div class="main-container">
+        <form method="post" class="auth_form">
+            <h1>Создание учетной записи</h1>
+            <p id="op_status"></p>
+            <div class="form-element">
+                <input type="text" placeholder="придумайте имя пользователя*" name="username" pattern="[A-Za-z._-1234567890]{4,}" required>
+            </div>
+            <div class="form-element">
+                <input type="password" placeholder="придумайте пароль*" name="passwd" minlength="8" required>
+            </div>
+            <div class="form-element">
+                <input type="email" name="email" required placeholder="эл.почта (в случае сброса пароля)*" />
+            </div>
+            <div class="form-element">
+                <input type="text" placeholder="кто пригласил? (реферальный код)" name="ref" pattern="[A-Za-z._-1234567890]{4,}">
+            </div>
+            <button type="submit" name="register" value="register">Готово</button>
+            <p>Уже есть аккаунт? <a href="login.php" class="white-link">Войдите</a></p>
+        </form>
+    </div>
 </body>
 
 </html>

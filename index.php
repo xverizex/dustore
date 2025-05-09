@@ -1,6 +1,6 @@
 <?php
-    define('ROOT_DIR', str_replace('\\', '/', __DIR__));
-    
+define('ROOT_DIR', str_replace('\\', '/', __DIR__));
+
 ?>
 
 <!DOCTYPE html>
@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div class="game-cards-popular">
-                
+
             </div>
         </div>
 

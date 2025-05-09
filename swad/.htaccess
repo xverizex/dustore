@@ -1,0 +1,10 @@
+Order deny,allow
+Deny from all
+
+# Разрешить доступ только для внутренних запросов
+Allow from 127.0.0.1
+Allow from ::1
+
+# Если скрипты используют HTTP-запросы (например, cURL), добавьте:
+SetEnvIf Request_URI "^/swad/" internal
+Allow from env=internal
