@@ -2,15 +2,15 @@
 // Start the session
 session_start();
 
-
-// When the user is logged in, go to the user page
 if (isset($_SESSION['logged-in']) && $_SESSION['logged-in'] == TRUE) {
     die(header('Location: me'));
 }
 
-
-// Place username of your bot here
-define('BOT_USERNAME', 'dustore_auth_bot');
+if ($_SERVER['HTTP_HOST'] == 'dustore.ru') {
+    define('BOT_USERNAME', 'dustore_auth_bot');
+}else if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
+    define('BOT_USERNAME', 'dustore_auth_local_bot');
+}
 ?>
 
 <!DOCTYPE html>

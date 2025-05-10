@@ -2,11 +2,28 @@
 // 08.03.2025 (c) Alexander Livanov
 
 // 26.04.2025
+
+if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
+    require_once('../swad-config/secrets.php');
+} else if ($_SERVER['HTTP_HOST'] == 'dustore.ru') {
+    require_once('../../swad-config/secrets.php');
+}
+
+
 class Database {
-    private $host = 'localhost';
-    private $db_name = 'dustore';
-    private $username = 'root';
-    private $password = '';
+
+    // Important Note: function use_pack() is defined! Она находится в файле, ../../swad-config/secrets.php,
+    // просто проверка подключения файла выполняется на сервере. (10.05.2025 / Будущте программисты, извините
+    // меня за такой костыль, просто мои текущие знания и отсутствие свободного времени не позволяют сделать это нормально.
+    // Спасибо. (с) Alexander Livanov)
+    function get_creds(){
+        if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
+            return use_pack('LOCAL');
+        } else if ($_SERVER['HTTP_HOST'] == 'dustore.ru') {
+            return use_pack('PRODUCTION');
+        }
+    }
+
     private $conn;
 
     // DB Connect (PDO)
@@ -16,9 +33,9 @@ class Database {
 
         try {
             $this->conn = new PDO(
-                'mysql:host=' . $this->host . ';dbname=' . $this->db_name,
-                $this->username,
-                $this->password
+                'mysql:host=' . $this->get_creds()[0] . ';dbname=' . $this->get_creds()[1],
+                $this->get_creds()[2],
+                $this->get_creds()[3]
             );
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {

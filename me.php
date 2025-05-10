@@ -85,7 +85,7 @@ $HTML .= '
 # echo '<pre>', print_r($user_data, TRUE), '</pre>';
 # echo '<pre>', print_r($_SESSION, TRUE), '</pre>';
 ?>
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en-US">
 
 <head>
@@ -114,4 +114,4 @@ $HTML .= '
     </div>
 </body>
 
-</html>
+</html> -->

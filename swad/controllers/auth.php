@@ -14,18 +14,13 @@ require('../config.php');
 
 $db = new Database;
 
-
-// Place bot token of your bot here
 define('BOT_TOKEN', '7993358429:AAH3EfKtSW7oqyN1fVWBAQsD6ehKZViF1do');
+define('LOCAL_BOT_TOKEN', '8111791435:AAHs41kdMZ0PBkm2lt0lNavG9vI9xCiJ_FA');
 
-
-// The Telegram hash is required to authorize
 if (!isset($_GET['hash'])) {
     die('Telegram hash not found');
 }
 
-
-// Official Telegram authorization - function
 function checkTelegramAuthorization($auth_data)
 {
     $check_hash = $auth_data['hash'];
@@ -36,7 +31,12 @@ function checkTelegramAuthorization($auth_data)
     }
     sort($data_check_arr);
     $data_check_string = implode("\n", $data_check_arr);
-    $secret_key = hash('sha256', BOT_TOKEN, true);
+    if($_SERVER['HTTP_HOST'] == 'dustore.ru'){
+        $secret_key = hash('sha256', BOT_TOKEN, true);
+    }
+    if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
+        $secret_key = hash('sha256', LOCAL_BOT_TOKEN, true);
+    }
     $hash = hash_hmac('sha256', $data_check_string, $secret_key);
     if (strcmp($hash, $check_hash) !== 0) {
         throw new Exception('Data is NOT from Telegram');
