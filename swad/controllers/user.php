@@ -63,9 +63,13 @@ class User
         return $stmt->rowCount() > 0;
     }
 
-    public function auth($user, $username){
-        session_start();
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $username;
-    }
+
+    // 11.05.2025: DEPRECATED
+    // public function auth($user, $username){
+    //     session_start();
+    //     $_SESSION['user_id'] = $user['id'];
+    //     $_SESSION['username'] = $username;
+    // }
+
+    public function update
 }

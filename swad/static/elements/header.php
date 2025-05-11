@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once('constants.php');
 require_once(ROOT_DIR . '/swad/config.php');
 require_once(ROOT_DIR . '/swad/controllers/user.php');
 
@@ -40,6 +41,14 @@ $db = new Database();
     </noscript>
     <!-- /Yandex.Metrika counter -->
     <link rel="stylesheet" href="swad/css/header.css">
+    <link rel="shortcut icon" href="../img/logo.svg" type="image/x-icon">
+    <link rel="stylesheet" href="/swad/css/style.css">
+    <link rel="shortcut icon" href="/swad/static/img/logo.svg" type="image/x-icon">
+    <meta name="theme-color" content="#14041d">
+    <meta name="description" content="Dustore.ru - новая игровая платформа! Скачивайте новинки инди-разработчиков.">
+    <meta name="robots" content="index,follow">
+    <meta name="generator" content="SWAD Framework">
+    <meta name="google" content="notranslate">
 </head>
 
 <body>
@@ -53,7 +62,7 @@ $db = new Database();
                     </svg></button>
             </div>
             <div class="buttons-left">
-                <button class="button">Игры</button>
+                <button class="button" onclick="location.href='/'">Игры</button>
                 <button class="button">Приложения</button>
                 <button class="button">Ассеты</button>
                 <button class="button">О платформе</button>

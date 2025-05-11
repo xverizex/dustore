@@ -4,18 +4,17 @@
 // 26.04.2025
 
 if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
-    require_once('../swad-config/secrets.php');
+    require_once('secrets.php');
 } else if ($_SERVER['HTTP_HOST'] == 'dustore.ru') {
-    require_once('../../swad-config/secrets.php');
+    require_once('secrets.php');
 }
 
 
 class Database {
 
-    // Important Note: function use_pack() is defined! Она находится в файле, ../../swad-config/secrets.php,
-    // просто проверка подключения файла выполняется на сервере. (10.05.2025 / Будущте программисты, извините
+    // Important Note: function use_pack() находится в файле secrets.php. Будущие программисты, извините
     // меня за такой костыль, просто мои текущие знания и отсутствие свободного времени не позволяют сделать это нормально.
-    // Спасибо. (с) Alexander Livanov)
+    // Спасибо. (с) 10.05.2025 Alexander Livanov
     function get_creds(){
         if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
             return use_pack('LOCAL');
