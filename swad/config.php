@@ -98,10 +98,3 @@ class Database {
         }
     }
 }
-
-class Time {
-    public function getServerTime()
-    {
-        return date('d.m.Y H:i', time());
-    }
-}

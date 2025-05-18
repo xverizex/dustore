@@ -1,17 +1,20 @@
+<?php
+require_once('swad/static/elements/header.php');
+require_once('swad/controllers/time.php');
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dustore - Мой аккаунт</title>
+    <link rel="stylesheet" href="swad/css/userprofile.css">
 </head>
 
 <body>
-    
-    <?php
-    require_once('swad/static/elements/header.php');
-
+    <?php if (empty($_SESSION['logged-in'])) die(header('Location: login'));
     if (empty($_SESSION['logged-in'])) {
         die(header('Location: login'));
     }
@@ -31,60 +34,84 @@
     $telegramID       = $user_data[0]['telegram_id'];
     $telegramUsername = $user_data[0]['telegram_username'];
     $userID           = $user_data[0]['id'];
-
-
-    if (!is_null($lastName)) {
-        // Display first name and last name
-        $HTML = "<h1>Hello, {$firstName} {$lastName}!</h1>";
-    } else {
-        // Display first name
-        $HTML = "<h1>Hello, {$firstName}!</h1>";
-    }
-
-    if (!is_null($profilePicture)) {
-        // Display profile picture with no cache trick "image.jpg?v=time()"
-        $HTML .= '
-        <a href="' . $profilePicture . '" target="_blank">
-            <img class="profile-picture" src="' . $profilePicture . '?v=' . time() . '">
-        </a>
-        ';
-    }
-
-    if (!is_null($lastName)) {
-        // Display first name and last name
-        $HTML .= '
-        <h2 class="user-data">First Name: ' . $firstName . '</h2>
-        <h2 class="user-data">Last Name: ' . $lastName . '</h2>
-        ';
-    } else {
-        // Display first name
-        $HTML .= '<h2 class="user-data">First Name: ' . $firstName . '</h2>';
-    }
-
-    if (!is_null($telegramUsername)) {
-        // Display Telegram username
-        $HTML .= '
-        <h2 class="user-data">
-            Username:
-            <a href="https://t.me/' . $telegramUsername . '" target="_blank">
-                @' . $telegramUsername . '
-            </a>
-        </h2>
-        ';
-    }
-
-    // Display Telegram ID | User ID | Logout Button
-    $HTML .= '
-    <h2 class="user-data">Telegram ID: ' . $telegramID . '</h2>
-    <h2 class="user-data">User ID: ' . $userID . '</h2>
-    ';
-
-
-    // Display all selected user data
-    echo '<style>body { background-color: #fff !important; } .middle-center { display: none !important; }</style>';
-    echo '<pre>', print_r($user_data, TRUE), '</pre>';
-    echo '<pre>', print_r($_SESSION, TRUE), '</pre>';
+    $added            = $user_data[0]['added'];
+    $updated          = $user_data[0]['updated'];
     ?>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <?php if (!is_null($profilePicture)): ?>
+                <img src="<?= $profilePicture ?>?v=<?= time() ?>"
+                    class="profile-picture"
+                    alt="Аватар">
+            <?php endif; ?>
+            <div>
+                <h1><?= $firstName . (!is_null($lastName) ? ' ' . $lastName : '') ?></h1>
+                <?php if (!is_null($telegramUsername)): ?>
+                    <p>@<?= $telegramUsername ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab(event, 'profile')">Профиль</button>
+            <button class="tab-button" onclick="switchTab(event, 'security')">Безопасность</button>
+            <button class="tab-button" onclick="switchTab(event, 'activity')">Активность</button>
+        </div>
+
+        <div id="profile" class="tab-content active">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Основная информация</h3>
+                    <p>Имя пользователя: <?= $firstName ?>
+                        <?php if (!is_null($lastName)): ?>
+                            <?= $lastName ?>
+                        <?php endif; ?>
+                    </p>
+                    <p>Присоединился к проекту: <?= time_ago($added); ?></p>
+                    <p>Последний вход: <?= time_ago($updated); ?></p>
+                </div>
+
+                <div class="info-card">
+                    <h3>Информация об аккаунте</h3>
+                    <p>Telegram ID: <?= $telegramID ?></p>
+                    <?php if (!is_null($telegramUsername)): ?>
+                        <p>Username: <a href="https://t.me/<?= $telegramUsername ?>">@<?= $telegramUsername ?></a></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <div id="security" class="tab-content">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Безопасность аккаунта</h3>
+                    <!-- <p>Двухфакторная аутентификация: отключена</p> -->
+                </div>
+            </div>
+        </div>
+
+        <div id="activity" class="tab-content">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Последние действия</h3>
+                    <p>Нет последних действий</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(event, tabName) {
+            // Убираем активные классы
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Добавляем активные классы
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+    </script>
 </body>
 
 </html>
