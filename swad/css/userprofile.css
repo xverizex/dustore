@@ -24,6 +24,7 @@ body {
     background: linear-gradient(var(--bg-dark1), var(--bg-dark2), var(--bg-dark3), var(--bg-dark4));
     /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
     padding: 20px;
+    min-height: 100vh;
 }
 
 .profile-header {

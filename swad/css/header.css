@@ -57,6 +57,21 @@ body {
     transition: all .2s;
 }
 
+.footer {
+    background-color: #c32178;
+    font-family: 'Tiny5', 'Gill Sans';
+    padding: 10px;
+    color: white;
+    font-size: 18pt;
+    text-align: center;
+}
+
+.footer a {
+    color: white;
+    font-size: 18pt;
+    text-align: center;
+}
+
 .button:hover {
     background-color: #c32178;
     color: white;

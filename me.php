@@ -1,6 +1,7 @@
 <?php
 require_once('swad/static/elements/header.php');
 require_once('swad/controllers/time.php');
+require_once('swad/controllers/user.php');
 ?>
 
 <!DOCTYPE html>
@@ -21,8 +22,8 @@ require_once('swad/controllers/time.php');
 
     $user_data = $db->Select(
         "SELECT *
-            FROM `users`
-                WHERE `telegram_id` = :id",
+                FROM `users`
+                    WHERE `telegram_id` = :id",
         [
             'id' => $_SESSION['telegram_id']
         ]
@@ -68,16 +69,17 @@ require_once('swad/controllers/time.php');
                             <?= $lastName ?>
                         <?php endif; ?>
                     </p>
-                    <p>Присоединился к проекту: <?= time_ago($added); ?></p>
-                    <p>Последний вход: <?= time_ago($updated); ?></p>
+                    <p title="<?= $added; ?>">Присоединился к проекту: <?= time_ago($added); ?></p>
+                    <p title="<?= $updated; ?>">Последний вход: <?= time_ago($updated); ?></p>
                 </div>
 
-                <div class="info-card">
+                <div class=" info-card">
                     <h3>Информация об аккаунте</h3>
                     <p>Telegram ID: <?= $telegramID ?></p>
                     <?php if (!is_null($telegramUsername)): ?>
                         <p>Username: <a href="https://t.me/<?= $telegramUsername ?>">@<?= $telegramUsername ?></a></p>
                     <?php endif; ?>
+                    <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($telegramID); ?></p>
                 </div>
             </div>
         </div>
@@ -100,6 +102,7 @@ require_once('swad/controllers/time.php');
             </div>
         </div>
     </div>
+    <?php require_once('swad/static/elements/footer.php'); ?>
 
     <script>
         function switchTab(event, tabName) {
