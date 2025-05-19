@@ -4,266 +4,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Core Dashboard</title>
-
-    <!-- Улучшенный кибер-дизайн с детализацией -->
+    <title>Nexus Developer Console</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --matrix-green: #00ff88;
-            --neon-purple: #bc13fe;
-            --interface-black: #0a0a12;
-            --hud-blue: #00f3ff;
+            --space: #0f172a;
+            --neon: #7c3aed;
+            --hud: #2dd4bf;
+            --interface: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background: var(--interface-black);
+            background: var(--space);
             color: white;
-            font-family: 'Source Code Pro', monospace;
-            margin: 0;
-            overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        .core-container {
+        .console {
             max-width: 1440px;
             margin: 0 auto;
             padding: 2rem;
-            position: relative;
-        }
-
-        /* Динамическая сетка данных */
-        .data-matrix {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 1.5rem;
-            margin: 3rem 0;
+            grid-template-columns: 240px 1fr;
+            gap: 2rem;
         }
 
-        /* Расширенные карточки проектов */
-        .project-frame {
-            background: linear-gradient(15deg,
-                    rgba(0, 255, 136, 0.1) 0%,
-                    rgba(11, 12, 16, 0.95) 40%);
-            border: 1px solid var(--matrix-green);
-            padding: 1.5rem;
+        /* Навигация */
+        .nav-panel {
+            border-right: 1px solid var(--interface);
+            padding-right: 2rem;
+            height: calc(100vh - 4rem);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: 0.2s;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover {
+            background: var(--interface);
+        }
+
+        /* Основной контент */
+        .main-content {
+            display: grid;
+            gap: 2rem;
+        }
+
+        /* Карточка проекта */
+        .project-card {
+            background: var(--interface);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 2rem;
             position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent 49.9%, 
+                var(--neon) 50%, 
+                transparent 50.1%
+            );
+            animation: gridScan 8s infinite linear;
+            opacity: 0.1;
         }
 
         .project-header {
-            display: grid;
-            grid-template-columns: auto 120px;
-            border-bottom: 2px solid var(--neon-purple);
-            padding-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
         }
 
-        .runtime-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin: 1.5rem 0;
+        .project-badge {
+            background: #334155;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
         }
 
-        .stat-node {
-            background: rgba(0, 243, 255, 0.05);
-            padding: 1rem;
-            border-left: 3px solid var(--hud-blue);
-        }
-
-        /* Детализированная секция команды */
-        .unit-grid {
+        .project-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 2rem;
-            margin: 4rem 0;
         }
 
-        .unit-card {
-            background: rgba(188, 19, 254, 0.05);
-            border: 1px solid var(--neon-purple);
-            padding: 1.5rem;
+        .metric-item {
+            text-align: center;
         }
 
-        .task-queue {
-            margin-top: 1rem;
-            border-top: 1px solid rgba(188, 19, 254, 0.3);
-            padding-top: 1rem;
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--hud);
+            margin-bottom: 0.5rem;
         }
 
-        /* Расширенная аналитика */
-        .analytics-hub {
+        /* Команда */
+        .team-section {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            margin: 4rem 0;
-        }
-
-        .main-graph {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid var(--matrix-green);
-            padding: 2rem;
-        }
-
-        .side-panel {
-            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
         }
 
-        /* Анимации */
-        @keyframes pulse {
-            0% {
-                opacity: 0.2;
-            }
+        .member-card {
+            background: var(--interface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+        }
 
-            50% {
-                opacity: 1;
-            }
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
 
-            100% {
-                opacity: 0.2;
-            }
+        .member-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .task-list {
+            border-top: 1px solid #334155;
+            padding-top: 1rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+        }
+
+        /* Графики */
+        .analytics-panel {
+            background: var(--interface);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .chart-container {
+            height: 400px;
+        }
+
+        @keyframes gridScan {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(50%,50%); }
         }
     </style>
 </head>
-
 <body>
-    <div class="core-container">
-        <!-- Секция проектов -->
-        <h2 style="color: var(--matrix-green);">ACTIVE OPERATIONS</h2>
-        <div class="data-matrix">
-            <div class="project-frame">
-                <div class="project-header">
+    <div class=" console">
+    <!-- Навигация -->
+    <nav class="nav-panel">
+        <div class="nav-item">
+            <span class="material-icons">dashboard</span>
+            Обзор
+        </div>
+        <div class="nav-item">
+            <span class="material-icons">sports_esports</span>
+            Проекты
+        </div>
+        <div class="nav-item">
+            <span class="material-icons">groups</span>
+            Команда
+        </div>
+        <div class="nav-item">
+            <span class="material-icons">analytics</span>
+            Аналитика
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <!-- Проекты -->
+        <div class="project-card">
+            <div class="project-header">
+                <h2>Cyber Revolution</h2>
+                <div class="project-badge">
+                    <span class="material-icons">public</span>
+                    Опубликовано
+                </div>
+            </div>
+            <div class="project-grid">
+                <div class="metric-item">
+                    <div class="metric-value">142K</div>
+                    <div>Просмотры</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">24K</div>
+                    <div>Скачивания</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">$8.4K</div>
+                    <div>Доход</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">4.8</div>
+                    <div>Рейтинг</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Команда -->
+        <div class="team-section">
+            <div class="member-card">
+                <div class="member-header">
+                    <img src="avatar.jpg" class="member-avatar" alt="Аватар">
                     <div>
-                        <h3>PROJECT: CYBER NOIR</h3>
-                        <div class="status-tag" style="background: var(--neon-purple);">BETA v0.8.3</div>
-                    </div>
-                    <div class="runtime-stats">
-                        <div class="stat-node">
-                            <small>UPTIME</small>
-                            <div>98.7%</div>
-                        </div>
+                        <h4>Александр Ливанов</h4>
+                        <p>Tech Lead</p>
                     </div>
                 </div>
-
-                <div class="runtime-stats">
-                    <div class="stat-node">
-                        <small>DAILY ACTIVE</small>
-                        <div>24.8K</div>
-                        <progress value="75" max="100"></progress>
+                <div class="task-list">
+                    <div class="task-item">
+                        <span class="material-icons">code</span>
+                        Оптимизация рендеринга
                     </div>
-                    <div class="stat-node">
-                        <small>REVENUE 24H</small>
-                        <div>$5,429</div>
-                        <div style="color: var(--matrix-green);">↑12.4%</div>
-                    </div>
-                    <div class="stat-node">
-                        <small>BUGS</small>
-                        <div>142</div>
-                        <div style="color: var(--hud-blue);">12 new</div>
-                    </div>
-                </div>
-
-                <div class="tech-specs">
-                    <h4>SYSTEM LOAD</h4>
-                    <div class="spec-grid">
-                        <div>CPU: 68% <progress value="68" max="100"></progress></div>
-                        <div>RAM: 4.2/8GB <progress value="52.5" max="100"></progress></div>
-                        <div>NET: 324Mb/s <progress value="65" max="100"></progress></div>
+                    <div class="task-item">
+                        <span class="material-icons">bug_report</span>
+                        Исправление физики
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Детализированная команда -->
-        <h2 style="color: var(--neon-purple);">UNIT ROSTER</h2>
-        <div class="unit-grid">
-            <div class="unit-card">
-                <div class="unit-header">
-                    <h4>ENGINEER-01</h4>
-                    <div class="specs">
-                        <span>LEVEL: 47</span>
-                        <span>XP: 84%</span>
-                    </div>
-                </div>
-                <button class="hud-button">++ ADD DIRECTIVE</button>
-                <div class="task-queue">
-                    <div class="directive">
-                        <div>▹ OPTIMIZE RENDER PIPELINE</div>
-                        <small>PHASE: IMPLEMENTATION</small>
-                        <progress value="65" max="100"></progress>
-                    </div>
-                    <div class="directive">
-                        <div>▹ FIX NETWORK DESYNC</div>
-                        <small>PHASE: TESTING</small>
-                        <progress value="90" max="100"></progress>
-                    </div>
-                </div>
+        <!-- Аналитика -->
+        <div class="analytics-panel">
+            <h3>Динамика проекта</h3>
+            <div class="chart-container">
+                <canvas id="analyticsChart"></canvas>
             </div>
         </div>
-
-        <!-- Комплексная аналитика -->
-        <div class="analytics-hub">
-            <div class="main-graph">
-                <canvas id="mainChart"></canvas>
-            </div>
-            <div class="side-panel">
-                <div class="stat-node">
-                    <h4>LIVE FEED</h4>
-                    <div>▶ 342 NEW PLAYERS (24H)</div>
-                    <div>▶ $12,430 REVENUE</div>
-                    <div>▶ 45 CODE COMMITS</div>
-                </div>
-                <div class="stat-node">
-                    <h4>CRITICAL SYSTEMS</h4>
-                    <div>■ DATABASE: STABLE</div>
-                    <div>■ CDN: 98.4% UPTIME</div>
-                    <div>■ API: RESPONSE 142ms</div>
-                </div>
-            </div>
-        </div>
+    </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('mainChart').getContext('2d');
+        const ctx = document.getElementById('analyticsChart').getContext('2d');
         new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май'],
                 datasets: [{
-                        label: 'Active Players',
-                        data: [12000, 19000, 30000, 28000, 42000, 39000, 45000],
-                        backgroundColor: 'rgba(0, 255, 136, 0.2)',
-                        borderColor: '#00ff88'
+                        label: 'Активные игроки',
+                        data: [12000, 19000, 30000, 28000, 42000],
+                        borderColor: '#7c3aed',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(124, 58, 237, 0.1)'
                     },
                     {
-                        label: 'Revenue ($)',
-                        data: [2400, 3900, 6000, 5400, 8400, 7500, 9200],
-                        backgroundColor: 'rgba(188, 19, 254, 0.2)',
-                        borderColor: '#bc13fe'
+                        label: 'Доход ($)',
+                        data: [2400, 3900, 6000, 5400, 9200],
+                        borderColor: '#2dd4bf',
+                        tension: 0.4
                     }
                 ]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         grid: {
-                            color: 'rgba(255,255,255,0.1)'
+                            color: '#334155'
                         },
                         ticks: {
-                            color: '#fff'
+                            color: '#94a3b8'
                         }
                     },
                     x: {
                         grid: {
-                            color: 'rgba(255,255,255,0.1)'
+                            color: '#334155'
                         },
                         ticks: {
-                            color: '#fff'
+                            color: '#94a3b8'
                         }
                     }
                 }
             }
         });
     </script>
-</body>
+    </body>
 
 </html>
