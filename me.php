@@ -80,7 +80,7 @@ require_once('swad/controllers/user.php');
                         <p>Username: <a href="https://t.me/<?= $telegramUsername ?>">@<?= $telegramUsername ?></a></p>
                     <?php endif; ?>
                     <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($telegramID); ?></p>
-                    <p><a href="/dev/">Вход в консоль для разработчиков</a></p>
+                    <p><a href="/devs/">Вход в консоль для разработчиков</a></p>
                 </div>
             </div>
         </div>
