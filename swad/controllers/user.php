@@ -1,4 +1,7 @@
 <?php
+
+require_once('jwt.php');
+
 class User
 {
     private $db;
@@ -8,16 +11,6 @@ class User
     {
         $database = new Database();
         $this->db = $database->connect();
-    }
-
-    public function getIDByTelegramId($tel_id)
-    {
-        $query = 'SELECT id FROM ' . $this->table . ' WHERE telegram_id = :tel_id LIMIT 1';
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getUsername($id)
@@ -67,5 +60,34 @@ class User
             default:
                 echo "Неверный идентификатор";
         }
+    }
+
+    public function checkAuth()
+    {
+        if (!isset($_COOKIE['auth_token'])) {
+            // header('HTTP/1.1 401 Unauthorized');
+            exit('Требуется авторизация');
+        }
+
+        $telegram_id = validateToken($_COOKIE['auth_token']);
+
+        if (!$telegram_id) {
+            setcookie('auth_token', '', time() - 3600, '/');
+            // header('HTTP/1.1 403 Forbidden');
+            exit('Недействительный токен');
+        }
+
+        // get user info from DB
+        $query = 'SELECT * FROM ' . $this->table . ' WHERE telegram_id = :telegram_id LIMIT 1';
+        $stmt = $this->db->prepare($query);
+        $stmt->execute(['telegram_id' => $telegram_id]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            // header('HTTP/1.1 404 Not Found');
+            exit('Пользователь не найден');
+        }
+
+        return $user;
     }
 }

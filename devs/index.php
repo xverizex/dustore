@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -14,65 +12,7 @@
   </head>
 
   <body>
-    <!-- github fork banner -->
-    <a href="https://github.com/SlimShadyIAm/material-admin"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
-
-    <ul id="slide-out" class="side-nav fixed z-depth-4">
-      <li>
-        <div class="userView">
-          <div class="background">
-            <img src="assets/img/photo1.png">
-          </div>
-          <a href="#!user"><img class="circle" src="assets/img/avatar04.png"></a>
-          <a href="#!name"><span class="white-text name">Welcome back,</span></a>
-          <a href="#!email"><span class="white-text email">user!</span></a>
-        </div>
-      </li>
-
-      <li>
-        <form class="sidebar-form">
-          <div class="input-group">
-            <input id="accounts" type="text" name="username" class="form-control" placeholder="Universal Search" autocomplete="off" />
-          </div>
-        </form>
-      </li>
-
-      <li><a class="active" href="index.html"><i class="material-icons pink-item">dashboard</i>Dashboard</a></li>
-      <li><div class="divider"></div></li>
-
-      <li><a class="subheader">Management</a></li>
-      <li><a href="names.html"><i class="material-icons pink-item">thumbs_up_down</i>Name Approvals</a></li>
-      <li><a href="comments.html"><i class="material-icons pink-item">note_add</i>News Comments</a></li>
-
-      <li class="no-padding">
-        <ul class="collapsible collapsible-accordion">
-          <li>
-            <a class="collapsible-header">User Management<i class="material-icons pink-item">person</i></a>
-            <div class="collapsible-body">
-              <ul>
-                <li><a href="userdetails.html">User Detail</a></li>
-                <li><a href="recentusers.html">Recent Users</a></li>
-                <li><a href="reports.html">Reports</a></li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-      </li>
-
-      <li class="no-padding">
-        <ul class="collapsible collapsible-accordion">
-          <li>
-            <a class="collapsible-header">Announcements<i class="material-icons pink-item">arrow_drop_down</i></a>
-            <div class="collapsible-body">
-              <ul>
-                <li><a href="addannoun.html">Add New</a></li>
-                <li><a href="allannoun.html">All Announcements</a></li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-      </li>
-    </ul>
+    <?php require_once('../swad/static/elements/sidebar.php'); ?>
     <main>
     <section class="content">
       <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a><h1 class="page-announce-text valign">// Dashboard </h1></div>

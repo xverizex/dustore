@@ -1,21 +1,24 @@
 <?php
-// Start the session
 session_start();
 
-
-// When the user is logged in, go to the user page
+// // When the user is logged in, go to the user page
 if (isset($_SESSION['logged-in']) && $_SESSION['logged-in'] == TRUE) {
-    die(header('Location: /'));
+    die(header('Location: /me'));
 }
 
 
 // Import database connection and class
-require('../config.php');
+require_once('../config.php');
+// Import JWT script
+require_once('jwt.php');
 
 $db = new Database;
 
+// TOKENS FOR TG BOTS (GLOBAL and LOCAL)
 define('BOT_TOKEN', '7993358429:AAH3EfKtSW7oqyN1fVWBAQsD6ehKZViF1do');
 define('LOCAL_BOT_TOKEN', '8111791435:AAHs41kdMZ0PBkm2lt0lNavG9vI9xCiJ_FA');
+
+
 
 if (!isset($_GET['hash'])) {
     die('Telegram hash not found');
@@ -119,11 +122,13 @@ function userAuthentication($db, $auth_data)
     }
 
     // Create logged in user session
+    $_SESSION['id'] = $auth_data['id'];
+    $token = authUser($auth_data['id']);
     $_SESSION = [
         'logged-in' => TRUE,
-        'telegram_id' => $auth_data['id']
+        'telegram_id' => $auth_data['id'],
+        'auth_token' => $token
     ];
-    $_SESSION['id'] = $auth_data['id'];
 }
 
 try {
@@ -135,6 +140,5 @@ try {
     die($e->getMessage());
 }
 
+die(header('Location: /me'));
 
-// Go to the user page
-die(header('Location: /'));
