@@ -29,6 +29,9 @@ require_once('swad/controllers/user.php');
         ]
     );
 
+    $_SESSION['id'] = $curr_user->getID($_SESSION['telegram_id']);
+
+
     $firstName        = $user_data[0]['first_name'];
     $lastName         = $user_data[0]['last_name'];
     $profilePicture   = $user_data[0]['profile_picture'];
@@ -79,7 +82,7 @@ require_once('swad/controllers/user.php');
                     <?php if (!is_null($telegramUsername)): ?>
                         <p>Username: <a href="https://t.me/<?= $telegramUsername ?>">@<?= $telegramUsername ?></a></p>
                     <?php endif; ?>
-                    <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($telegramID); ?></p>
+                    <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($_SESSION['id'])['role_id'])['name']); ?></p>
                     <p><a href="/devs/select">Вход в консоль для разработчиков</a></p>
                 </div>
             </div>

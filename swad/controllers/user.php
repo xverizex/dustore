@@ -13,6 +13,16 @@ class User
         $this->db = $database->connect();
     }
 
+    public function getID($telegram_id){
+        $query = 'SELECT id FROM ' . $this->table . ' WHERE telegram_id = :telegram_id LIMIT 1';
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':telegram_id', $telegram_id);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['id'] : null;
+    }
+
     public function getUsername($id)
     {
         $query = 'SELECT telegram_username FROM ' . $this->table . ' WHERE telegram_id = :id LIMIT 1';
@@ -25,41 +35,59 @@ class User
     }
 
     // 19.05.2025 (c) Alexander Livanov
-    // Function to get user privileges
-    public function getUserPrivileges($id){
-        // TODO: get usernames from DB
-        $creators = ['7107471254'];
-        $moders = [];
-        $admins = [];
-
-        if(in_array($id, $creators, true)){
-            return -1;
-        }else if(in_array($id, $moders, true)){
-            return 1;
-        }else if(in_array($id, $admins, true)){
-            return 2;
-        }else{
-            return 0;
-        }
-    }
-
-    public function printUserPrivileges($id){
-        $priv = $this->getUserPrivileges($id);
-        switch($priv){
-            case -1:
+    public function printUserPrivileges($role){
+        switch($role){
+            case 'creator':
                 echo "Создатель";
                 break;
-            case 0:
+            case 'user':
                 echo "Пользователь";
                 break;
-            case 1:
+            case 'employee':
+                echo "Сотрудник";
+                break;
+            case 'owner':
+                echo "Владелец";
+                break;
+            case 'moder':
                 echo "Модератор";
                 break;
-            case 2:
+            case 'admin':
                 echo "Администратор";
             default:
                 echo "Неверный идентификатор";
         }
+    }
+
+    public function getUserRole($id){
+        $stmt = $this->db->prepare("
+            SELECT `role_id` FROM user_organization WHERE user_id = ?
+        ");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getRoleName($role_id){
+        $stmt = $this->db->prepare("
+            SELECT `name` FROM roles WHERE id = ?
+        ");
+        $stmt->execute([$role_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function userHasRole($userId, $organizationId, $requiredRole)
+    {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) 
+            FROM user_organization 
+            WHERE 
+                user_id = ? AND 
+                organization_id = ? AND 
+                role_id = (SELECT id FROM roles WHERE name = ?) AND 
+                status = 'active'
+        ");
+        $stmt->execute([$userId, $organizationId, $requiredRole]);
+        return $stmt->fetchColumn() > 0;
     }
 
     public function checkAuth()
@@ -89,5 +117,22 @@ class User
         }
 
         return 0;
+    }
+
+    public function addUserToOrganization($owner_id, $userId, $organizationId, $givenRoleId)
+    {
+        if (!$this->userHasRole($owner_id, $organizationId, 'owner')) {
+            throw new Exception("Access denied");
+        }
+
+        $stmt = $this->db->prepare("
+                INSERT INTO user_organization 
+                (user_id, organization_id, role_id) 
+                VALUES (?, ?, ?)
+            ");
+        $stmt->execute([$userId, $organizationId, $givenRoleId]);
+
+        // TODO: сделать систему уведомлений
+        // $this->sendNotification($userId, "You've been added to organization");
     }
 }

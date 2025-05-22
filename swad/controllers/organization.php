@@ -49,8 +49,8 @@ class Organization
     }
 
     private function createOrganizationFolder()
-    {
-        $basePath = $_SERVER['DOCUMENT_ROOT'] . '/swad/usercontent/';
+    {   
+        $basePath = '../swad/usercontent/';
         $folderPath = $basePath . $this->name;
 
         if (!file_exists($folderPath)) {

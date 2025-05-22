@@ -1,3 +1,20 @@
+<?php
+session_start();
+
+require_once('../constants.php');
+require_once(ROOT_DIR . '/swad/config.php');
+require_once(ROOT_DIR . '/swad/controllers/user.php');
+
+$curr_user = new User();
+$db = new Database();
+
+
+if (empty($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
+  echo ("<script>window.location.replace('../login');</script>");
+  exit;
+}
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -17,7 +34,7 @@
   <main>
     <section class="content">
       <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a>
-        <h1 class="page-announce-text valign"><?= 'Студия \'CrazyProjectsLab\'' ?></h1>
+        <h1 class="page-announce-text valign"><?= 'Студия ' . $user_orgs[0][1] ?></h1>
       </div>
       <!-- Stat Boxes -->
       <div class="row">
@@ -27,6 +44,13 @@
             <div class="inner">
               <h3><?= 0 ?></h3>
               <p>Сотрудники</p>
+              <?php
+                if ($curr_user->userHasRole($_SESSION['id'], $user_org[0][0], 'owner')) {
+                  echo ("true");
+                }
+
+                // $curr_user->addUserToOrganization($_SESSION['id'], 2, $user_org[0][0], 1);
+              ?>
             </div>
             <div class="icon">
               <i class="ion ion-person-add"></i>

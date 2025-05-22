@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once('../constants.php');
 require_once(ROOT_DIR . '/swad/config.php');
 require_once(ROOT_DIR . '/swad/controllers/user.php');
@@ -10,6 +9,13 @@ $db = new Database();
 if (empty($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
     echo ("<script>window.location.replace('../login');</script>");
 }
+
+$user_org = $db->Select("SELECT * FROM `organizations` WHERE `owner_id` = :owner_id and `id` = :org_id", ['owner_id' => $_SESSION['id'], 'org_id' => $_GET['s']]);
+echo 12;
+// if ($user_org[0][2] != $_SESSION['id']) {
+//     echo ("<script>alert('Вам не принадлежит эта студия!');</script>");
+//     echo ("<script>window.location.replace('../login');</script>");
+// }
 ?>
 
 <ul id="slide-out" class="side-nav fixed z-depth-4">
@@ -21,6 +27,10 @@ if (empty($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
             </div>
             <img class="circle" src="assets/img/avatar04.png">
             <span class="white-text">Добро пожаловать,</span>
+            <?php
+                                        print_r($user_orgs);
+
+                                        ?>
             <span class="white-text"><?= $curr_user->getUsername($_SESSION['telegram_id']); ?></span>
         </div>
     </li>

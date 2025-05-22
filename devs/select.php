@@ -18,10 +18,15 @@ $user_id = $db->Select(
         'id' => $_SESSION['telegram_id']
     ]
 );
-
 $user_orgs = $db->Select(
-    "SELECT name FROM `organizations`
-                        WHERE `owner_id` = :id",
+    "SELECT 
+                    o.name AS organization_name,
+                    r.name AS user_role,
+                    uo.status 
+                FROM user_organization uo
+                JOIN organizations o ON o.id = uo.organization_id
+                JOIN roles r ON r.id = uo.role_id
+                WHERE uo.user_id = :id ORDER BY status DESC;",
     [
         'id' => $user_id[0][0]
     ]
@@ -150,11 +155,23 @@ $user_orgs = $db->Select(
 
         <?php foreach ($user_orgs as $org): ?>
             <ul class="studio-list">
-                <li class="studio-item">
+                <?php if ($org['status'] == 'pending'): ?>
+                    <li class="studio-item" style="cursor: not-allowed;">
+                        <i class="material-icons studio-icon">schedule</i>
+                        <span class="studio-name"><?= $org[0] ?><i style="color: crimson; font-size: 11pt;"> На проверке...</i></span>
+                        <br>
+                    </li>
+                <?php endif;
+
+                if ($org['status'] == 'active'): ?>
+                <li class="studio-item" onclick="location.href='index?s=<?= $org[0] ?>'">
                     <i class="material-icons studio-icon">business</i>
-                    
-                    <span class="studio-name" onclick="location.href='devs'"><?= $org[0] ?></span>
+
+                    <span class="studio-name"><?= $org[0] ?></span>
+                    <br>
+                    <span style="color: #5f6368; margin: 5px; padding: 5px;"><?= $curr_user->printUserPrivileges($org['user_role']) ?></span>
                 </li>
+                <?php endif; ?>
             </ul>
         <?php endforeach; ?>
 
