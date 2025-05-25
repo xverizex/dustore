@@ -28,7 +28,7 @@ if (empty($_SESSION['studio_id'])) {
 }
 ?>
 
-<?php require_once('swad/controllers/ymcounter.php'); ?>
+<?php require_once('../swad/controllers/ymcounter.php'); ?>
 
 <ul id="slide-out" class="side-nav fixed z-depth-4">
     <li style="line-height: 36px;">
