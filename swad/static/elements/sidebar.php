@@ -49,8 +49,9 @@ if (empty($_SESSION['studio_id'])) {
     </li>
 
     <li><a class="subheader">Моя студия</a></li>
-    <li><a href="staff"><i class="material-icons pink-item">groups</i>Сотрудники</a></li>
-    <li><a href="feedback"><i class="material-icons pink-item">note_add</i>Отзывы</a></li>
+    <li><a href="# staff"><i class="material-icons pink-item">groups</i>Сотрудники</a></li>
+    <li><a href="projects"><i class="material-icons pink-item">work</i>Проекты</a></li>
+    <li><a href="# feedback"><i class="material-icons pink-item">note_add</i>Отзывы</a></li>
 
     <?php if ($curr_user->getUserRole($_SESSION['id'], "global") == -1): ?>
         <li><a class="subheader">Для администраторов</a></li>
@@ -60,10 +61,10 @@ if (empty($_SESSION['studio_id'])) {
                     <a class="collapsible-header">Администрирование<i class="material-icons pink-item">shield</i></a>
                     <div class="collapsible-body" style="padding: 0 2rem;">
                         <ul>
-                            <li><a href="userdetails">Поиск пользователя</a></li>
-                            <li><a href="recentusers">Новые пользователи</a></li>
-                            <li><a href="recentorgs">Новые организации</a></li>
-                            <li><a href="reports">Репорты</a></li>
+                            <li><a href="# userdetails">Поиск пользователя</a></li>
+                            <li><a href="# recentusers">Новые пользователи</a></li>
+                            <li><a href="# recentorgs">Новые организации</a></li>
+                            <li><a href="# reports">Репорты</a></li>
                         </ul>
                     </div>
                 </li>

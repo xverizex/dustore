@@ -27,8 +27,9 @@ h1.page-announce-text {
   font-weight: 100;
   font-size: 56px;
   color: #fff;
-  line-height: 0.5em;
-  margin-left: 50px;
+  line-height: 1em;
+  margin-left: 1px;
+  margin-right: 1px;
 }
 
 body {
@@ -238,6 +239,10 @@ div.quick-links a {
     font-size: 36px;
   }
 
+  #role {
+    font-size: 18px;
+  }
+
   .page-announce {
     padding: 20px;
   }
@@ -251,6 +256,6 @@ div.quick-links a {
   }
 
   h1.page-announce-text {
-    font-size: 32px;
+    font-size: large;
   }
 }

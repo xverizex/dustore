@@ -43,7 +43,7 @@ class User
                 echo "Создатель этого мира";
                 break;
             case 'user':
-                echo "Обычный ользователь";
+                echo "Обычный пользователь";
                 break;
             case 'employee':
                 echo "Сотрудник в студии";

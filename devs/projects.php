@@ -17,65 +17,36 @@
 
   <main>
     <section class="content">
-
-      <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a>
-        <h1 class="page-announce-text valign">// Управление сотрудниками </h1>
+      <div class="page-announce valign-wrapper">
+        <a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only">
+          <i class="material-icons">menu</i>
+        </a>
+        <h1 class="page-announce-text valign">// Мои проекты</h1>
       </div>
-      <div id="posttable" class="container">
-        <table class="responsive-table striped hover centered" id="names-table">
+
+      <div id="projects-table" class="container">
+        <table class="responsive-table striped hover centered">
           <thead>
             <tr>
-              <th>Username:</th>
-              <th>Date Requested:</th>
-              <th>Toon ID:</th>
-              <th>Name Requested:</th>
-              <th>Name Actions:</th>
+              <th>Название</th>
+              <th>Дата создания</th>
+              <th>Статус</th>
+              <th>Управление</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><a>MeredithPalmer</a></td>
-              <td><a>2017-03-30</a></td>
-              <td><a>1000016</a></td>
-              <td><a>Ticking Time Bags</a></td>
+              <td>Dustore</td>
+              <td>16.02.2025</td>
+              <td>В разработке</td>
               <td>
-                <div class="btn-toolbar">
-                  <a href="#">
-                    <button class="btn green" type="submit">
-                      <i class="material-icons">done</i>
-                    </button>
-                  </a>
-                  <a href="#">
-                    <button class="btn red" type="submit">
-                      <i class="material-icons">remove</i>
-                    </button>
-                  </a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td><a>OscarMartinez</a></td>
-              <td><a>2017-03-30</a></td>
-              <td><a>1000017</a></td>
-              <td><a>Aggregious</a></td>
-              <td>
-                <div class="btn-toolbar">
-                  <a href="#">
-                    <button class="btn green" type="submit">
-                      <i class="material-icons">done</i>
-                    </button>
-                  </a>
-                  <a href="#">
-                    <button class="btn red" type="submit">
-                      <i class="material-icons">remove</i>
-                    </button>
-                  </a>
-                </div>
+                <button class="btn blue waves-effect waves-light edit-project" onclick="location.href='p/edit?id='<?php ?>">
+                  <i class="material-icons">settings</i>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
-      </div>
       </div>
     </section>
   </main>
