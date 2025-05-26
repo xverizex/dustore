@@ -25,6 +25,10 @@
       </div>
 
       <div id="projects-table" class="container">
+        <button class="btn blue waves-effect waves-light" onclick="location.href='p/manage'">
+          Новый проект
+          <i class="material-icons">task</i>
+        </button>
         <table class="responsive-table striped hover centered">
           <thead>
             <tr>

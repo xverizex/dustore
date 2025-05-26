@@ -42,13 +42,6 @@ $db = new Database();
             <div class="inner">
               <h3><?= 0 ?></h3>
               <p>Сотрудники</p>
-              <?php
-              // if ($curr_user->userHasRole($_SESSION['id'], $user_org[0][0], 'owner')) {
-              //   echo ("true");
-              // }
-
-              // $curr_user->addUserToOrganization($_SESSION['id'], 2, $user_org[0][0], 1);
-              ?>
             </div>
             <div class="icon">
               <i class="ion ion-person-add"></i>

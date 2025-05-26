@@ -49,38 +49,55 @@ if (empty($_SESSION['studio_id'])) {
     </li>
 
     <li><a class="subheader">Моя студия</a></li>
-    <li><a href="# staff"><i class="material-icons pink-item">groups</i>Сотрудники</a></li>
-    <li><a href="projects"><i class="material-icons pink-item">work</i>Проекты</a></li>
-    <li><a href="# feedback"><i class="material-icons pink-item">note_add</i>Отзывы</a></li>
-
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">groups</i>Сотрудники</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">work</i>Проекты</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">note_add</i>Отзывы</a></li>
+    <li>
+        <div class="divider"></div>
+    </li>
+    <li><a class="subheader">Проекты</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">add</i>Создать новый</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">group</i>Исполнители</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">list_alt</i>Задачи</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">reviews</i>Отзывы</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">stars</i>Рейтинг игры</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">currency_ruble</i>Монетизация</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">bug_report</i>Написать отчёт</a></li>
+    <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">campaign</i>Создать событие</a></li>
+    <li>
+        <div class="divider"></div>
+    </li>
     <?php if ($curr_user->getUserRole($_SESSION['id'], "global") == -1): ?>
         <li><a class="subheader">Для администраторов</a></li>
         <li class="no-padding">
             <ul class="collapsible collapsible-accordion">
                 <li>
                     <a class="collapsible-header">Администрирование<i class="material-icons pink-item">shield</i></a>
-                    <div class="collapsible-body" style="padding: 0 2rem;">
+                    <div class="collapsible-body" style="padding: 0;">
                         <ul>
-                            <li><a href="# userdetails">Поиск пользователя</a></li>
-                            <li><a href="# recentusers">Новые пользователи</a></li>
-                            <li><a href="# recentorgs">Новые организации</a></li>
-                            <li><a href="# reports">Репорты</a></li>
+                            <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">person_search</i>Поиск пользователя</a></li>
+                            <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">how_to_reg</i>Новые пользователи</a></li>
+                            <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">domain_add</i>Новые организации</a></li>
+                            <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">report</i>Репорты</a></li>
                         </ul>
                     </div>
                 </li>
             </ul>
         </li>
     <?php endif; ?>
+    <li>
+        <div class="divider"></div>
+    </li>
     <li class="no-padding">
         <ul class="collapsible collapsible-accordion">
             <li>
                 <a class="collapsible-header">Объявления<i class="material-icons pink-item">campaign</i></a>
-                <div class="collapsible-body" style="padding: 0 2rem;">
+                <div class="collapsible-body" style="padding: 0;">
                     <ul>
                         <?php if ($curr_user->getUserRole($_SESSION['id'], "global") == -1): ?>
-                            <li><a href="addannoun">Создать новое</a></li>
+                            <li><a href="addannoun" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">add_alert</i>Создать новое</a></li>
                         <?php endif; ?>
-                        <li><a href="allannoun">Все</a></li>
+                        <li><a href="allannoun" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">notifications</i>Все</a></li>
                     </ul>
                 </div>
             </li>
