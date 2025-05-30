@@ -1,9 +1,104 @@
+<?php
+session_start();
+require_once('../swad/config.php');
+require_once(ROOT_DIR . '/swad/controllers/user.php');
+require_once(ROOT_DIR . '/swad/controllers/organization.php');
+
+$db = new Database();
+$curr_user = new User();
+
+// Проверка прав пользователя
+if ($curr_user->getUserRole($_SESSION['id'], "global") != -1) {
+  header('Location: select');
+  exit();
+}
+
+// Получаем информацию о студии пользователя
+$user_id = $_SESSION['id'];
+$user_orgs = $curr_user->getUserOrgs($user_id);
+$studio_info = $user_orgs[0];
+$studio_name = $studio_info['name'];
+
+// Обработка отправки формы
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // Сбор данных формы
+  $project_name = $_POST['project-name'];
+  $genre = $_POST['genre'];
+  $description = $_POST['description'];
+  $platforms = implode(',', $_POST['platform'] ?? []);
+  $release_date = $_POST['release-date'];
+  $game_website = $_POST['website'];
+
+  // Расчет GQI (Game Quality Index)
+  $gqi = 0;
+  $filled_fields = 0;
+  $total_fields = 7; // Всего полей в форме
+
+  if (!empty($project_name)) $filled_fields++;
+  if (!empty($genre)) $filled_fields++;
+  if (!empty($description)) $filled_fields++;
+  if (!empty($_POST['platform'])) $filled_fields++;
+  if (!empty($release_date)) $filled_fields++;
+  if (!empty($game_website)) $filled_fields++;
+  if (!empty($_FILES['cover-art']['name'])) $filled_fields++;
+
+  $gqi = round(($filled_fields / $total_fields) * 100);
+
+  // Обработка загрузки обложки
+  $cover_path = '';
+  if (!empty($_FILES['cover-art']['name'])) {
+    $upload_dir = ROOT_DIR . "/swad/usercontent/{$studio_name}/{$project_name}/";
+
+    // Создаем директории, если не существуют
+    if (!file_exists($upload_dir)) {
+      mkdir($upload_dir, 0777, true);
+    }
+
+    $file_extension = pathinfo($_FILES['cover-art']['name'], PATHINFO_EXTENSION);
+    $cover_filename = "cover." . $file_extension;
+    $cover_path = "/swad/usercontent/{$studio_name}/{$project_name}/{$cover_filename}";
+    $full_path = ROOT_DIR . $cover_path;
+
+    // Перемещаем загруженный файл
+    move_uploaded_file($_FILES['cover-art']['tmp_name'], $full_path);
+  }
+
+  // Создание записи в базе данных с использованием PDO
+  $sql = "INSERT INTO games (developer, publisher, name, genre, description, platforms, release_date, path_to_cover, game_website, status, GQI, rating_boost) 
+            VALUES (:developer, :publisher, :name, :genre, :description, :platforms, :release_date, :cover_path, :website, 'draft', :gqi, 0)";
+
+  try {
+    $stmt = $db->connect()->prepare($sql);
+
+    $stmt->bindParam(':developer', $studio_id, PDO::PARAM_INT);
+    $stmt->bindParam(':publisher', $studio_id, PDO::PARAM_INT);
+    $stmt->bindParam(':name', $project_name, PDO::PARAM_STR);
+    $stmt->bindParam(':genre', $genre, PDO::PARAM_STR);
+    $stmt->bindParam(':description', $description, PDO::PARAM_STR);
+    $stmt->bindParam(':platforms', $platforms, PDO::PARAM_STR);
+    $stmt->bindParam(':release_date', $release_date, PDO::PARAM_STR);
+    $stmt->bindParam(':cover_path', $cover_path, PDO::PARAM_STR);
+    $stmt->bindParam(':website', $game_website, PDO::PARAM_STR);
+    $stmt->bindParam(':gqi', $gqi, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    $project_id = $db->connect()->lastInsertId();
+    $_SESSION['success_message'] = "Проект '{$project_name}' успешно создан!";
+    header("Location: project.php?id={$project_id}");
+    exit();
+  } catch (PDOException $e) {
+    $error_message = "Ошибка при создании проекта: " . $e->getMessage();
+  }
+}
+?>
+
 <!DOCTYPE html>
 <html>
 
 <head>
   <meta charset="UTF-8">
-  <title>Game Project Creation</title>
+  <title>Dustore.Devs - Создать новый проект</title>
   <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
   <link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
@@ -11,6 +106,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="assets/css/custom.css" rel="stylesheet" type="text/css" />
   <style>
+    /* Стили остаются без изменений */
     .gqi-fixed-container {
       position: fixed;
       bottom: 0;
@@ -58,81 +154,176 @@
         margin-left: 0;
       }
     }
+
+    .alert {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .alert-success {
+      background-color: #dff0d8;
+      border-color: #d6e9c6;
+      color: #3c763d;
+    }
+
+    .alert-error {
+      background-color: #f2dede;
+      border-color: #ebccd1;
+      color: #a94442;
+    }
+
+    .form-footer {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .file-field {
+      margin-top: 10px;
+    }
+
+    .preview-container {
+      margin-top: 15px;
+      max-width: 300px;
+      border: 1px dashed #ddd;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .cover-preview {
+      max-width: 100%;
+      max-height: 200px;
+      display: none;
+    }
   </style>
 </head>
 
 <body>
-  <?php require_once('../swad/static/elements/sidebar.php');
-  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1) {
-    header('Location: select');
-    exit();
-  }
-  ?>
+  <?php require_once('../swad/static/elements/sidebar.php'); ?>
   <main>
     <section class="content">
       <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a>
-        <h1 class="page-announce-text valign">// Create Game Project </h1>
+        <h1 class="page-announce-text valign">// Создать новый проект</h1>
       </div>
       <div class="container">
-        <h3>Project Details</h3>
+        <?php if (isset($_SESSION['success_message'])): ?>
+          <div class="alert alert-success">
+            <?= $_SESSION['success_message'] ?>
+            <?php unset($_SESSION['success_message']); ?>
+          </div>
+        <?php endif; ?>
+
+        <?php if (isset($error_message)): ?>
+          <div class="alert alert-error">
+            <?= $error_message ?>
+          </div>
+        <?php endif; ?>
+
+        <h3>Общая информация</h3>
+        <p>Создайте черновик проекта для вашей новой игры. После создания вы сможете добавлять файлы, настраивать публикацию и управлять проектом.</p>
         <br>
-        <form id="game-project">
+
+        <form id="game-project" method="POST" enctype="multipart/form-data">
           <table class="table table-hover">
             <tbody>
               <tr>
-                <td><label for="project-name">Project Name: </label></td>
-                <td><input type="text" name="project-name" placeholder="Enter project name" required /></td>
+                <td><label for="project-name">Название: </label></td>
+                <td>
+                  <input type="text" name="project-name" placeholder="Введите название" required maxlength="64" />
+                  <div class="hint">Максимум 64 символа</div>
+                </td>
               </tr>
               <tr>
-                <td><label for="genre">Genre: </label></td>
+                <td><label for="genre">Жанр: </label></td>
                 <td>
-                  <select name="genre" class="browser-default">
-                    <option value="" disabled selected>Select genre</option>
-                    <option value="action">Action</option>
+                  <select name="genre" class="browser-default" required>
+                    <option value="" disabled selected>Выберите жанр</option>
+                    <option value="action">Экшен</option>
                     <option value="rpg">RPG</option>
-                    <option value="strategy">Strategy</option>
-                    <option value="adventure">Adventure</option>
+                    <option value="strategy">Стратегия</option>
+                    <option value="adventure">Приключение</option>
+                    <option value="simulator">Симулятор</option>
+                    <option value="visnovel">Визуальная новелла</option>
+                    <option value="indie">Инди</option>
+                    <option value="other">Другое</option>
                   </select>
                 </td>
               </tr>
               <tr>
-                <td><label for="description">Description: </label></td>
-                <td><textarea name="description" class="materialize-textarea" placeholder="Game description"></textarea></td>
+                <td><label for="description">Описание: </label></td>
+                <td>
+                  <textarea name="description" class="materialize-textarea" placeholder="Введите описание (50-2000 символов)" minlength="50" maxlength="2000" required></textarea>
+                  <div class="hint">Опишите вашу игру: сюжет, геймплей, особенности</div>
+                </td>
               </tr>
               <tr>
-                <td><label for="platform">Platform: </label></td>
+                <td><label for="platform">Платформа: </label></td>
                 <td>
                   <p>
-                    <input type="checkbox" id="pc" name="platform[]" />
-                    <label for="pc">PC</label>
+                    <input type="checkbox" id="pc_windows" name="platform[]" value="windows" />
+                    <label for="pc_windows">Windows</label>
                   </p>
                   <p>
-                    <input type="checkbox" id="console" name="platform[]" />
-                    <label for="console">Console</label>
+                    <input type="checkbox" id="pc_linux" name="platform[]" value="linux" />
+                    <label for="pc_linux">Linux</label>
                   </p>
                   <p>
-                    <input type="checkbox" id="mobile" name="platform[]" />
-                    <label for="mobile">Mobile</label>
+                    <input type="checkbox" id="pc_macos" name="platform[]" value="macos" />
+                    <label for="pc_macos">MacOS</label>
+                  </p>
+                  <p>
+                    <input type="checkbox" id="android" name="platform[]" value="android" />
+                    <label for="android">Android</label>
+                  </p>
+                  <p>
+                    <input type="checkbox" id="web" name="platform[]" value="web" />
+                    <label for="web">Web</label>
                   </p>
                 </td>
               </tr>
               <tr>
-                <td><label for="release-date">Release Date: </label></td>
-                <td><input type="date" name="release-date" class="datepicker" /></td>
+                <td><label for="release-date">Дата выхода: </label></td>
+                <td>
+                  <input type="date" name="release-date" class="datepicker" placeholder="Выберите дату выхода игры" required />
+                </td>
               </tr>
               <tr>
-                <td><label for="cover-art">Cover Art: </label></td>
-                <td><input type="file" name="cover-art" accept="image/*" /></td>
+                <td><label for="cover-art">Обложка: </label></td>
+                <td>
+                  <div class="file-field">
+                    <div class="btn">
+                      <span>Выбрать файл</span>
+                      <input type="file" name="cover-art" accept="image/*" id="cover-input" />
+                    </div>
+                    <div class="file-path-wrapper">
+                      <input class="file-path" type="text" placeholder="Загрузите обложку игры">
+                    </div>
+                  </div>
+                  <div class="preview-container">
+                    <img src="" alt="Предпросмотр обложки" class="cover-preview" id="cover-preview">
+                    <p class="preview-text">Предпросмотр появится здесь</p>
+                  </div>
+                  <div class="hint">Рекомендуемый размер: 1200×630px, формат JPG/PNG</div>
+                </td>
               </tr>
               <tr>
-                <td><label for="website">Website: </label></td>
-                <td><input type="url" name="website" placeholder="https://yourgame.com" /></td>
+                <td><label for="website">Вебсайт игры: </label></td>
+                <td>
+                  <input type="url" name="website" placeholder="https://example.com" required />
+                  <div class="hint">Это может быть страница в ВК, канал в Telegram или официальный сайт</div>
+                </td>
               </tr>
               <tr>
                 <td colspan="2">
-                  <div class="center-align">
-                    <input class="btn btn-success" type="submit" value="Create Project" />
-                    <a href="#" class="btn btn-flat">Cancel</a>
+                  <div class="form-footer">
+                    <button class="btn btn-large waves-effect waves-light" type="submit">
+                      <i class="material-icons left">create</i> Создать черновик
+                    </button>
+                    <a href="dashboard.php" class="btn btn-large grey lighten-1 waves-effect">
+                      <i class="material-icons left">cancel</i> Отмена
+                    </a>
                   </div>
                 </td>
               </tr>
@@ -141,26 +332,28 @@
         </form>
 
         <br><br>
-        <h2>Project Documentation</h2><br>
+        <h2>Документация проекта</h2>
+        <p>После создания проекта вы сможете загрузить дополнительные материалы:</p>
+        <br>
         <table class="striped hover">
           <thead>
             <tr>
-              <th>File Name</th>
-              <th>Upload Date</th>
+              <th>Название документа</th>
+              <th>Статус</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Design Document.pdf</td>
-              <td>Not uploaded</td>
+              <td>Дизайн-документ (GDD)</td>
+              <td class="grey-text">Будет доступно после создания</td>
             </tr>
             <tr>
-              <td>Technical Specs.docx</td>
-              <td>Not uploaded</td>
+              <td>Техническая спецификация</td>
+              <td class="grey-text">Будет доступно после создания</td>
             </tr>
             <tr>
-              <td>Art Concepts.zip</td>
-              <td>Not uploaded</td>
+              <td>Арт-концепты</td>
+              <td class="grey-text">Будет доступно после создания</td>
             </tr>
           </tbody>
         </table>
@@ -168,7 +361,7 @@
       <div class="gqi-fixed-container">
         <div class="container">
           <div class="gqi-wrapper">
-            <span class="gqi-label">GQI: <span id="gqi-value">0%</span></span>
+            <span class="gqi-label">Индекс качества: <span id="gqi-value">0%</span></span>
             <div class="progress">
               <div class="determinate" id="gqi-progress" style="width: 0%"></div>
             </div>
@@ -184,7 +377,12 @@
   <script>
     // Инициализация компонентов Materialize
     $(document).ready(function() {
-      $('.datepicker').pickadate();
+      $('.datepicker').pickadate({
+        selectMonths: true,
+        selectYears: 15,
+        format: 'yyyy-mm-dd'
+      });
+
       $('select').material_select();
       $('.tooltipped').tooltip({
         delay: 50
@@ -197,6 +395,22 @@
       edge: 'left',
       closeOnClick: false,
       draggable: true
+    });
+
+    // Предпросмотр обложки
+    document.getElementById('cover-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const preview = document.getElementById('cover-preview');
+          preview.src = event.target.result;
+          preview.style.display = 'block';
+          document.querySelector('.preview-text').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+      updateGQI();
     });
   </script>
   <script>
@@ -224,7 +438,6 @@
 
         switch (field.type) {
           case 'checkbox':
-            // Для группы чекбоксов
             isFilled = document.querySelectorAll(`[name="${fieldId}"]:checked`).length > 0;
             break;
           case 'file':
@@ -234,7 +447,6 @@
             isFilled = field.value !== '';
             break;
           default:
-            // Безопасная проверка для текстовых полей
             isFilled = field.value ? field.value.trim() !== '' : false;
         }
 
@@ -253,7 +465,7 @@
         '#F44336';
     }
 
-    // Инициализация слушателей с проверкой
+    // Инициализация слушателей
     document.querySelectorAll('#game-project input, #game-project select, #game-project textarea').forEach(element => {
       if (element) {
         element.addEventListener('input', updateGQI);

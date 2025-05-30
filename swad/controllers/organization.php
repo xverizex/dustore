@@ -35,7 +35,7 @@ class Organization
     public function save(PDO $pdo)
     {
         try {
-            // $this->createOrganizationFolder();
+            $this->createOrganizationFolder();
 
             $stmt = $pdo->prepare("
                 INSERT INTO organizations 
