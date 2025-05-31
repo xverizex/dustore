@@ -77,7 +77,7 @@ if (empty($_SESSION['studio_id'])) {
                         <ul>
                             <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">person_search</i>Поиск пользователя</a></li>
                             <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">how_to_reg</i>Новые пользователи</a></li>
-                            <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">domain_add</i>Новые организации</a></li>
+                            <li><a href="recentorgs"><i class="material-icons pink-item">domain_add</i>Новые организации</a></li>
                             <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">report</i>Репорты</a></li>
                         </ul>
                     </div>

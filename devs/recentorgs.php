@@ -13,12 +13,49 @@
 </head>
 
 <body>
-  <?php 
-    require_once('../swad/static/elements/sidebar.php');
-    if($curr_user->getUserRole($_SESSION['id'], "global") != -1){
-      header('Location: select');
-      exit();
-    }
+  <?php
+  require_once('../swad/static/elements/sidebar.php');
+  require_once('../swad/config.php');
+  $db = new Database();
+
+  // Проверка прав
+  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1 && $curr_user->getUserRole($_SESSION['id'], "global") < 3) {
+    echo ("<script>alert('У вас нет прав на использование этой функции');</script>");
+    exit();
+  }
+
+  // Обработка подтверждения студии
+  if (isset($_GET['approve'])) {
+    $org_id = (int)$_GET['approve'];
+
+    // Обновляем статус студии
+    $stmt = $db->connect()->prepare("UPDATE user_organization SET status = 'active' WHERE organization_id = ?");
+    $stmt->execute([$org_id]);
+
+    // Получаем owner_id студии
+    $stmt = $db->connect()->prepare("SELECT user_id FROM user_organization WHERE organization_id = ?");
+    $stmt->execute([$org_id]);
+    $owner_id = $stmt->fetchColumn();
+
+    // Обновляем глобальную роль владельца
+    $stmt = $db->connect()->prepare("UPDATE users SET global_role = 2 WHERE id = ?");
+    $stmt->execute([$owner_id]);
+
+    echo ("<script>alert('Студия успешно подтверждена!'); window.location.href = 'recentorgs';</script>");
+    exit();
+  }
+
+  // Обработка отклонения студии
+  if (isset($_GET['reject'])) {
+    $org_id = (int)$_GET['reject'];
+
+    // Удаляем студию
+    $stmt = $db->connect()->prepare("DELETE FROM user_organization WHERE organization_id = ?");
+    $stmt->execute([$org_id]);
+
+    echo ("<script>alert('Студия отклонена!'); window.location.href = 'pending_orgs.php';</script>");
+    exit();
+  }
   ?>
 
   <main>
@@ -39,30 +76,56 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><a>MeredithPalmer</a></td>
-              <td><a>2017-03-30</a></td>
-              <td><a>1000016</a></td>
-              <td><a>Ticking Time Bags</a></td>
-              <td><a>Ticking Time Bags</a></td>
-              <td>
-                <div class="btn-toolbar">
-                  <a href="#">
-                    <button class="btn green" type="submit">
-                      <i class="material-icons">done</i>
-                    </button>
-                  </a>
-                  <a href="#">
-                    <button class="btn red" type="submit">
-                      <i class="material-icons">remove</i>
-                    </button>
-                  </a>
-                </div>
-              </td>
-            </tr>
+            <?php
+            // Получаем все студии со статусом pending
+            $stmt = $db->connect()->prepare("
+                SELECT uo.*, u.first_name 
+                FROM user_organization uo
+                JOIN users u ON uo.user_id = u.id
+                WHERE uo.status = 'pending'
+            ");
+            $stmt->execute();
+            $orgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($orgs as $org): ?>
+              <tr>
+                <td><?= htmlspecialchars($curr_user->getOrgData($org['organization_id'])['name']) ?></td>
+                <td><?= date('Y-m-d', strtotime($org['created_at'])) ?></td>
+                <td><?= $org['organization_id'] ?></td>
+                <td>
+                  <?php if (!empty($org['vk_group'])): ?>
+                    <a href="<?= htmlspecialchars($org['vk_group']) ?>" target="_blank">Ссылка</a>
+                  <?php else: ?>
+                    Не указана
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <?= $org['user_id'] ?>, @<?= htmlspecialchars($curr_user->getUsername($org['user_id'])) ?>
+                </td>
+                <td>
+                  <div class="btn-toolbar">
+                    <a href="?approve=<?= $org['organization_id'] ?>">
+                      <button class="btn green" type="button">
+                        <i class="material-icons">done</i>
+                      </button>
+                    </a>
+                    <a href="?reject=<?= $org['organization_id'] ?>">
+                      <button class="btn red" type="button">
+                        <i class="material-icons">remove</i>
+                      </button>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+
+            <?php if (empty($orgs)): ?>
+              <tr>
+                <td colspan="6">Нет студий, ожидающих подтверждения</td>
+              </tr>
+            <?php endif; ?>
           </tbody>
         </table>
-      </div>
       </div>
     </section>
   </main>
@@ -71,35 +134,30 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
   <script>
-    // Hide sideNav
-    $('.button-collapse').sideNav({
-      menuWidth: 300, // Default is 300
-      edge: 'left', // Choose the horizontal origin
-      closeOnClick: false, // Closes side-nav on <a> clicks, useful for Angular/Meteor
-      draggable: true // Choose whether you can drag to open on touch screens
-    });
+    // Инициализация компонентов
     $(document).ready(function() {
+      $('.button-collapse').sideNav({
+        menuWidth: 300,
+        edge: 'left',
+        closeOnClick: false,
+        draggable: true
+      });
+
       $('.tooltipped').tooltip({
         delay: 50
       });
+
+      $('select').material_select();
+      $('.collapsible').collapsible();
+
+      // Подтверждение перед отклонением
+      $('.btn.red').click(function(e) {
+        if (!confirm('Вы уверены, что хотите отклонить эту студию?')) {
+          e.preventDefault();
+        }
+      });
     });
-    $('select').material_select();
-    $('.collapsible').collapsible();
   </script>
-  <div class="fixed-action-btn horizontal tooltipped" data-position="top" dattooltipped" data-position="top" data-delay="50" data-tooltip="Quick Links">
-    <a class="btn-floating btn-large red">
-      <i class="large material-icons">mode_edit</i>
-    </a>
-    <ul>
-      <li><a class="btn-floating red tooltipped" data-position="top" data-delay="50" data-tooltip="Handbook" href="#"><i class="material-icons">insert_chart</i></a></li>
-      <li><a class="btn-floating yellow darken-1 tooltipped" data-position="top" data-delay="50" data-tooltip="Staff Applications" href="#"><i class="material-icons">format_quote</i></a></li>
-      <li><a class="btn-floating green tooltipped" data-position="top" data-delay="50" data-tooltip="Name Guidelines" href="#"><i class="material-icons">publish</i></a></li>"
-      <li><a class="btn-floating blue tooltipped" data-position="top" data-delay="50" data-tooltip="Issue Tracker" href="#"><i class="material-icons">attach_file</i></a></li>
-      <li><a class="btn-floating orange tooltipped" data-position="top" data-delay="50" data-tooltip="Support" href="#"><i class="material-icons">person</i></a></li>
-    </ul>
-  </div>
-  </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 
 </html>
