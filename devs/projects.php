@@ -13,7 +13,11 @@
 </head>
 
 <body>
-  <?php require_once('../swad/static/elements/sidebar.php'); ?>
+  <?php 
+  require_once('../swad/static/elements/sidebar.php');
+  require_once('../swad/config.php');
+  require_once('../swad/controllers/pm.php');
+  ?>
 
   <main>
     <section class="content">
@@ -23,9 +27,12 @@
         </a>
         <h1 class="page-announce-text valign">// Мои проекты</h1>
       </div>
-
+        <?php 
+          $projmanage = new ProjectManagment();
+          $all_projects = $projmanage->getAllStudioGames($_SESSION['studio_id']);
+        ?>
       <div id="projects-table" class="container">
-        <button class="btn blue waves-effect waves-light" onclick="location.href='p/manage'">
+        <button class="btn blue waves-effect waves-light" onclick="location.href='new'">
           Новый проект
           <i class="material-icons">task</i>
         </button>
@@ -39,16 +46,18 @@
             </tr>
           </thead>
           <tbody>
+            <?php foreach($all_projects as $project): ?>
             <tr>
-              <td>Dustore</td>
-              <td>16.02.2025</td>
-              <td>В разработке</td>
+              <td><?= $project['name']; ?></td>
+              <td><?= date('d.m.Y', strtotime($project['release_date'])); ?></td>
+              <td><?= $project['status']; ?></td>
               <td>
                 <button class="btn blue waves-effect waves-light edit-project" onclick="location.href='p/edit?id='<?php ?>">
                   <i class="material-icons">settings</i>
                 </button>
               </td>
             </tr>
+            <?php endforeach; ?>
           </tbody>
         </table>
       </div>

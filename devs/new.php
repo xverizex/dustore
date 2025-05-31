@@ -1,96 +1,10 @@
 <?php
-session_start();
 require_once('../swad/config.php');
-require_once(ROOT_DIR . '/swad/controllers/user.php');
-require_once(ROOT_DIR . '/swad/controllers/organization.php');
+require_once('../swad/controllers/user.php');
+require_once('../swad/controllers/organization.php');
 
 $db = new Database();
 $curr_user = new User();
-
-// Проверка прав пользователя
-if ($curr_user->getUserRole($_SESSION['id'], "global") != -1) {
-  header('Location: select');
-  exit();
-}
-
-// Получаем информацию о студии пользователя
-$user_id = $_SESSION['id'];
-$user_orgs = $curr_user->getUserOrgs($user_id);
-$studio_info = $user_orgs[0];
-$studio_name = $studio_info['name'];
-
-// Обработка отправки формы
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // Сбор данных формы
-  $project_name = $_POST['project-name'];
-  $genre = $_POST['genre'];
-  $description = $_POST['description'];
-  $platforms = implode(',', $_POST['platform'] ?? []);
-  $release_date = $_POST['release-date'];
-  $game_website = $_POST['website'];
-
-  // Расчет GQI (Game Quality Index)
-  $gqi = 0;
-  $filled_fields = 0;
-  $total_fields = 7; // Всего полей в форме
-
-  if (!empty($project_name)) $filled_fields++;
-  if (!empty($genre)) $filled_fields++;
-  if (!empty($description)) $filled_fields++;
-  if (!empty($_POST['platform'])) $filled_fields++;
-  if (!empty($release_date)) $filled_fields++;
-  if (!empty($game_website)) $filled_fields++;
-  if (!empty($_FILES['cover-art']['name'])) $filled_fields++;
-
-  $gqi = round(($filled_fields / $total_fields) * 100);
-
-  // Обработка загрузки обложки
-  $cover_path = '';
-  if (!empty($_FILES['cover-art']['name'])) {
-    $upload_dir = ROOT_DIR . "/swad/usercontent/{$studio_name}/{$project_name}/";
-
-    // Создаем директории, если не существуют
-    if (!file_exists($upload_dir)) {
-      mkdir($upload_dir, 0777, true);
-    }
-
-    $file_extension = pathinfo($_FILES['cover-art']['name'], PATHINFO_EXTENSION);
-    $cover_filename = "cover." . $file_extension;
-    $cover_path = "/swad/usercontent/{$studio_name}/{$project_name}/{$cover_filename}";
-    $full_path = ROOT_DIR . $cover_path;
-
-    // Перемещаем загруженный файл
-    move_uploaded_file($_FILES['cover-art']['tmp_name'], $full_path);
-  }
-
-  // Создание записи в базе данных с использованием PDO
-  $sql = "INSERT INTO games (developer, publisher, name, genre, description, platforms, release_date, path_to_cover, game_website, status, GQI, rating_boost) 
-            VALUES (:developer, :publisher, :name, :genre, :description, :platforms, :release_date, :cover_path, :website, 'draft', :gqi, 0)";
-
-  try {
-    $stmt = $db->connect()->prepare($sql);
-
-    $stmt->bindParam(':developer', $studio_id, PDO::PARAM_INT);
-    $stmt->bindParam(':publisher', $studio_id, PDO::PARAM_INT);
-    $stmt->bindParam(':name', $project_name, PDO::PARAM_STR);
-    $stmt->bindParam(':genre', $genre, PDO::PARAM_STR);
-    $stmt->bindParam(':description', $description, PDO::PARAM_STR);
-    $stmt->bindParam(':platforms', $platforms, PDO::PARAM_STR);
-    $stmt->bindParam(':release_date', $release_date, PDO::PARAM_STR);
-    $stmt->bindParam(':cover_path', $cover_path, PDO::PARAM_STR);
-    $stmt->bindParam(':website', $game_website, PDO::PARAM_STR);
-    $stmt->bindParam(':gqi', $gqi, PDO::PARAM_INT);
-
-    $stmt->execute();
-
-    $project_id = $db->connect()->lastInsertId();
-    $_SESSION['success_message'] = "Проект '{$project_name}' успешно создан!";
-    header("Location: project.php?id={$project_id}");
-    exit();
-  } catch (PDOException $e) {
-    $error_message = "Ошибка при создании проекта: " . $e->getMessage();
-  }
-}
 ?>
 
 <!DOCTYPE html>
@@ -201,20 +115,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-  <?php require_once('../swad/static/elements/sidebar.php'); ?>
+  <?php require_once('../swad/static/elements/sidebar.php');
+
+  // Проверка прав пользователя
+  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1) {
+    header('Location: select');
+    exit();
+  }
+
+  // Получаем информацию о студии пользователя
+  $user_id = $_SESSION['id'];
+  $user_orgs = $curr_user->getUserOrgs($user_id);
+  $studio_info = $user_orgs[0];
+  $studio_name = $studio_info['organization_name'];
+  $studio_id = $studio_info['organization_id'];
+
+  // Обработка отправки формы
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Сбор данных формы
+    $project_name = preg_replace("/[^A-Za-zА-Яа-яёЁ0-9-_! ]/", '', $_POST['project-name']);
+    $genre = $_POST['genre'];
+    $description = $_POST['description'];
+    $platforms = implode(',', $_POST['platform'] ?? []);
+    $release_date = $_POST['release-date'];
+    $game_website = $_POST['website'];
+
+    // Расчет GQI (Game Quality Index)
+    $gqi = 0;
+    $filled_fields = 0;
+    $total_fields = 7; // Всего полей в форме
+
+    if (!empty($project_name)) $filled_fields++;
+    if (!empty($genre)) $filled_fields++;
+    if (!empty($description)) $filled_fields++;
+    if (!empty($_POST['platform'])) $filled_fields++;
+    if (!empty($release_date)) $filled_fields++;
+    if (!empty($game_website)) $filled_fields++;
+    if (!empty($_FILES['cover-art']['name'])) $filled_fields++;
+
+    $gqi = round(($filled_fields / $total_fields) * 100);
+
+    // Обработка загрузки обложки
+    $cover_path = '';
+    if (!empty($_FILES['cover-art']['name'])) {
+      $upload_dir = ROOT_DIR . "/swad/usercontent/{$studio_name}/{$project_name}/";
+
+      // Создаем директории, если не существуют
+      if (!file_exists($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+      }
+
+      $file_extension = pathinfo($_FILES['cover-art']['name'], PATHINFO_EXTENSION);
+      $cover_filename = "cover." . $file_extension;
+      $cover_path = "/swad/usercontent/{$studio_name}/{$project_name}/{$cover_filename}";
+      $full_path = ROOT_DIR . $cover_path;
+
+      // Перемещаем загруженный файл
+      move_uploaded_file($_FILES['cover-art']['tmp_name'], $full_path);
+    }
+
+    // Создание записи в базе данных с использованием PDO
+    $sql = "INSERT INTO games (developer, publisher, name, genre, description, platforms, release_date, path_to_cover, game_website, status, GQI, rating_boost) 
+            VALUES (:developer, :publisher, :name, :genre, :description, :platforms, :release_date, :cover_path, :website, 'draft', :gqi, 0)";
+
+    try {
+      $stmt = $db->connect()->prepare($sql);
+
+      $stmt->bindParam(':developer', $studio_id, PDO::PARAM_INT);
+      $stmt->bindParam(':publisher', $studio_id, PDO::PARAM_INT);
+      $stmt->bindParam(':name', $project_name, PDO::PARAM_STR);
+      $stmt->bindParam(':genre', $genre, PDO::PARAM_STR);
+      $stmt->bindParam(':description', $description, PDO::PARAM_STR);
+      $stmt->bindParam(':platforms', $platforms, PDO::PARAM_STR);
+      $stmt->bindParam(':release_date', $release_date, PDO::PARAM_STR);
+      $stmt->bindParam(':cover_path', $cover_path, PDO::PARAM_STR);
+      $stmt->bindParam(':website', $game_website, PDO::PARAM_STR);
+      $stmt->bindParam(':gqi', $gqi, PDO::PARAM_INT);
+
+      $stmt->execute();
+
+      $project_id = $db->connect()->lastInsertId();
+      echo("<script>window.location.replace('projects')</script>");
+      exit();
+    } catch (PDOException $e) {
+      $error_message = "Ошибка при создании проекта: " . $e->getMessage();
+    }
+  }
+  ?>
   <main>
     <section class="content">
       <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a>
         <h1 class="page-announce-text valign">// Создать новый проект</h1>
       </div>
       <div class="container">
-        <?php if (isset($_SESSION['success_message'])): ?>
-          <div class="alert alert-success">
-            <?= $_SESSION['success_message'] ?>
-            <?php unset($_SESSION['success_message']); ?>
-          </div>
-        <?php endif; ?>
-
         <?php if (isset($error_message)): ?>
           <div class="alert alert-error">
             <?= $error_message ?>
@@ -232,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <td><label for="project-name">Название: </label></td>
                 <td>
                   <input type="text" name="project-name" placeholder="Введите название" required maxlength="64" />
-                  <div class="hint">Максимум 64 символа</div>
+                  <div class="hint">Максимум 64 символа, только английские и русские буквы и знаки "!", "_", "-"</div>
                 </td>
               </tr>
               <tr>
@@ -361,7 +354,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="gqi-fixed-container">
         <div class="container">
           <div class="gqi-wrapper">
-            <span class="gqi-label">Индекс качества: <span id="gqi-value">0%</span></span>
+            <span class="gqi-label">Индекс качества: <span id="gqi-value">0</span></span>
             <div class="progress">
               <div class="determinate" id="gqi-progress" style="width: 0%"></div>
             </div>
