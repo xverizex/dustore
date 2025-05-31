@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Control Panel</title>
+  <title>Dustore.Devs - Мои проекты</title>
   <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
   <link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
@@ -52,7 +52,7 @@
               <td><?= date('d.m.Y', strtotime($project['release_date'])); ?></td>
               <td><?= $project['status']; ?></td>
               <td>
-                <button class="btn blue waves-effect waves-light edit-project" onclick="location.href='p/edit?id='<?php ?>">
+                <button class="btn blue waves-effect waves-light edit-project" onclick="location.href='edit?id=<?= $project['id']; ?>'">
                   <i class="material-icons">settings</i>
                 </button>
               </td>

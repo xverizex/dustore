@@ -15,9 +15,10 @@ function time_ago($datetime)
 {
     $now = new DateTime();
     $now->setTimezone(new DateTimeZone('Europe/Moscow'));
-    $now->format('Y-m-d H:i:s');
+
     try {
         $ago = new DateTime($datetime);
+        $ago->setTimezone(new DateTimeZone('Europe/Moscow'));
     } catch (Exception $e) {
         return 'неверная дата';
     }
@@ -29,37 +30,47 @@ function time_ago($datetime)
     $diff = $now->diff($ago);
     $intervalInSeconds = $now->getTimestamp() - $ago->getTimestamp();
 
+    // Специальные случаи
     if ($intervalInSeconds < 5) {
         return 'только что';
     } elseif ($intervalInSeconds < 60) {
-        return plural_form($intervalInSeconds, ['секунда', 'секунды', 'секунд']) . ' назад';
-        // TODO: пофиксить не отображаются секунды
+        return $intervalInSeconds . ' ' . plural_form($intervalInSeconds, ['секунда', 'секунды', 'секунд']) . ' назад';
     }
 
-    $weeks = floor($diff->d / 7);
-    $remainingDays = $diff->d % 7;
+    // Рассчитываем недели
+    $totalDays = $diff->days;
+    $weeks = floor($totalDays / 7);
+    $remainingDays = $totalDays % 7;
 
+    // Если больше 4 недель (28 дней) - показываем в месяцах
+    if ($totalDays > 28) {
+        $months = $diff->y * 12 + $diff->m;
+        if ($months > 0) {
+            return $months . ' ' . plural_form($months, ['месяц', 'месяца', 'месяцев']) . ' назад';
+        }
+    }
+
+    // Если больше 7 дней - показываем в неделях
+    if ($weeks > 0) {
+        return $weeks . ' ' . plural_form($weeks, ['неделю', 'недели', 'недель']) . ' назад';
+    }
+
+    // Обычные случаи
     $units = [
-        'y' => ['год', 'года', 'лет'],
-        'm' => ['месяц', 'месяца', 'месяцев'],
         'd' => ['день', 'дня', 'дней'],
         'h' => ['час', 'часа', 'часов'],
         'i' => ['минута', 'минуты', 'минут']
     ];
 
-    if ($weeks > 0) {
-        $units = ['w' => ['неделю', 'недели', 'недель']] + $units;
-        $diff->w = $weeks;
-        $diff->d = $remainingDays;
-    }
-
     foreach ($units as $unit => $titles) {
-        if (isset($diff->$unit) && $diff->$unit > 0) {
+        if ($diff->$unit > 0) {
             $value = $diff->$unit;
 
-            // Специальные случаи
-            if ($unit === 'd' && $value === 1) return 'вчера';
-            if ($unit === 'd' && $value === 2) return 'позавчера';
+            // Специальные случаи для дней
+            if ($unit === 'd') {
+                if ($value === 1) return 'вчера';
+                if ($value === 2) return 'позавчера';
+            }
 
             return $value . ' ' . plural_form($value, $titles) . ' назад';
         }

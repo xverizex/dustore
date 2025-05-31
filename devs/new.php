@@ -118,8 +118,8 @@ $curr_user = new User();
   <?php require_once('../swad/static/elements/sidebar.php');
 
   // Проверка прав пользователя
-  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1) {
-    header('Location: select');
+  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1 && $curr_user->getUserRole($_SESSION['id'], "global") < 2) {
+    echo ("<script>alert('У вас нет прав на использование этой функции');</script>");
     exit();
   }
 
@@ -195,7 +195,7 @@ $curr_user = new User();
       $stmt->execute();
 
       $project_id = $db->connect()->lastInsertId();
-      echo("<script>window.location.replace('projects')</script>");
+      echo ("<script>window.location.replace('projects')</script>");
       exit();
     } catch (PDOException $e) {
       $error_message = "Ошибка при создании проекта: " . $e->getMessage();
@@ -279,7 +279,7 @@ $curr_user = new User();
               <tr>
                 <td><label for="release-date">Дата выхода: </label></td>
                 <td>
-                  <input type="date" name="release-date" class="datepicker" placeholder="Выберите дату выхода игры" required />
+                  <input type="date" name="release-date" placeholder="Выберите дату выхода игры" required />
                 </td>
               </tr>
               <tr>
@@ -373,7 +373,13 @@ $curr_user = new User();
       $('.datepicker').pickadate({
         selectMonths: true,
         selectYears: 15,
-        format: 'yyyy-mm-dd'
+        format: 'yyyy-mm-dd',
+        // Добавьте эти параметры:
+        closeOnSelect: true,
+        closeOnClear: false,
+        onStart: function() {
+          this.$node.removeAttr('type').attr('type', 'text');
+        }
       });
 
       $('select').material_select();

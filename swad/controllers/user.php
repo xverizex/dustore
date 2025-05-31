@@ -163,6 +163,15 @@ class User
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getOrgData($org_id){
+        $stmt = $this->db->prepare(
+            "SELECT * FROM organizations WHERE id = :id LIMIT 1;"
+        );
+        $stmt->execute(['id' => $org_id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
 
 class Moderator extends User 
