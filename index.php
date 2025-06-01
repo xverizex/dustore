@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dustore - Игровая платформа для разработчиков и игроков</title>
+    <link rel="manifest" crossorigin="use-credentials" href="manifest.json">
+
     <?php require_once('swad/controllers/ymcounter.php'); ?>
     <style>
         /* Основные стили */
@@ -658,6 +660,28 @@
                 observer.observe(step);
             });
         });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            // регистрация сервис-воркера 
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => {
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // Новая версия сервис-воркера доступна
+                                console.log('New service worker version available.');
+
+                                // Опционально: показать уведомление пользователю
+                                showUpdateNotification();
+                            }
+                        };
+                    };
+                })
+                .catch(err => console.log('service worker not registered', err));
+        }
     </script>
 </body>
 
