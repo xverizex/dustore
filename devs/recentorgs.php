@@ -53,7 +53,7 @@
     $stmt = $db->connect()->prepare("DELETE FROM user_organization WHERE organization_id = ?");
     $stmt->execute([$org_id]);
 
-    echo ("<script>alert('Студия отклонена!'); window.location.href = 'pending_orgs.php';</script>");
+    echo ("<script>alert('Студия отклонена!'); window.location.href = 'recentorgs';</script>");
     exit();
   }
   ?>
@@ -93,8 +93,8 @@
                 <td><?= date('Y-m-d', strtotime($org['created_at'])) ?></td>
                 <td><?= $org['organization_id'] ?></td>
                 <td>
-                  <?php if (!empty($org['vk_group'])): ?>
-                    <a href="<?= htmlspecialchars($org['vk_group']) ?>" target="_blank">Ссылка</a>
+                  <?php if (!empty($org['vk_link'])): ?>
+                    <a href="<?= htmlspecialchars($org['vk_link']) ?>" target="_blank">Ссылка</a>
                   <?php else: ?>
                     Не указана
                   <?php endif; ?>
