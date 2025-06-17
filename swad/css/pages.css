@@ -1,0 +1,340 @@
+/* 17.06.2025 (c) Alexander Livanov */
+
+/* Основные стили */
+:root {
+    --primary: #c32178;
+    --secondary: #74155d;
+    --dark: #14041d;
+    --light: #f8f9fa;
+    --gradient: linear-gradient(180deg, #14041d, #400c4a, #74155d, #c32178);
+    --gradient2: linear-gradient(180deg, #c32178, #14041d, #400c4a, #c32178);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--dark);
+    color: var(--light);
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+section {
+    padding: 80px 0;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'PixelizerBold', 'Gill Sans', sans-serif;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 3.5rem;
+}
+
+h2 {
+    font-size: 2.5rem;
+    text-align: center;
+    position: relative;
+    margin-bottom: 60px;
+}
+
+h2:after {
+    content: "";
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 2px;
+}
+
+p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn:hover {
+    background: #e62e8a;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(195, 33, 120, 0.3);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 2px solid var(--primary);
+}
+
+.btn-secondary:hover {
+    background: rgba(195, 33, 120, 0.1);
+}
+
+/* Секция героя */
+.hero {
+    background: var(--gradient);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 120px 20px 60px;
+}
+
+.hero h1 {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.hero p {
+    font-size: 1.3rem;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.hero-buttons .btn {
+    min-width: 200px;
+}
+
+.hero-image {
+    width: 100%;
+    max-width: 800px;
+    margin: 50px auto 0;
+    position: relative;
+}
+
+.hero-image img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Секция платформы */
+.platform {
+    background: linear-gradient(var(--primary), var(--dark));
+    position: relative;
+}
+
+.platform-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.platform-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: left;
+    transition: transform 0.3s ease;
+}
+
+.platform-card:hover {
+    transform: translateY(-10px);
+    background: #74155d;
+}
+
+.platform-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--primary);
+}
+
+.platform-card h3 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+/* Секция статистики */
+.stats {
+    background: var(--dark);
+    position: relative;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 30px;
+}
+
+.stat-number {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--primary);
+    font-family: 'PixelizerBold', 'Gill Sans', sans-serif;
+}
+
+.stat-label {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Секция как это работает */
+.how-it-works {
+    background-color: var(--gradient2);
+}
+
+.steps {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.step {
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+    text-align: center;
+    position: relative;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 auto 20px;
+}
+
+.step:not(:last-child):after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    right: -40px;
+    width: 40px;
+    height: 2px;
+    background: var(--primary);
+}
+
+/* Секция призыва к действию */
+.cta {
+    text-align: center;
+    padding: 100px 0;
+    background: var(--gradient);
+}
+
+.cta h2 {
+    margin-bottom: 30px;
+}
+
+.cta p {
+    max-width: 600px;
+    margin: 0 auto 40px;
+    font-size: 1.2rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    .hero-content {
+        padding-top: 100px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .step:not(:last-child):after {
+        display: none;
+    }
+}
+
+/* Анимации */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.floating {
+    animation: float 6s ease-in-out infinite;
+}
+
+.delay-1 {
+    animation-delay: 0.5s;
+}
+
+.delay-2 {
+    animation-delay: 1s;
+}
+
+.delay-3 {
+    animation-delay: 1.5s;
+}
