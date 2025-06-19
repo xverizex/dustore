@@ -63,7 +63,7 @@ $curr_user->checkAuth();
                     </svg></button>
             </div>
             <div class="buttons-left">
-                <button class="button" onclick="location.href='/games'">Игры</button>
+                <button class="button" onclick="location.href='/explore'">Игры</button>
                 <button class="button disabled-btn tooltip">Приложения<span class="tooltiptext">Скоро</span></button>
                 <button class="button disabled-btn tooltip">Ассеты<span class="tooltiptext">Скоро</span></button>
                 <button class="button" onclick="location.href='/about'">О платформе</button>
