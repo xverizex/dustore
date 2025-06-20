@@ -15,6 +15,64 @@
 <body>
     <?php require_once('swad/static/elements/header.php'); ?>
     <main>
+        <section class="slider-section">
+            <div class="slider-container">
+                <div class="slider-track">
+                    <!-- Слайд 1 - Популярная игра -->
+                    <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
+                        <div class="slide-overlay"></div>
+                        <div class="slide-content">
+                            <h2>Cyber Odyssey - Игра месяца!</h2>
+                            <p>Погрузитесь в мир киберпанка с новой игрой от Pixel Dream Studios. Скидка 20% в течение этой недели!</p>
+                            <a href="/game/cyber-odyssey" class="btn">Узнать больше</a>
+                        </div>
+                    </div>
+
+                    <!-- Слайд 2 - Новости платформы -->
+                    <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=1351&q=80');">
+                        <div class="slide-overlay"></div>
+                        <div class="slide-content">
+                            <h2>Новая система достижений!</h2>
+                            <p>Зарабатывайте уникальные награды и повышайте свой статус в сообществе Dustore.</p>
+                            <a href="/news/achievements" class="btn">Подробнее о системе</a>
+                        </div>
+                    </div>
+
+                    <!-- Слайд 3 - Подписка -->
+                    <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1552820728-8b83bb6b773f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
+                        <div class="slide-overlay"></div>
+                        <div class="slide-content">
+                            <h2>Dustore Premium подписка</h2>
+                            <p>Полный доступ к каталогу игр за фиксированную цену. Первый месяц всего за 99₽!</p>
+                            <a href="/subscription" class="btn">Попробовать Premium</a>
+                        </div>
+                    </div>
+
+                    <!-- Слайд 4 - Инструменты для разработчиков -->
+                    <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1542751110-97427bbecf20?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
+                        <div class="slide-overlay"></div>
+                        <div class="slide-content">
+                            <h2>HuRMa - Панель для разработчиков</h2>
+                            <p>Новые инструменты для управления играми и аналитики теперь доступны всем разработчикам.</p>
+                            <a href="/devs" class="btn">Начать разработку</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slider-arrows">
+                    <div class="slider-arrow prev">❮</div>
+                    <div class="slider-arrow next">❯</div>
+                </div>
+
+                <div class="slider-nav">
+                    <div class="slider-dot active"></div>
+                    <div class="slider-dot"></div>
+                    <div class="slider-dot"></div>
+                    <div class="slider-dot"></div>
+                </div>
+            </div>
+        </section>
+        
         <section class="hero">
             <div class="container">
                 <div class="hero-content">
@@ -297,6 +355,76 @@
     <?php require_once('swad/static/elements/footer.php'); ?>
 
     <script>
+        // Анимация для слайдера
+        document.addEventListener('DOMContentLoaded', function() {
+            const sliderTrack = document.querySelector('.slider-track');
+            const slides = document.querySelectorAll('.slider-slide');
+            const dots = document.querySelectorAll('.slider-dot');
+            const prevBtn = document.querySelector('.slider-arrow.prev');
+            const nextBtn = document.querySelector('.slider-arrow.next');
+
+            let currentIndex = 0;
+            let slideCount = slides.length;
+            let autoSlideInterval;
+
+            // Функция для переключения слайдов
+            function goToSlide(index) {
+                if (index < 0) index = slideCount - 1;
+                if (index >= slideCount) index = 0;
+
+                sliderTrack.style.transform = `translateX(-${index * 100}%)`;
+                currentIndex = index;
+
+                // Обновление активной точки
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            }
+
+            // Переключение по точкам
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    goToSlide(index);
+                    resetAutoSlide();
+                });
+            });
+
+            // Кнопки навигации
+            prevBtn.addEventListener('click', () => {
+                goToSlide(currentIndex - 1);
+                resetAutoSlide();
+            });
+
+            nextBtn.addEventListener('click', () => {
+                goToSlide(currentIndex + 1);
+                resetAutoSlide();
+            });
+
+            // Автоматическое переключение слайдов
+            function startAutoSlide() {
+                autoSlideInterval = setInterval(() => {
+                    goToSlide(currentIndex + 1);
+                }, 5000); // Меняем слайд каждые 5 секунд
+            }
+
+            function resetAutoSlide() {
+                clearInterval(autoSlideInterval);
+                startAutoSlide();
+            }
+
+            // Запуск автоматического слайдера
+            startAutoSlide();
+
+            // Остановка автоматического переключения при наведении
+            sliderTrack.addEventListener('mouseenter', () => {
+                clearInterval(autoSlideInterval);
+            });
+
+            sliderTrack.addEventListener('mouseleave', () => {
+                startAutoSlide();
+            });
+        });
+
         // Анимация для карточек платформы
         document.addEventListener('DOMContentLoaded', function() {
             // Анимация при прокрутке
