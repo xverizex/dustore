@@ -129,17 +129,23 @@ $curr_user->checkAuth();
 
             // Обработчик закрытия
             closeBtn.addEventListener('click', function() {
+                // Сохраняем состояние в localStorage
+                localStorage.setItem('bannerClosed', 'true');
+
                 // Анимация закрытия
-                banner.style.animation = 'slideUp 0.5s forwards';
+                banner.style.animation = 'bannerSlideUp 0.5s forwards';
 
                 // После анимации скрываем элемент
                 setTimeout(() => {
                     banner.style.display = 'none';
-                }, 500);
 
-                // Сохраняем состояние в localStorage
-                localStorage.setItem('bannerClosed', 'true');
+                    // Обновляем отступ у body
+                    document.body.style.paddingTop = '0';
+                }, 500);
             });
+
+            // Устанавливаем отступ для body, чтобы контент не заезжал под баннер
+            document.body.style.paddingTop = banner.offsetHeight + 'px';
         });
     </script>
 </body>
