@@ -50,7 +50,7 @@
     $org_id = (int)$_GET['reject'];
 
     // Удаляем студию
-    $stmt = $db->connect()->prepare("DELETE FROM user_organization WHERE organization_id = ?");
+    $stmt = $db->connect()->prepare("UPDATE user_organization SET status = 'suspended' WHERE organization_id = ?");
     $stmt->execute([$org_id]);
 
     echo ("<script>alert('Студия отклонена!'); window.location.href = 'recentorgs';</script>");

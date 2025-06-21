@@ -19,6 +19,7 @@ $db = new Database();
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="assets/css/custom.css" rel="stylesheet" type="text/css" />
+  <link rel="shortcut icon" href="/swad/static/img/DD.svg" type="image/x-icon">
 </head>
 
 <body>
@@ -27,12 +28,14 @@ $db = new Database();
     echo ("window.location.replace('/login');");
     exit;
   }
+
+  $curr_user_org_data = $curr_user->getOrgData($_SESSION['studio_id'])
   ?>
   <main>
     <section class="content">
       <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a>
-        <h1 class="page-announce-text valign"><?= 'Студия ' . $curr_user_org[0]['organization_name']; ?></h1>
-        <h6 id="role" class="page-announce-text valign" style="color: white;"><?= ' '.$curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($_SESSION['id'], "in_company")));?></h6>
+        <h1 class="page-announce-text valign"><?= 'Студия ' . $curr_user_org_data['name']; ?></h1>
+        <h6 id="role" class="page-announce-text valign" style="color: white;"><?= ' ' . $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($_SESSION['id'], "in_company"))); ?></h6>
       </div>
       <!-- Stat Boxes -->
       <div class="row">

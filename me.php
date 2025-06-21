@@ -33,6 +33,7 @@ require_once('swad/controllers/user.php');
     );
 
     $_SESSION['id'] = $curr_user->getID($_SESSION['telegram_id']);
+    $_SESSION['USERDATA'] = $user_data;
 
 
     $firstName        = $user_data[0]['first_name'];

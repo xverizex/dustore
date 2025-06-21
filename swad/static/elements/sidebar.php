@@ -9,15 +9,18 @@ $db = new Database();
 
 if (empty($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
     echo ("<script>window.location.replace('../login');</script>");
+} else {
+    $curr_user_data = $_SESSION['USERDATA'][0];
 }
 
-$curr_user_org = $curr_user->getUserOrgs($_SESSION['id'], 1);
-if (empty($curr_user_org) or empty($_SESSION['studio_id'])) {
+$curr_user_org = $curr_user->getOrgInfo($_SESSION['studio_id']);
+// print_r($curr_user_org['status']);
+if (empty($_SESSION['studio_id'])) {
     header('Location: select');
     exit();
 }
 
-if ($curr_user_org[0]['status'] != 'active') {
+if ($curr_user_org['status'] != 'active') {
     header('Location: select');
     exit();
 }
@@ -35,9 +38,9 @@ if (empty($_SESSION['studio_id'])) {
         <div class="userView">
             <div class="background">
                 <!-- Баннер в профиле -->
-                <img src="assets/img/photo1.png">
+                <img src="/swad/static/img/DD.svg" style="padding: 2rem; background-color: black; filter: brightness(20%)">
             </div>
-            <img class="circle" src="assets/img/avatar04.png">
+            <img class="circle" src="<?= $curr_user_data['profile_picture'] ?>">
             <span class="white-text">Добро пожаловать,</span>
             <span class="white-text"><?= $curr_user->getUsername($_SESSION['telegram_id']); ?></span>
         </div>

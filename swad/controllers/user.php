@@ -156,7 +156,8 @@ class User
                             o.id AS organization_id,
                             o.name AS organization_name,
                             r.name AS user_role,
-                            uo.status 
+                            uo.status,
+                            uo.ban_reason
                         FROM user_organization uo
                         JOIN organizations o ON o.id = uo.organization_id
                         JOIN roles r ON r.id = uo.role_id
@@ -169,6 +170,15 @@ class User
     public function getOrgData($org_id){
         $stmt = $this->db->prepare(
             "SELECT * FROM organizations WHERE id = :id LIMIT 1;"
+        );
+        $stmt->execute(['id' => $org_id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getOrgInfo($org_id){
+        $stmt = $this->db->prepare(
+            "SELECT * FROM user_organization WHERE organization_id = :id LIMIT 1;"
         );
         $stmt->execute(['id' => $org_id]);
 

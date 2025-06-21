@@ -107,7 +107,7 @@
                         <h3 class="team-name">Александр Партикевич</h3>
                         <p class="team-role">Арт-директор</p>
                         <p>Логотипы и визуальная концепция проекта</p>
-                        <a class="team-link" href="https://t.me/Aleksandr_MotionGraphics">https://t.me/Aleksandr_MotionGraphics</a>
+                        <a class="team-link" href="https://t.me/Portfolio_Aleksandr_Partikevich">https://t.me/Aleksandr_MotionGraphics</a>
                     </div>
                 </div>
                 <div style="margin-top: 50px;"></div>

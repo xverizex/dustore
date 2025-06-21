@@ -10,14 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studio_id'])) {
         exit();
     }
 
-    // Записываем ID студии в сессию
     $_SESSION['studio_id'] = (int)$_POST['studio_id'];
 
-    // Перенаправляем на главную
     header('Location: index');
     exit();
 }
 
-// Если запрос не POST или нет studio_id
 header('Location: select');
 exit();
