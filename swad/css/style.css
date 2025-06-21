@@ -128,15 +128,3 @@
         opacity: 0;
     }
 }
-
-@media (max-width: 768px) {
-    .top-banner {
-        font-size: 12px;
-        padding: 8px 15px;
-    }
-
-    .close-banner {
-        width: 20px;
-        height: 20px;
-    }
-}
