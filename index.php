@@ -152,7 +152,7 @@
                         <div class="slide-overlay"></div>
                         <div class="slide-content">
                             <h2>Dustore Premium подписка</h2>
-                            <p>Доступ ко всем играм играм по меньшей цене</p>
+                            <p>Доступ ко всем играм по меньшей цене</p>
                             <a href="/finance" class="btn">Исследовать цены</a>
                         </div>
                     </div>
@@ -160,8 +160,8 @@
                     <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1542751110-97427bbecf20?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
                         <div class="slide-overlay"></div>
                         <div class="slide-content">
-                            <h2>HuRMa - Панель для разработчиков</h2>
-                            <p>Новые инструменты для управления играми и аналитики теперь доступны всем разработчикам.</p>
+                            <h2>shaurMA - консоль для разработчиков</h2>
+                            <p>Новые инструменты для управления играми и аналитики будут доступны всем разработчикам.</p>
                             <a href="/devs" class="btn">Начать разработку</a>
                         </div>
                     </div>
