@@ -7,6 +7,7 @@ $curr_user = new User();
 $db = new Database();
 
 $curr_user->checkAuth();
+// echo($curr_user->auth());
 ?>
 
 <!DOCTYPE html>
@@ -87,10 +88,10 @@ $curr_user->checkAuth();
             <div class="buttons-right">
                 <button class="button">0</button>
                 <button class="button" onclick="location.href='/login'">
-                    <?php if (empty($_SESSION['telegram_id'])) {
+                    <?php if (empty($_SESSION['USERDATA'])) {
                         echo ("Войти в аккаунт");
                     } else {
-                        echo ($curr_user->getUsername($_SESSION['telegram_id']) . " - 0₽");
+                        echo ($curr_user->getUsername($_SESSION['USERDATA']['telegram_id']) . " - 0₽");
                     }
                     ?>
                 </button>

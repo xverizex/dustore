@@ -101,7 +101,6 @@ class User
         return $stmt->fetchColumn() > 0;
     }
 
-    // This checkAuth() function will be deprecated soon! Use auth($token) instead
     // (c) 01.06.2025 Alexander Livanov
     public function checkAuth()
     {
@@ -109,7 +108,7 @@ class User
             return 1;
         }
 
-        $telegram_id = validateToken($_COOKIE['auth_token']);
+        $telegram_id = $this->auth();
 
         if (!$telegram_id) {
             setcookie('auth_token', '', time() - 3600, '/');
@@ -127,9 +126,18 @@ class User
             // header('HTTP/1.1 404 Not Found');
             return 3;
         }
-
-        $_SESSION['auth_token'] = $_COOKIE['auth_token'];
+        
+        $_SESSION['USERDATA'] = $user;
+        // $_SESSION['auth_token'] = $_COOKIE['auth_token'];
         return 0;
+    }
+
+    public function auth() {
+        if(empty($_SESSION['auth_token'])){
+            $_SESSION['auth_token'] = $_COOKIE['auth_token'];
+            return validateToken($_COOKIE['auth_token']);
+        }
+        return validateToken($_COOKIE['auth_token']);
     }
 
     public function addUserToOrganization($owner_id, $userId, $organizationId, $givenRoleId)

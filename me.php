@@ -18,32 +18,23 @@ require_once('swad/controllers/user.php');
 
 <body>
     <?php
-    if (!isset($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
+    if ($curr_user->checkAuth() > 0) {
         echo ("<script>window.location.replace('/login');</script>");
         exit;
     }
 
-    $user_data = $db->Select(
-        "SELECT *
-                FROM `users`
-                    WHERE `telegram_id` = :id",
-        [
-            'id' => $_SESSION['telegram_id']
-        ]
-    );
-
-    $_SESSION['id'] = $curr_user->getID($_SESSION['telegram_id']);
-    $_SESSION['USERDATA'] = $user_data;
+    // $_SESSION['id'] = $curr_user->getID($_SESSION['telegram_id']);
+    $user_data = $_SESSION['USERDATA'];
 
 
-    $firstName        = $user_data[0]['first_name'];
-    $lastName         = $user_data[0]['last_name'];
-    $profilePicture   = $user_data[0]['profile_picture'];
-    $telegramID       = $user_data[0]['telegram_id'];
-    $telegramUsername = $user_data[0]['telegram_username'];
-    $userID           = $user_data[0]['id'];
-    $added            = $user_data[0]['added'];
-    $updated          = $user_data[0]['updated'];
+    $firstName        = $user_data['first_name'];
+    $lastName         = $user_data['last_name'];
+    $profilePicture   = $user_data['profile_picture'];
+    $telegramID       = $user_data['telegram_id'];
+    $telegramUsername = $user_data['telegram_username'];
+    $userID           = $user_data['id'];
+    $added            = $user_data['added'];
+    $updated          = $user_data['updated'];
     ?>
 
     <div class="profile-container">
@@ -86,7 +77,7 @@ require_once('swad/controllers/user.php');
                     <?php if (!is_null($telegramUsername)): ?>
                         <p>Username: <a href="https://t.me/<?= $telegramUsername ?>">@<?= $telegramUsername ?></a></p>
                     <?php endif; ?>
-                    <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($_SESSION['id'], "global"))); ?></p>
+                    <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($user_data['id'], "global"))); ?></p>
                 </div>
             </div>
         </div>
