@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
 
+* {
+    ::-webkit-scrollbar {
+            display: none;
+        }
+}
+
 .main-container {
     height: 100vh;
     background: linear-gradient(#14041d, #400c4a, #74155d, #c32178);

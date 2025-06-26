@@ -87,11 +87,16 @@ $curr_user->checkAuth();
         <div class="section right-section">
             <div class="buttons-right">
                 <button class="button">0</button>
-                <button class="button" onclick="location.href='/login'">
-                    <?php if (empty($_SESSION['USERDATA'])) {
+                    <?php 
+                    $curr_user->checkAuth();
+                    if (empty($_SESSION['USERDATA'])) {
+                        echo ("<button class=\"button\" onclick=\"location.href='/login'\">");
                         echo ("Войти в аккаунт");
+                        echo ("</button>");
                     } else {
+                        echo ("<button class=\"button\" onclick=\"location.href='/me'\">");
                         echo ($curr_user->getUsername($_SESSION['USERDATA']['telegram_id']) . " - 0₽");
+                        echo ("</button>");
                     }
                     ?>
                 </button>
