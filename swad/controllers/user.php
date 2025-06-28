@@ -71,7 +71,7 @@ class User
             return $stmt->fetch(PDO::FETCH_ASSOC)['role_id'];
         }else if($type == "global"){
             $stmt = $this->db->prepare("
-                SELECT `global_role` FROM users WHERE id = ?
+                SELECT `global_role` FROM users WHERE telegram_id = ?
             ");
             $stmt->execute([$id]);
             return $stmt->fetch(PDO::FETCH_ASSOC)['global_role'];

@@ -24,7 +24,7 @@ $db = new Database();
 
 <body>
   <?php require_once('../swad/static/elements/sidebar.php');
-  if (empty($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
+  if ($curr_user->checkAuth() > 0) {
     echo ("window.location.replace('/login');");
     exit;
   }
@@ -35,7 +35,7 @@ $db = new Database();
     <section class="content">
       <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a>
         <h1 class="page-announce-text valign"><?= 'Студия ' . $curr_user_org_data['name']; ?></h1>
-        <h6 id="role" class="page-announce-text valign" style="color: white;"><?= ' ' . $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($_SESSION['id'], "in_company"))); ?></h6>
+        <h6 id="role" class="page-announce-text valign" style="color: white;"><?= ' ' . $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($_SESSION['USERDATA'][0], "in_company"))); ?></h6>
       </div>
       <!-- Stat Boxes -->
       <div class="row">

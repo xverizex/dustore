@@ -18,6 +18,7 @@ $curr_user = new User();
   <link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="shortcut icon" href="/swad/static/img/DD.svg" type="image/x-icon">
   <link href="assets/css/custom.css" rel="stylesheet" type="text/css" />
   <style>
     /* Стили остаются без изменений */

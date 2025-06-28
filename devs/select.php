@@ -7,15 +7,14 @@ require_once('../swad/controllers/user.php');
 $curr_user = new User();
 $db = new Database();
 
-if (empty($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
+if ($curr_user->checkAuth() > 0) {
     echo ("<script>window.location.replace('../login');</script>");
 }
 
 $user_id = $curr_user->getID($_SESSION['telegram_id']);
 
-$user_orgs = $curr_user->getUserOrgs($_SESSION['id']);
+$user_orgs = $curr_user->getUserOrgs($user_id);
 
-// print_r($user_orgs);
 ?>
 
 <!DOCTYPE html>
@@ -26,7 +25,8 @@ $user_orgs = $curr_user->getUserOrgs($_SESSION['id']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dustore.Devs - Выберите студию</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="/swad/css/studioselect.css">
+  <link rel="shortcut icon" href="/swad/static/img/DD.svg" type="image/x-icon">
+  <link rel="stylesheet" href="/swad/css/studioselect.css">
 </head>
 
 <body>

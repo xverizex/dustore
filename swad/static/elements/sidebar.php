@@ -7,10 +7,10 @@ require_once(ROOT_DIR . '/swad/controllers/user.php');
 $curr_user = new User();
 $db = new Database();
 
-if (empty($_SESSION['logged-in']) or $curr_user->checkAuth() > 0) {
+if ($curr_user->checkAuth() > 0) {
     echo ("<script>window.location.replace('../login');</script>");
 } else {
-    $curr_user_data = $_SESSION['USERDATA'][0];
+    $curr_user_data = $_SESSION['USERDATA'];
 }
 
 $curr_user_org = $curr_user->getOrgInfo($_SESSION['studio_id']);
@@ -21,11 +21,6 @@ if (empty($_SESSION['studio_id'])) {
 }
 
 if ($curr_user_org['status'] != 'active') {
-    header('Location: select');
-    exit();
-}
-
-if (empty($_SESSION['studio_id'])) {
     header('Location: select');
     exit();
 }
@@ -40,7 +35,7 @@ if (empty($_SESSION['studio_id'])) {
                 <!-- Баннер в профиле -->
                 <img src="/swad/static/img/DD.svg" style="padding: 2rem; background-color: black; filter: brightness(20%)">
             </div>
-            <img class="circle" src="<?= $curr_user_data['profile_picture'] ?>">
+            <img class="circle" src="<?= $curr_user_data[6] ?>">
             <span class="white-text">Добро пожаловать,</span>
             <span class="white-text"><?= $curr_user->getUsername($_SESSION['telegram_id']); ?></span>
         </div>
@@ -70,7 +65,7 @@ if (empty($_SESSION['studio_id'])) {
     <li>
         <div class="divider"></div>
     </li>
-    <?php if ($curr_user->getUserRole($_SESSION['id'], "global") == -1): ?>
+    <?php if ($curr_user->getUserRole($curr_user_data['telegram_id'], "global") == -1): ?>
         <li><a class="subheader">Для администраторов</a></li>
         <li class="no-padding">
             <ul class="collapsible collapsible-accordion">

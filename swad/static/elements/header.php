@@ -7,7 +7,6 @@ $curr_user = new User();
 $db = new Database();
 
 $curr_user->checkAuth();
-// echo($curr_user->auth());
 ?>
 
 <!DOCTYPE html>
@@ -84,7 +83,8 @@ $curr_user->checkAuth();
         </div>
         <div class="section center-section">
             <div class="image">
-                <img src="/swad/static/img/logo_low.png" alt="" onclick="location.href='/'">
+                <!-- <img src="/swad/static/img/logo_low.png" alt="" onclick="location.href='/'"> -->
+                <img src="/swad/static/img/logo_test.png" alt="" onclick="location.href='/'">
             </div>
         </div>
         <div class="section right-section">
