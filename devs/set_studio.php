@@ -5,7 +5,7 @@ require_once(ROOT_DIR . '/swad/config.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studio_id'])) {
     // Проверка авторизации
-    if (empty($_SESSION['logged-in'])) {
+    if (empty($_SESSION['USERDATA'])) {
         header('Location: ../login');
         exit();
     }
