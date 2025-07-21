@@ -59,7 +59,7 @@ $curr_user = new User();
   $org_info = $curr_user->getOrgData($_SESSION['studio_id']);
 
   // Проверка прав пользователя
-  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1 && $curr_user->getUserRole($_SESSION['id'], "global") < 2) {
+  if ($_SESSION['USERDATA']['global_role'] != -1 && $_SESSION['USERDATA']['global_role'] < 2) {
     echo ("<script>alert('У вас нет прав на использование этой функции');</script>");
     exit();
   }
@@ -70,8 +70,8 @@ $curr_user = new User();
   // Получаем информацию о проекте
   $project_info = [];
   if ($project_id > 0) {
-    $stmt = $db->connect()->prepare("SELECT * FROM games WHERE id = ?");
-    $stmt->execute([$project_id]);
+    $stmt = $db->connect()->prepare("SELECT * FROM games WHERE id = ? AND developer = ?");
+    $stmt->execute([$project_id, $_SESSION['STUDIODATA']['id']]);
     $project_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
 

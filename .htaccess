@@ -1,4 +1,12 @@
 RewriteEngine On
+RewriteBase /
+
+# Перенаправляем все запросы /d/имя_разработчика на обработчик
+RewriteRule ^d/([a-zA-Z0-9_-]+)/?$ dev?name=$1 [L,QSA]
+
+# Если файл или папка существуют, использовать их напрямую
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 
 # Скрыть расширение .php
 RewriteCond %{REQUEST_FILENAME} !-d

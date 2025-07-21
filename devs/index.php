@@ -28,8 +28,9 @@ $db = new Database();
     echo ("window.location.replace('/login');");
     exit;
   }
-
+  
   $curr_user_org_data = $curr_user->getOrgData($_SESSION['studio_id']);
+  $_SESSION['STUDIODATA'] = $curr_user_org_data;
   ?>
   <main>
     <section class="content">

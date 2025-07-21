@@ -41,7 +41,7 @@ $curr_user->checkAuth();
         <div><img src="https://mc.yandex.ru/watch/101729504" style="position:absolute; left:-9999px;" alt="" /></div>
     </noscript>
     <!-- /Yandex.Metrika counter -->
-    <link rel="stylesheet" href="swad/css/header.css">
+    <link rel="stylesheet" href="/swad/css/header.css">
     <link rel="shortcut icon" href="../img/logo.svg" type="image/x-icon">
     <link rel="stylesheet" href="/swad/css/style.css">
     <link rel="stylesheet" href="/swad/css/notifications.css">
