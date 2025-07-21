@@ -392,7 +392,7 @@
                     </div>
                     <div class="stat-item">
                         <div class="stat-number"><?= $count_games ?></div>
-                        <div class="stat-label">Опубликованных игр</div>
+                        <div class="stat-label">Опубликованных проектов</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-number"><?= $count_users ?></div>

@@ -67,7 +67,7 @@ require_once('swad/controllers/user.php');
                             <?= $lastName ?>
                         <?php endif; ?>
                     </p>
-                    <p title="<?= $added; ?>">Присоединился к проекту: <?= time_ago($added); ?></p>
+                    <p title="<?= $added; ?>">Присоединился к проекту: <?= $added ?></p>
                     <p title="<?= $updated; ?>">Последний вход: <?= time_ago($updated); ?></p>
                 </div>
 

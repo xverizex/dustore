@@ -83,7 +83,7 @@ $curr_user = new User();
 
     // Создание записи в базе данных с использованием PDO
     $sql = "INSERT INTO games (badge, developer, publisher, name, genre, description, platforms, release_date, path_to_cover, game_website, status, GQI, rating_boost) 
-            VALUES ('null', :developer, :publisher, :name, :genre, :description, :platforms, :release_date, :cover_path, :website, 'draft', :gqi, 0)";
+            VALUES (0, :developer, :publisher, :name, :genre, :description, :platforms, :release_date, :cover_path, :website, 'draft', :gqi, 0)";
 
     try {
       $stmt = $db->connect()->prepare($sql);
