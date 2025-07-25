@@ -153,7 +153,7 @@ $curr_user = new User();
       $stmt->bindParam(':id', $project_id);
       $stmt->execute();
 
-      // echo ("<script>window.location.replace('edit?id=" . $project_id . "');</script>");
+      echo ("<script>window.location.replace('edit?id=" . $project_id . "');</script>");
       exit();
     } catch (PDOException $e) {
       $error_message = "Ошибка при обновлении проекта: " . $e->getMessage();
