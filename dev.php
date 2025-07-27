@@ -130,7 +130,7 @@ if (!$studio) {
                                         <div class="project-info">
                                             <h3 class="project-title"><?= $project['name'] ?></h3>
                                             <div class="project-rating">GQI: <?= $project['GQI'] ?></div>
-                                            <p>Визуальная новелла с уникальным сюжетом и множеством интересных механик</p>
+                                            <p><?= $project['short_description'] ?></p>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -187,13 +187,13 @@ if (!$studio) {
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
-                        <?php if (sizeof($all_badges) < 0): ?>
+                        <?php if (sizeof($all_badges) <= 0): ?>
                             <h3>Эта студия ещё не получила трофеи :(</h3>
                         <?php endif; ?>
                     </div>
 
                     <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 25px;">
-                        <h3>Статьи</h3>
+                        <h3>Статьи на Dustore.Media</h3>
                         <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 10px; margin-top: 20px;">
                             <div style="text-align: center; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px;">
                                 <div style="font-size: 1rem;">Этот раздел пока не доступен...</div>
