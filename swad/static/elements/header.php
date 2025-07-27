@@ -79,29 +79,30 @@ $curr_user->checkAuth();
                 <button class="button disabled-btn tooltip">Приложения<span class="tooltiptext">Скоро</span></button>
                 <button class="button disabled-btn tooltip">Ассеты<span class="tooltiptext">Скоро</span></button>
                 <button class="button" onclick="location.href='/about'">О платформе</button>
+                <button class="button" onclick="location.href='/finance'">Финансы</button>
             </div>
         </div>
         <div class="section center-section">
             <div class="image">
-                <!-- <img src="/swad/static/img/logo_low.png" alt="" onclick="location.href='/'"> -->
-                <img src="/swad/static/img/logo_test.png" alt="" onclick="location.href='/'">
+                <img src="/swad/static/img/logo_low.png" alt="" onclick="location.href='/'">
+                <!-- <img src="/swad/static/img/logo_new_neon.png" alt="" onclick="location.href='/'"> -->
             </div>
         </div>
         <div class="section right-section">
             <div class="buttons-right">
-                <button class="button">0</button>
-                    <?php 
-                    $curr_user->checkAuth();
-                    if (empty($_SESSION['USERDATA'])) {
-                        echo ("<button class=\"button\" onclick=\"location.href='/login'\">");
-                        echo ("Войти в аккаунт");
-                        echo ("</button>");
-                    } else {
-                        echo ("<button class=\"button\" onclick=\"location.href='/me'\">");
-                        echo ($curr_user->getUsername($_SESSION['USERDATA']['telegram_id']) . " - 0₽");
-                        echo ("</button>");
-                    }
-                    ?>
+                <!-- <button class="button" onclick="location.href='/'"></button> -->
+                <?php
+                $curr_user->checkAuth();
+                if (empty($_SESSION['USERDATA'])) {
+                    echo ("<button class=\"button\" onclick=\"location.href='/login'\">");
+                    echo ("Войти в аккаунт");
+                    echo ("</button>");
+                } else {
+                    echo ("<button class=\"button\" onclick=\"location.href='/me'\">");
+                    echo ($curr_user->getUsername($_SESSION['USERDATA']['telegram_id']) . "");
+                    echo ("</button>");
+                }
+                ?>
                 </button>
             </div>
         </div>
@@ -125,28 +126,22 @@ $curr_user->checkAuth();
         });
     </script>
     <script>
-        // Обработка закрытия баннера
         document.addEventListener('DOMContentLoaded', function() {
             const banner = document.getElementById('top-banner');
             const closeBtn = document.getElementById('close-banner');
 
-            // Проверяем, закрывал ли пользователь баннер ранее
             if (localStorage.getItem('bannerClosed') === 'true') {
                 banner.style.display = 'none';
                 return;
             }
 
-            // Обработчик закрытия
             closeBtn.addEventListener('click', function() {
-                // Анимация закрытия
                 banner.style.animation = 'slideUp 0.5s forwards';
 
-                // После анимации скрываем элемент
                 setTimeout(() => {
                     banner.style.display = 'none';
                 }, 500);
 
-                // Сохраняем состояние в localStorage
                 localStorage.setItem('bannerClosed', 'true');
             });
         });

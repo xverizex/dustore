@@ -41,7 +41,7 @@
             font-weight: 700;
         }
 
-        .logo span {
+        .lightblue {
             color: var(--secondary);
         }
 
@@ -235,15 +235,16 @@
             }
         }
     </style>
+    <link rel="shortcut icon" href="../swad/static/img/DF.svg" type="image/x-icon">
 </head>
 
 <body>
     <header>
-        <div class="logo">DUSTORE<span>.FINANCE</span></div>
+        <div class="logo">DUSTORE<span class="lightblue">.FINANCE</span> | <span style="font-size: .9rem;">Текущий оборот средств платформы: <span class="lightblue">0₽</span></span></div>
         <nav>
             <ul>
-                <li><a href="/">Главная</a></li>
-                <li><a href="mailto:support@dustore.ru">Помощь</a></li>
+                <li><a href="/">На главную</a></li>
+                <li><a href="mailto:support@dustore.ru">Написать письмо</a></li>
             </ul>
         </nav>
     </header>
@@ -253,7 +254,7 @@
 
         <div class="products">
             <div class="product-card">
-                <!-- <div class="product-image" style="background: linear-gradient(135deg, #8e44ad, #3498db);"></div> -->
+                <div class="product-image" style="background: linear-gradient(135deg, #8e44ad, #3498db);"></div>
                 <div class="product-info">
                     <h2 class="product-title">Подписка для игроков</h2>
                     <p class="product-description">
@@ -265,7 +266,7 @@
                 </div>
             </div>
             <div class="product-card">
-                <!-- <div class="product-image" style="background: linear-gradient(135deg, #8e44ad, #3498db);"></div> -->
+                <div class="product-image" style="background: linear-gradient(135deg, #8e44ad, #3498db);"></div>
                 <div class="product-info">
                     <h2 class="product-title">Подписка для игроков (ПРЕМИУМ 👑)</h2>
                     <p class="product-description">
@@ -280,7 +281,7 @@
 
             <!-- Товар 2: Консоль разработчика -->
             <div class="product-card">
-                <!-- <div class="product-image" style="background: linear-gradient(135deg, #e74c3c, #f39c12);"></div> -->
+                <div class="product-image" style="background: linear-gradient(135deg, #e74c3c, #f39c12);"></div>
                 <div class="product-info">
                     <h2 class="product-title">Консоль разработчика</h2>
                     <p class="product-description">
