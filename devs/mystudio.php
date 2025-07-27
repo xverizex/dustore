@@ -73,10 +73,7 @@ $curr_user = new User();
   require_once('../swad/static/elements/sidebar.php');
 
   // Проверка прав пользователя
-  if ($_SESSION['USERDATA']['global_role'] != -1 && $_SESSION['USERDATA']['global_role'] < 2) {
-    echo ("<script>alert('У вас нет прав на использование этой функции');</script>");
-    exit();
-  }
+  $curr_user->checkAuth();
 
   // Получаем информацию о студии
   $studio_id = $_SESSION['studio_id'];

@@ -140,6 +140,15 @@ class User
         return validateToken($_COOKIE['auth_token']);
     }
 
+    public function checkRole(){
+        if ($_SESSION['USERDATA']['global_role'] != -1 && $_SESSION['USERDATA']['global_role'] < 2) {
+            echo ("<script>alert('У вас нет прав на использование этой функции');</script>");
+            exit();
+        }else{
+            return True;
+        }
+    }
+
     public function addUserToOrganization($owner_id, $userId, $organizationId, $givenRoleId)
     {
         if (!$this->userHasRole($owner_id, $organizationId, 'owner')) {
