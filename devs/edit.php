@@ -88,12 +88,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     return $existing_path;
                 }
             }
-            
+
             $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-            
-            if (!in_array($file_extension, $allowed_extensions)) {
-                return $existing_path;
+
+            // Явная проверка MIME-типа для PNG
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime_type = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            $allowed_mime = [
+              'image/jpeg',
+              'image/png',  // ⬅️ явно разрешаем PNG
+              'image/gif',
+              'image/webp'
+            ];
+
+            if (
+              !in_array($file_extension, $allowed_extensions) ||
+              !in_array($mime_type, $allowed_mime)
+            ) {
+              error_log("Invalid file type: {$file['name']} | MIME: $mime_type");
+              return $existing_path;
             }
             
             // Удаляем старый файл

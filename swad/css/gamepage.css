@@ -218,12 +218,16 @@ h2:after {
 }
 
 .screenshot {
+    border-radius: 10px;
+    overflow: hidden;
+    height: 150px;
+    background: var(--secondary);
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s;
 }
 
 .screenshot:hover {
-    transform: scale(1.03);
+    transform: scale(1.05);
 }
 
 .game-description {
