@@ -1,4 +1,11 @@
 <?php session_start(); ?>
+<?php
+require_once('swad/config.php');
+require_once('swad/controllers/game.php');
+
+$gameController = new Game();
+$games = $gameController->getLatestGames(20); 
+?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -28,66 +35,55 @@
                         <span class="search-icon">🔍</span>
                         <input type="text" placeholder="Введите название игры или тикер разработчика...">
                     </div>
-                    <!-- <button class="filter-btn">
-                        <span>Фильтры</span>
-                        <span>▼</span>
-                    </button> -->
                 </div>
-                <!-- TODO: сделать фильтры -->
-                <!-- <div class="categories">
-                    <div class="category active">Все</div>
-                    <div class="category">Экшен</div>
-                    <div class="category">RPG</div>
-                    <div class="category">Стратегии</div>
-                    <div class="category">Инди</div>
-                    <div class="category">Гонки</div>
-                    <div class="category">Симуляторы</div>
-                    <div class="category">Хоррор</div>
-                    <div class="category">Приключения</div>
-                    <div class="category">Казуальные</div>
-                </div> -->
 
                 <div class="games-grid">
-                    <div class="game-card" onclick="window.location.replace('testgame');">
-                        <div class="game-image">
-                            <img src="https://via.placeholder.com/400x225/74155d/ffffff?text=Super+Game" alt="Super Game">
-                            <div class="game-badge">Новинка</div>
+                    <?php if (empty($games)): ?>
+                        <div class="no-games-message">
+                            <p>Игры еще не добавлены в каталог</p>
                         </div>
-                        <div class="game-info">
-                            <h3 class="game-title">Super Game</h3>
-                            <p class="game-developer">От Super Studio</p>
-                            <div class="game-footer">
-                                <div class="game-rating">★ 4.7</div>
-                                <div class="game-price">149 ₽</div>
-                            </div>
-                        </div>
-                    </div>
+                    <?php else: ?>
+                        <?php foreach ($games as $game):
+                            $badge = '';
+                            $badgeClass = '';
 
-                    <div class="game-card">
-                        <div class="game-image">
-                            <img src="https://via.placeholder.com/400x225/c32178/ffffff?text=Space+Explorer" alt="Space Explorer">
-                            <div class="game-badge">Бесплатно</div>
-                        </div>
-                        <div class="game-info">
-                            <h3 class="game-title">Space Explorer</h3>
-                            <p class="game-developer">От Space Devs</p>
-                            <div class="game-footer">
-                                <div class="game-rating">★ 4.3</div>
-                                <div class="game-price free">Бесплатно</div>
+                            if ($game['price'] == 0) {
+                                $badge = 'Бесплатно';
+                                $badgeClass = 'free';
+                            } elseif ((time() - strtotime($game['release_date'])) < (30 * 24 * 60 * 60)) {
+                                $badge = 'Новинка';
+                            }
+
+                            $price = ($game['price'] == 0)
+                                ? 'Бесплатно'
+                                : number_format($game['price'], 0, ',', ' ') . ' ₽';
+                        ?>
+                            <div class="game-card" onclick="window.location.href='/g/<?= $game['id'] ?>';">
+                                <div class="game-image">
+                                    <img src="<?= !empty($game['path_to_cover'])
+                                                    ? htmlspecialchars($game['path_to_cover'])
+                                                    : 'https://via.placeholder.com/400x225/74155d/ffffff?text=No+Image' ?>"
+                                        alt="<?= htmlspecialchars($game['name']) ?>">
+                                    <?php if ($badge): ?>
+                                        <div class="game-badge <?= $badgeClass ?>"><?= $badge ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="game-info">
+                                    <h3 class="game-title"><?= htmlspecialchars($game['name']) ?></h3>
+                                    <p class="game-developer">От <?= htmlspecialchars($game['studio_name']) ?></p>
+                                    <div class="game-footer">
+                                        <?php if ($game['GQI'] > 0): ?>
+                                            <div class="game-rating">★ <?= number_format($game['GQI'], 0) ?></div>
+                                        <?php endif; ?>
+                                        <div class="game-price <?= ($game['price'] == 0) ? 'free' : '' ?>">
+                                            <?= $price ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-<!-- 
-                <div class="pagination">
-                    <div class="page-btn">←</div>
-                    <div class="page-btn active">1</div>
-                    <div class="page-btn">2</div>
-                    <div class="page-btn">3</div>
-                    <div class="page-btn">4</div>
-                    <div class="page-btn">5</div>
-                    <div class="page-btn">→</div>
-                </div> -->
             </div>
         </section>
     </main>
@@ -95,39 +91,34 @@
     <?php require_once('swad/static/elements/footer.php'); ?>
 
     <script>
-        // Анимация для карточек игр
         document.addEventListener('DOMContentLoaded', function() {
             const gameCards = document.querySelectorAll('.game-card');
 
             gameCards.forEach((card, index) => {
-                // Добавляем небольшую задержку для каждой карточки
                 card.style.transitionDelay = `${index * 0.05}s`;
                 card.style.opacity = '0';
                 card.style.transform = 'translateY(20px)';
 
-                // Анимация появления
                 setTimeout(() => {
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
                 }, 100);
             });
 
-            // Обработка категорий
-            const categories = document.querySelectorAll('.category');
-            categories.forEach(category => {
-                category.addEventListener('click', function() {
-                    categories.forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
+            // Поиск по играм
+            const searchInput = document.querySelector('.search-bar input');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const gameCards = document.querySelectorAll('.game-card');
 
-            // Обработка пагинации
-            const pageBtns = document.querySelectorAll('.page-btn');
-            pageBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    if (!this.classList.contains('active')) {
-                        document.querySelector('.page-btn.active').classList.remove('active');
-                        this.classList.add('active');
+                gameCards.forEach(card => {
+                    const title = card.querySelector('.game-title').textContent.toLowerCase();
+                    const developer = card.querySelector('.game-developer').textContent.toLowerCase();
+
+                    if (title.includes(searchTerm) || developer.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
                     }
                 });
             });
