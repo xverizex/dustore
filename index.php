@@ -133,7 +133,7 @@
                     <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
                         <div class="slide-overlay"></div>
                         <div class="slide-content">
-                            <h2>3 июля состоится презентация проекта!</h2>
+                            <h2>3 сентября состоится презентация проекта!</h2>
                             <p>Мы расскажем обо всех наших преимуществах и сделаем полный обзор Платформы</p>
                             <a href="https://t.me/dustore_official" target="_blank" class="btn">Следить за новостями</a>
                         </div>
