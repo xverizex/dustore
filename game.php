@@ -79,7 +79,7 @@ $platforms = !empty($game['platforms']) ? explode(',', $game['platforms']) : [];
     <main>
         <section class="game-hero">
             <!-- Баннер игры -->
-            <div class="game-banner" style="background-image: url('<?= !empty($game['banner_path']) ? htmlspecialchars($game['banner_path']) : 'https://via.placeholder.com/1920x600/74155d/ffffff?text=Dustore+Game+Banner' ?>')"></div>
+            <div class="game-banner" style="background-image: url('<?= !empty($game['banner_url']) ? htmlspecialchars($game['banner_url']) : '' ?>')"></div>
 
             <div class="container">
                 <div class="game-content">

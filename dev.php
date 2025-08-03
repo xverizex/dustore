@@ -26,7 +26,6 @@ if (!$studio) {
 <body>
     <?php require_once('swad/static/elements/header.php'); ?>
     <section class="studio-hero">
-        <!-- TODO: studio banner in the future? -->
         <div class="studio-banner" style="background-image: url('<?= $studio['banner_link'] ?>');"></div>
         <div class="container">
             <div class="studio-content">
@@ -124,8 +123,7 @@ if (!$studio) {
                         <?php if (sizeof($all_projects) > 0): ?>
                             <div class="projects-grid">
                                 <?php foreach ($all_projects as $project): ?>
-                                    <!-- TODO: onclick="location.href='/g/<?= $project['id'] ?>'" -->
-                                    <div class="project-card">
+                                    <div class="project-card" onclick="location.href='/g/<?= $project['id'] ?>'">
                                         <div class="project-image" style="background: url('<?= $project['path_to_cover'] ?>') no-repeat center center / cover;"></div>
                                         <div class="project-info">
                                             <h3 class="project-title"><?= $project['name'] ?></h3>
