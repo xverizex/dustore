@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $allowed_mime = [
               'image/jpeg',
-              'image/png',  // ⬅️ явно разрешаем PNG
+              'image/png',
               'image/gif',
               'image/webp'
             ];

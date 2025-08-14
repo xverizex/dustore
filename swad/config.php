@@ -1,6 +1,13 @@
 <?php
 // 08.03.2025 (c) Alexander Livanov
 
+// 14.08.2025 
+define('AWS_S3_KEY', 'YOUR_ACCESS_KEY');
+define('AWS_S3_SECRET', 'YOUR_SECRET_KEY');
+define('AWS_S3_REGION', 'your-region');
+define('AWS_S3_BUCKET', 'your-bucket-name');
+define('AWS_S3_ENDPOINT', 'https://s3.your-region.amazonaws.com');
+
 // 26.04.2025
 
 if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
