@@ -7,5 +7,5 @@
     <a href="/oferta.html">Публичная оферта</a>
     <p>DUSTORE (Dust Store) является собственностью Dust Studio.</p>
     <!-- SemVer spec: status-global.design.tech#patch -->
-    <p>Версия платформы: prealpha-1.6.9#10</p>
+    <p>Версия платформы: prealpha-1.6.10#10</p>
 </div>

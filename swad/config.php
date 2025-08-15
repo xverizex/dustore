@@ -2,11 +2,12 @@
 // 08.03.2025 (c) Alexander Livanov
 
 // 14.08.2025 
-define('AWS_S3_KEY', 'YOUR_ACCESS_KEY');
-define('AWS_S3_SECRET', 'YOUR_SECRET_KEY');
-define('AWS_S3_REGION', 'your-region');
-define('AWS_S3_BUCKET', 'your-bucket-name');
-define('AWS_S3_ENDPOINT', 'https://s3.your-region.amazonaws.com');
+define('AWS_S3_KEY', '7QBONCR6C6AA9CDZFMRI');
+define('AWS_S3_SECRET', 'HfIRtjxB2K0aVJODNO5qWdmrNhCdiOoSWLAiApJY');
+define('AWS_S3_REGION', 'ru-7');
+define('AWS_S3_BUCKET_GAMES', 'dustore.public.games');
+define('AWS_S3_BUCKET_USERCONTENT', 'dustore.public.usercontent');
+define('AWS_S3_ENDPOINT', 'https://s3.regru.cloud');
 
 // 26.04.2025
 

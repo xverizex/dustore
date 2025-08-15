@@ -3,6 +3,7 @@ require_once('../swad/static/elements/sidebar.php');
 require_once('../swad/config.php');
 require_once('../swad/controllers/user.php');
 require_once('../swad/controllers/organization.php');
+require_once('../swad/controllers/s3.php');
 
 $db = new Database();
 $curr_user = new User();
@@ -40,6 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $age_rating = $_POST['age_rating'];
     $price = (float)$_POST['price'];
     $in_subscription = isset($_POST['in_subscription']) ? 1 : 0;
+  
+    $s3Uploader = new S3Uploader();
+
     
     // Обработка особенностей
     $features = [];
@@ -77,53 +81,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Функция для обработки загрузки изображений
     function handleImageUpload($file, $name, $project_name, $org_name, $existing_path, $type) {
-        global $project_info;
+        global $s3Uploader, $project_info;
         
         if (!empty($file['name']) && $file['error'] == UPLOAD_ERR_OK) {
-            $upload_dir = ROOT_DIR . "/swad/usercontent/{$org_name}/{$project_name}/";
-            
-            if (!file_exists($upload_dir)) {
-                if (!mkdir($upload_dir, 0775, true)) {
-                    error_log("Failed to create directory: $upload_dir");
-                    return $existing_path;
-                }
-            }
-
-            $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-            // Явная проверка MIME-типа для PNG
+            // Проверка MIME-типа
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mime_type = finfo_file($finfo, $file['tmp_name']);
             finfo_close($finfo);
 
-            $allowed_mime = [
-              'image/jpeg',
-              'image/png',
-              'image/gif',
-              'image/webp'
-            ];
-
-            if (
-              !in_array($file_extension, $allowed_extensions) ||
-              !in_array($mime_type, $allowed_mime)
-            ) {
-              error_log("Invalid file type: {$file['name']} | MIME: $mime_type");
-              return $existing_path;
+            $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($mime_type, $allowed_mime)) {
+                error_log("Invalid file type: {$file['name']} | MIME: $mime_type");
+                return $existing_path;
             }
             
-            // Удаляем старый файл
-            if (!empty($existing_path) && file_exists(ROOT_DIR . $existing_path)) {
-                unlink(ROOT_DIR . $existing_path);
+            // Удаляем старое изображение из S3
+            if (!empty($existing_path) && strpos($existing_path, 'amazonaws.com') !== false) {
+                $s3Uploader->deleteFile($existing_path);
             }
             
-            $filename = "{$type}.{$file_extension}";
-            $relative_path = "/swad/usercontent/{$org_name}/{$project_name}/{$filename}";
-            $full_path = ROOT_DIR . $relative_path;
+            // Генерируем уникальное имя файла
+            $file_extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $safe_org_name = preg_replace('/[^a-z0-9]/i', '-', $org_name);
+            $safe_project_name = preg_replace('/[^a-z0-9]/i', '-', $project_name);
+            $s3_path = "{$safe_org_name}/{$safe_project_name}/{$type}-" . uniqid() . ".{$file_extension}";
             
-            if (move_uploaded_file($file['tmp_name'], $full_path)) {
-                chmod($full_path, 0664);
-                return $relative_path;
+            // Загружаем в S3
+            if ($new_url = $s3Uploader->uploadFile($file['tmp_name'], $s3_path)) {
+                return $new_url;
             }
         }
         return $existing_path;
@@ -145,6 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($screenshots as $screenshot) {
         if (isset($_POST['existing_screenshot'][$screenshot['id']])) {
             $new_screenshots[] = $screenshot;
+        } elseif (strpos($screenshot['path'], 'amazonaws.com') !== false) {
+            // Удаляем удаленные скриншоты из S3
+            $s3Uploader->deleteFile($screenshot['path']);
         }
     }
     
@@ -161,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
                 
                 $screenshot_id = uniqid();
-                $screenshot_path = handleImageUpload($file, "screenshot_{$screenshot_id}", $project_name, $org_name, '', "screenshot_{$screenshot_id}");
+                $screenshot_path = handleImageUpload($file, "screenshot_{$screenshot_id}", $project_name, $org_name, '', "screenshot");
                 
                 if ($screenshot_path) {
                     $new_screenshots[] = [
