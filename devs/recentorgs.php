@@ -17,43 +17,39 @@
   <?php
   require_once('../swad/static/elements/sidebar.php');
   require_once('../swad/config.php');
+  require_once('../swad/controllers/tg_bot.php');
+
   $db = new Database();
 
-  // Проверка прав
-  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1 && $curr_user->getUserRole($_SESSION['id'], "global") < 3) {
+  if ($_SESSION['USERDATA']['global_role'] != -1 && $_SESSION['USERDATA']['global_role'] < 3) {
     echo ("<script>alert('У вас нет прав на использование этой функции');</script>");
     exit();
   }
 
-  // Обработка подтверждения студии
   if (isset($_GET['approve'])) {
     $org_id = (int)$_GET['approve'];
+    $tg_id = $_GET['tg_id'];
 
-    // Обновляем статус студии
-    $stmt = $db->connect()->prepare("UPDATE user_organization SET status = 'active' WHERE organization_id = ?");
+    $stmt = $db->connect()->prepare("UPDATE studios SET status = 'active' WHERE id = ?");
     $stmt->execute([$org_id]);
 
-    // Получаем owner_id студии
-    $stmt = $db->connect()->prepare("SELECT user_id FROM user_organization WHERE organization_id = ?");
+    $stmt = $db->connect()->prepare("UPDATE users SET global_role = 2 WHERE id = (SELECT owner_id FROM studios WHERE id = ?)");
     $stmt->execute([$org_id]);
-    $owner_id = $stmt->fetchColumn();
 
-    // Обновляем глобальную роль владельца
-    $stmt = $db->connect()->prepare("UPDATE users SET global_role = 2 WHERE id = ?");
-    $stmt->execute([$owner_id]);
-
+    send_message($tg_id, "Ваша студия была подтверждена. Благодарим за регистрацию на нашей платформе! ❤");
     echo ("<script>alert('Студия успешно подтверждена!'); window.location.href = 'recentorgs';</script>");
     exit();
   }
 
-  // Обработка отклонения студии
   if (isset($_GET['reject'])) {
     $org_id = (int)$_GET['reject'];
+    $tg_id = $_GET['tg_id'];
+    $reason = isset($_GET['reject_reason']) ? trim($_GET['reject_reason']) : '';
 
-    // Удаляем студию
-    $stmt = $db->connect()->prepare("UPDATE user_organization SET status = 'suspended' WHERE organization_id = ?");
-    $stmt->execute([$org_id]);
+    $stmt = $db->connect()->prepare("UPDATE studios SET status = 'suspended', ban_reason = ? WHERE id = ?");
+    $stmt->execute([$reason, $org_id]);
 
+    send_message($tg_id, "Ваша заявка на регистрацию студии была отклонена. Причина отклонения: " . trim($_GET['reject_reason']) . ". Вы можете изменить вашу заявку на странице https://dustore.ru/devs/regorg и отправить её заново!");
     echo ("<script>alert('Студия отклонена!'); window.location.href = 'recentorgs';</script>");
     exit();
   }
@@ -61,68 +57,126 @@
 
   <main>
     <section class="content">
-      <div class="page-announce valign-wrapper"><a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only"><i class="material-icons">menu</i></a>
-        <h1 class="page-announce-text valign">// Новые студии, требующие проверки</h1>
+      <div class="page-announce valign-wrapper">
+        <a href="#" data-activates="slide-out" class="button-collapse valign hide-on-large-only">
+          <i class="material-icons">menu</i>
+        </a>
+        <h1 class="page-announce-text valign">// Управление студиями</h1>
       </div>
-      <div id="posttable" class="container">
-        <table class="responsive-table striped hover centered" id="names-table">
+
+      <div class="container">
+        <!-- Вкладки -->
+        <ul class="tabs">
+          <li class="tab col s6"><a class="active" href="#pending">Новые студии</a></li>
+          <li class="tab col s6"><a href="#active">Активные студии</a></li>
+        </ul>
+      </div>
+
+      <!-- Таблица pending -->
+      <div id="pending" class="container">
+        <h5>Новые студии (ожидают подтверждения)</h5>
+        <table class="responsive-table striped hover centered">
           <thead>
             <tr>
-              <th>Название:</th>
-              <th>Дата регистрации:</th>
-              <th>ID студии:</th>
-              <th>Ссылка на VK-группу:</th>
-              <th>ID владельца, @username:</th>
-              <th>Действия:</th>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Дата регистрации</th>
+              <th>Владелец (telegram_id, @username)</th>
+              <th>Ссылка VK</th>
+              <th>Город</th>
+              <th>Email</th>
+              <th>Действия</th>
             </tr>
           </thead>
           <tbody>
             <?php
-            // Получаем все студии со статусом pending
             $stmt = $db->connect()->prepare("
-                SELECT uo.*, u.first_name 
-                FROM user_organization uo
-                JOIN users u ON uo.user_id = u.id
-                WHERE uo.status = 'pending'
-            ");
+            SELECT s.*, u.telegram_id, u.telegram_username 
+            FROM studios s
+            JOIN users u ON s.owner_id = u.id
+            WHERE s.status = 'pending'
+          ");
             $stmt->execute();
-            $orgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $pending = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            foreach ($orgs as $org): ?>
+            if ($pending):
+              foreach ($pending as $org): ?>
+                <tr>
+                  <td><?= $org['id'] ?></td>
+                  <td><?= htmlspecialchars($org['name']) ?></td>
+                  <td><?= date('Y-m-d', strtotime($org['created_at'])) ?></td>
+                  <td><?= $org['telegram_id'] ?>, @<?= htmlspecialchars($org['telegram_username']) ?></td>
+                  <td>
+                    <?php if (!empty($org['vk_link'])): ?>
+                      <a href="<?= htmlspecialchars($org['vk_link']) ?>" target="_blank">Ссылка</a>
+                    <?php else: ?>
+                      Не указана
+                    <?php endif; ?>
+                  </td>
+                  <td><?= htmlspecialchars($org['city'] ?? '-') ?></td>
+                  <td><?= htmlspecialchars($org['contact_email'] ?? '-') ?></td>
+                  <td>
+                    <a href="?approve=<?= $org['id'] ?>&tg_id=<?= $org['telegram_id'] ?>" class="btn green"><i class="material-icons">done</i></a>
+                    <a href="?reject=<?= $org['id'] ?>&tg_id=<?= $org['telegram_id'] ?>" class="btn red btn-reject"><i class="material-icons">remove</i></a>
+                  </td>
+                </tr>
+              <?php endforeach;
+            else: ?>
               <tr>
-                <td><?= htmlspecialchars($curr_user->getOrgData($org['organization_id'])['name']) ?></td>
-                <td><?= date('Y-m-d', strtotime($org['created_at'])) ?></td>
-                <td><?= $org['organization_id'] ?></td>
-                <td>
-                  <?php if (!empty($org['vk_link'])): ?>
-                    <a href="<?= htmlspecialchars($org['vk_link']) ?>" target="_blank">Ссылка</a>
-                  <?php else: ?>
-                    Не указана
-                  <?php endif; ?>
-                </td>
-                <td>
-                  <?= $org['user_id'] ?>, @<?= htmlspecialchars($curr_user->getUsername($org['user_id'])) ?>
-                </td>
-                <td>
-                  <div class="btn-toolbar">
-                    <a href="?approve=<?= $org['organization_id'] ?>">
-                      <button class="btn green" type="button">
-                        <i class="material-icons">done</i>
-                      </button>
-                    </a>
-                    <a href="?reject=<?= $org['organization_id'] ?>">
-                      <button class="btn red" type="button">
-                        <i class="material-icons">remove</i>
-                      </button>
-                    </a>
-                  </div>
-                </td>
+                <td colspan="8">Нет новых студий</td>
               </tr>
-            <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
 
-            <?php if (empty($orgs)): ?>
+      <!-- Таблица active -->
+      <div id="active" class="container">
+        <h5>Активные студии</h5>
+        <table class="responsive-table striped hover centered">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Дата регистрации</th>
+              <th>Владелец (telegram_id, @username)</th>
+              <th>Ссылка VK</th>
+              <th>Город</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+            $stmt = $db->connect()->prepare("
+            SELECT s.*, u.telegram_id, u.telegram_username 
+            FROM studios s
+            JOIN users u ON s.owner_id = u.id
+            WHERE s.status = 'active'
+          ");
+            $stmt->execute();
+            $active = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($active):
+              foreach ($active as $org): ?>
+                <tr>
+                  <td><?= $org['id'] ?></td>
+                  <td><?= htmlspecialchars($org['name']) ?></td>
+                  <td><?= date('Y-m-d', strtotime($org['created_at'])) ?></td>
+                  <td><?= $org['telegram_id'] ?>, @<?= htmlspecialchars($org['telegram_username']) ?></td>
+                  <td>
+                    <?php if (!empty($org['vk_link'])): ?>
+                      <a href="<?= htmlspecialchars($org['vk_link']) ?>" target="_blank">Ссылка</a>
+                    <?php else: ?>
+                      Не указана
+                    <?php endif; ?>
+                  </td>
+                  <td><?= htmlspecialchars($org['city'] ?? '-') ?></td>
+                  <td><?= htmlspecialchars($org['contact_email'] ?? '-') ?></td>
+                </tr>
+              <?php endforeach;
+            else: ?>
               <tr>
-                <td colspan="6">Нет студий, ожидающих подтверждения</td>
+                <td colspan="7">Нет активных студий</td>
               </tr>
             <?php endif; ?>
           </tbody>
@@ -150,11 +204,19 @@
 
       $('select').material_select();
       $('.collapsible').collapsible();
+    });
+  </script>
 
-      // Подтверждение перед отклонением
-      $('.btn.red').click(function(e) {
-        if (!confirm('Вы уверены, что хотите отклонить эту студию?')) {
-          e.preventDefault();
+  <script>
+    $(document).ready(function() {
+      $('ul.tabs').tabs();
+
+      $('.btn-reject').click(function(e) {
+        e.preventDefault();
+        let url = $(this).attr('href');
+        let reason = prompt('Укажите причину отклонения студии:');
+        if (reason !== null && reason.trim() !== '') {
+          window.location.href = url + '&reject_reason=' + encodeURIComponent(reason);
         }
       });
     });

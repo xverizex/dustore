@@ -25,6 +25,8 @@ $form_token = $_SESSION['form_token'];
 $studios = $db->Select("SELECT id FROM studios WHERE owner_id = ?", [$userId]);
 if (count($studios) >= 1) {
     $error = "Вы уже зарегистрировали студию. У одного пользователя может быть только одна студия.";
+    echo ("<script>window.location.href = 'select';</script>");
+    exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
@@ -105,6 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
                     $db->Insert($staffSql, array_values($staffData));
 
                     unset($_SESSION['form_token']);
+                    echo ("<script>alert('Чтобы получить уведомление об активации вашей студии, Вы можете запустить нашего Telegram-бота: @dustore_auth_bot')</script>");
                     echo "<script>window.location.replace('/devs/select');</script>";
                     exit;
                 } catch (Exception $e) {
@@ -132,6 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
         <div class="page-header">
             <h1>Регистрация студии</h1>
             <p>Создайте свою студию на Dustore.Devs и получите доступ к экосистеме для инди-разработчиков</p>
+            <p>Чтобы получить уведомление об активации вашей студии, Вы можете запустить нашего Telegram-бота: <span style="font-weight: 900;"><a href="https://t.me/dustore_auth_bot">@dustore_auth_bot</a></span></p>
         </div>
 
         <div class="registration-container">

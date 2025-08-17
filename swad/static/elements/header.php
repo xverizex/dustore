@@ -10,8 +10,7 @@ $curr_user->checkAuth();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,7 +59,7 @@ $curr_user->checkAuth();
     <div class="top-banner" id="top-banner">
         <div class="banner-content">
             <div class="banner-text">
-                ⚠️ Важное уведомление! С 1 июля по 1 августа Платформа работает в тестовом режиме. Возможны перебои в работе сервиса.
+                ⚠️ Важное уведомление! С 1 июля по 3 сентября Платформа работает в тестовом режиме. Возможны перебои в работе сервиса.
             </div>
             <button class="close-banner" id="close-banner">&times;</button>
         </div>

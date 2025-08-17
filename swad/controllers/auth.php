@@ -16,10 +16,6 @@ require_once('jwt.php');
 
 $db = new Database;
 
-// TOKENS FOR TG BOTS (GLOBAL and LOCAL)
-define('BOT_TOKEN', '7993358429:AAH3EfKtSW7oqyN1fVWBAQsD6ehKZViF1do');
-define('LOCAL_BOT_TOKEN', '8111791435:AAHs41kdMZ0PBkm2lt0lNavG9vI9xCiJ_FA');
-
 if (!isset($_GET['hash'])) {
     die('Telegram hash not found');
 }

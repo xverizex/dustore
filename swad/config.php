@@ -9,6 +9,10 @@ define('AWS_S3_BUCKET_GAMES', 'dustore.public.games');
 define('AWS_S3_BUCKET_USERCONTENT', 'dustore.public.usercontent');
 define('AWS_S3_ENDPOINT', 'https://s3.regru.cloud');
 
+// TOKENS FOR TG BOTS (GLOBAL and LOCAL)
+define('BOT_TOKEN', '7993358429:AAH3EfKtSW7oqyN1fVWBAQsD6ehKZViF1do');
+define('LOCAL_BOT_TOKEN', '8111791435:AAHs41kdMZ0PBkm2lt0lNavG9vI9xCiJ_FA');
+
 // 26.04.2025
 
 if ($_SERVER['HTTP_HOST'] == '127.0.0.1') {
