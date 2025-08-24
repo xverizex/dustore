@@ -15,155 +15,155 @@ $project_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 // Получаем информацию о проекте
 $project_info = [];
 if ($project_id > 0) {
-    $stmt = $db->connect()->prepare("SELECT * FROM games WHERE id = ? AND developer = ?");
-    $stmt->execute([$project_id, $_SESSION['STUDIODATA']['id']]);
-    $project_info = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = $db->connect()->prepare("SELECT * FROM games WHERE id = ? AND developer = ?");
+  $stmt->execute([$project_id, $_SESSION['STUDIODATA']['id']]);
+  $project_info = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 // Если проект не найден
 if (empty($project_info)) {
-    echo ("<script>window.location.replace('projects');</script>");
-    exit();
+  echo ("<script>window.location.replace('projects');</script>");
+  exit();
 }
 
 // Обработка формы редактирования
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Обработка основных полей
-    $project_name = preg_replace("/[^A-Za-zА-Яа-яёЁ0-9-_! ]/", '', $_POST['project-name']);
-    $genre = $_POST['genre'];
-    $description = $_POST['description'];
-    $platforms = implode(',', $_POST['platform'] ?? []);
-    $release_date = $_POST['release-date'];
-    $game_website = $_POST['website'];
-    $trailer_url = $_POST['trailer'];
-    $rating_count = (int)$_POST['rating_count'];
-    $languages = $_POST['languages'];
-    $age_rating = $_POST['age_rating'];
-    $price = (float)$_POST['price'];
-    $in_subscription = isset($_POST['in_subscription']) ? 1 : 0;
-  
-    $s3Uploader = new S3Uploader();
+  // Обработка основных полей
+  $project_name = preg_replace("/[^A-Za-zА-Яа-яёЁ0-9-_! ]/", '', $_POST['project-name']);
+  $genre = $_POST['genre'];
+  $description = $_POST['description'];
+  $platforms = implode(',', $_POST['platform'] ?? []);
+  $release_date = $_POST['release-date'];
+  $game_website = $_POST['website'];
+  $trailer_url = $_POST['trailer'];
+  $rating_count = (int)$_POST['rating_count'];
+  $languages = $_POST['languages'];
+  $age_rating = $_POST['age_rating'];
+  $price = (float)$_POST['price'];
+  $in_subscription = isset($_POST['in_subscription']) ? 1 : 0;
 
-    
-    // Обработка особенностей
-    $features = [];
-    if (isset($_POST['feature_icon'])) {
-        for ($i = 0; $i < count($_POST['feature_icon']); $i++) {
-            if (!empty($_POST['feature_title'][$i])) {
-                $features[] = [
-                    'icon' => $_POST['feature_icon'][$i],
-                    'title' => $_POST['feature_title'][$i],
-                    'description' => $_POST['feature_description'][$i]
-                ];
-            }
-        }
-    }
-    $features_json = json_encode($features);
-    
-    // Обработка системных требований
-    $requirements = [];
-    if (isset($_POST['req_label'])) {
-        for ($i = 0; $i < count($_POST['req_label']); $i++) {
-            if (!empty($_POST['req_value'][$i])) {
-                $requirements[] = [
-                    'label' => $_POST['req_label'][$i],
-                    'value' => $_POST['req_value'][$i]
-                ];
-            }
-        }
-    }
-    $requirements_json = json_encode($requirements);
-    
-    // Обработка изображений
-    $cover_path = $project_info['path_to_cover'];
-    $banner_url = $project_info['banner_url'];
-    $screenshots = json_decode($project_info['screenshots'] ?? '[]', true) ?: [];
-    
-    // Функция для обработки загрузки изображений
-    function handleImageUpload($file, $name, $project_name, $org_name, $existing_path, $type) {
-        global $s3Uploader, $project_info;
-        
-        if (!empty($file['name']) && $file['error'] == UPLOAD_ERR_OK) {
-            // Проверка MIME-типа
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime_type = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
+  $s3Uploader = new S3Uploader();
 
-            $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            if (!in_array($mime_type, $allowed_mime)) {
-                error_log("Invalid file type: {$file['name']} | MIME: $mime_type");
-                return $existing_path;
-            }
-            
-            // Удаляем старое изображение из S3
-            if (!empty($existing_path) && strpos($existing_path, 'amazonaws.com') !== false) {
-                $s3Uploader->deleteFile($existing_path);
-            }
-            
-            // Генерируем уникальное имя файла
-            $file_extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $safe_org_name = preg_replace('/[^a-z0-9]/i', '-', $org_name);
-            $safe_project_name = preg_replace('/[^a-z0-9]/i', '-', $project_name);
-            $s3_path = "{$safe_org_name}/{$safe_project_name}/{$type}-" . uniqid() . ".{$file_extension}";
-            
-            // Загружаем в S3
-            if ($new_url = $s3Uploader->uploadFile($file['tmp_name'], $s3_path)) {
-                return $new_url;
-            }
-        }
+  // Обработка особенностей
+  $features = [];
+  if (isset($_POST['feature_icon'])) {
+    for ($i = 0; $i < count($_POST['feature_icon']); $i++) {
+      if (!empty($_POST['feature_title'][$i])) {
+        $features[] = [
+          'icon' => $_POST['feature_icon'][$i],
+          'title' => $_POST['feature_title'][$i],
+          'description' => $_POST['feature_description'][$i]
+        ];
+      }
+    }
+  }
+  $features_json = json_encode($features);
+
+  // Обработка системных требований
+  $requirements = [];
+  if (isset($_POST['req_label'])) {
+    for ($i = 0; $i < count($_POST['req_label']); $i++) {
+      if (!empty($_POST['req_value'][$i])) {
+        $requirements[] = [
+          'label' => $_POST['req_label'][$i],
+          'value' => $_POST['req_value'][$i]
+        ];
+      }
+    }
+  }
+  $requirements_json = json_encode($requirements);
+
+  // Обработка изображений
+  $cover_path = $project_info['path_to_cover'];
+  $banner_url = $project_info['banner_url'];
+  $screenshots = json_decode($project_info['screenshots'] ?? '[]', true) ?: [];
+
+  // Функция для обработки загрузки изображений
+  function handleImageUpload($file, $name, $project_name, $org_name, $existing_path, $type)
+  {
+    global $s3Uploader, $project_info;
+
+    if (!empty($file['name']) && $file['error'] == UPLOAD_ERR_OK) {
+      // Проверка MIME-типа
+      $finfo = finfo_open(FILEINFO_MIME_TYPE);
+      $mime_type = finfo_file($finfo, $file['tmp_name']);
+      finfo_close($finfo);
+
+      $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!in_array($mime_type, $allowed_mime)) {
+        error_log("Invalid file type: {$file['name']} | MIME: $mime_type");
         return $existing_path;
+      }
+
+      // Удаляем старое изображение из S3
+      if (!empty($existing_path) && strpos($existing_path, 'amazonaws.com') !== false) {
+        $s3Uploader->deleteFile($existing_path);
+      }
+
+      // Генерируем уникальное имя файла
+      $file_extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+      $safe_org_name = preg_replace('/[^a-z0-9]/i', '-', $org_name);
+      $safe_project_name = preg_replace('/[^a-z0-9]/i', '-', $project_name);
+      $s3_path = "{$safe_org_name}/{$safe_project_name}/{$type}-" . uniqid() . ".{$file_extension}";
+
+      // Загружаем в S3
+      if ($new_url = $s3Uploader->uploadFile($file['tmp_name'], $s3_path)) {
+        return $new_url;
+      }
     }
-    
-    $org_info = $curr_user->getOrgData($_SESSION['studio_id']);
-    $org_name = $org_info['name'];
-    
-    // Обработка обложки
-    $cover_path = handleImageUpload($_FILES['cover-art'], 'cover', $project_name, $org_name, $cover_path, 'cover');
-    
-    // Обработка баннера
-    $banner_url = handleImageUpload($_FILES['banner'], 'banner', $project_name, $org_name, $banner_url, 'banner');
-    
-    // Обработка скриншотов
-    $new_screenshots = [];
-    
-    // Сохраняем существующие скриншоты
-    foreach ($screenshots as $screenshot) {
-        if (isset($_POST['existing_screenshot'][$screenshot['id']])) {
-            $new_screenshots[] = $screenshot;
-        } elseif (strpos($screenshot['path'], 'amazonaws.com') !== false) {
-            // Удаляем удаленные скриншоты из S3
-            $s3Uploader->deleteFile($screenshot['path']);
+    return $existing_path;
+  }
+
+  $org_info = $curr_user->getOrgData($_SESSION['studio_id']);
+  $org_name = $org_info['name'];
+
+  // Обработка обложки
+  $cover_path = handleImageUpload($_FILES['cover-art'], 'cover', $project_name, $org_name, $cover_path, 'cover');
+
+  // Обработка баннера
+  $banner_url = handleImageUpload($_FILES['banner'], 'banner', $project_name, $org_name, $banner_url, 'banner');
+
+  // Обработка скриншотов
+  $new_screenshots = [];
+
+  // Сохраняем существующие скриншоты
+  foreach ($screenshots as $screenshot) {
+    if (isset($_POST['existing_screenshot'][$screenshot['id']])) {
+      $new_screenshots[] = $screenshot;
+    } elseif (strpos($screenshot['path'], 'amazonaws.com') !== false) {
+      // Удаляем удаленные скриншоты из S3
+      $s3Uploader->deleteFile($screenshot['path']);
+    }
+  }
+
+  // Добавляем новые скриншоты
+  if (!empty($_FILES['screenshots']['name'][0])) {
+    foreach ($_FILES['screenshots']['tmp_name'] as $index => $tmp_name) {
+      if ($_FILES['screenshots']['error'][$index] == UPLOAD_ERR_OK) {
+        $file = [
+          'name' => $_FILES['screenshots']['name'][$index],
+          'type' => $_FILES['screenshots']['type'][$index],
+          'tmp_name' => $tmp_name,
+          'error' => $_FILES['screenshots']['error'][$index],
+          'size' => $_FILES['screenshots']['size'][$index]
+        ];
+
+        $screenshot_id = uniqid();
+        $screenshot_path = handleImageUpload($file, "screenshot_{$screenshot_id}", $project_name, $org_name, '', "screenshot");
+
+        if ($screenshot_path) {
+          $new_screenshots[] = [
+            'id' => $screenshot_id,
+            'path' => $screenshot_path
+          ];
         }
+      }
     }
-    
-    // Добавляем новые скриншоты
-    if (!empty($_FILES['screenshots']['name'][0])) {
-        foreach ($_FILES['screenshots']['tmp_name'] as $index => $tmp_name) {
-            if ($_FILES['screenshots']['error'][$index] == UPLOAD_ERR_OK) {
-                $file = [
-                    'name' => $_FILES['screenshots']['name'][$index],
-                    'type' => $_FILES['screenshots']['type'][$index],
-                    'tmp_name' => $tmp_name,
-                    'error' => $_FILES['screenshots']['error'][$index],
-                    'size' => $_FILES['screenshots']['size'][$index]
-                ];
-                
-                $screenshot_id = uniqid();
-                $screenshot_path = handleImageUpload($file, "screenshot_{$screenshot_id}", $project_name, $org_name, '', "screenshot");
-                
-                if ($screenshot_path) {
-                    $new_screenshots[] = [
-                        'id' => $screenshot_id,
-                        'path' => $screenshot_path
-                    ];
-                }
-            }
-        }
-    }
-    $screenshots_json = json_encode($new_screenshots);
-    
-    // Обновление данных в базе
-    $sql = "UPDATE games SET 
+  }
+  $screenshots_json = json_encode($new_screenshots);
+
+  // Обновление данных в базе
+  $sql = "UPDATE games SET 
             name = :name, 
             genre = :genre, 
             description = :description, 
@@ -183,33 +183,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             in_subscription = :in_subscription
             WHERE id = :id";
 
-    try {
-        $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':name', $project_name);
-        $stmt->bindParam(':genre', $genre);
-        $stmt->bindParam(':description', $description);
-        $stmt->bindParam(':platforms', $platforms);
-        $stmt->bindParam(':release_date', $release_date);
-        $stmt->bindParam(':cover_path', $cover_path);
-        $stmt->bindParam(':website', $game_website);
-        $stmt->bindParam(':banner_url', $banner_url);
-        $stmt->bindParam(':trailer_url', $trailer_url);
-        $stmt->bindParam(':rating_count', $rating_count);
-        $stmt->bindParam(':features', $features_json);
-        $stmt->bindParam(':screenshots', $screenshots_json);
-        $stmt->bindParam(':requirements', $requirements_json);
-        $stmt->bindParam(':languages', $languages);
-        $stmt->bindParam(':age_rating', $age_rating);
-        $stmt->bindParam(':price', $price);
-        $stmt->bindParam(':in_subscription', $in_subscription);
-        $stmt->bindParam(':id', $project_id);
-        $stmt->execute();
+  try {
+    $stmt = $db->connect()->prepare($sql);
+    $stmt->bindParam(':name', $project_name);
+    $stmt->bindParam(':genre', $genre);
+    $stmt->bindParam(':description', $description);
+    $stmt->bindParam(':platforms', $platforms);
+    $stmt->bindParam(':release_date', $release_date);
+    $stmt->bindParam(':cover_path', $cover_path);
+    $stmt->bindParam(':website', $game_website);
+    $stmt->bindParam(':banner_url', $banner_url);
+    $stmt->bindParam(':trailer_url', $trailer_url);
+    $stmt->bindParam(':rating_count', $rating_count);
+    $stmt->bindParam(':features', $features_json);
+    $stmt->bindParam(':screenshots', $screenshots_json);
+    $stmt->bindParam(':requirements', $requirements_json);
+    $stmt->bindParam(':languages', $languages);
+    $stmt->bindParam(':age_rating', $age_rating);
+    $stmt->bindParam(':price', $price);
+    $stmt->bindParam(':in_subscription', $in_subscription);
+    $stmt->bindParam(':id', $project_id);
+    $stmt->execute();
 
-        echo ("<script>window.location.replace('edit?id=" . $project_id . "&success=1');</script>");
-        exit();
-    } catch (PDOException $e) {
-        $error_message = "Ошибка при обновлении проекта: " . $e->getMessage();
-    }
+    echo ("<script>window.location.replace('edit?id=" . $project_id . "&success=1');</script>");
+    exit();
+  } catch (PDOException $e) {
+    $error_message = "Ошибка при обновлении проекта: " . $e->getMessage();
+  }
 }
 ?>
 <!DOCTYPE html>
@@ -222,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
   <link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
-  <link rel="shortcut icon" href="/swad/static/img/DD.svg" type="image/x-icon">
+  <link rel="shortcut icon" href="../swad/static/img/DD.svg" type="image/x-icon">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="assets/css/custom.css" rel="stylesheet" type="text/css" />
   <style>
@@ -263,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       position: absolute;
       top: 5px;
       right: 5px;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.5);
       color: white;
       border-radius: 50%;
       width: 20px;
@@ -397,7 +397,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
 
               <p>
-                <input type="checkbox" name="in_subscription" id="in_subscription" 
+                <input type="checkbox" name="in_subscription" id="in_subscription"
                   <?= $project_info['in_subscription'] ? 'checked' : '' ?>>
                 <label for="in_subscription">Доступен по подписке</label>
               </p>
@@ -565,12 +565,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <script>
     $(document).ready(function() {
       $('select').material_select();
-      
+
       // Предпросмотр изображений
       $('input[type="file"]').change(function(e) {
         const input = this;
         const container = $(input).closest('.file-field').next('.preview-container');
-        
+
         if (input.files && input.files[0]) {
           const reader = new FileReader();
           reader.onload = function(e) {
