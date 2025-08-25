@@ -1,17 +1,11 @@
 <?php
 session_start();
 
-// When the user is logged in, go to the user page
 if (isset($_SESSION['logged-in']) && $_SESSION['logged-in'] == TRUE) {
-    $redirect_url = $_SESSION['redirect_url'] ?? '/me';
-    unset($_SESSION['redirect_url']);
-    die(header('Location: ' . $redirect_url));
+    die(header('Location: ' . $_SERVER['HTTP_REFERER']));
 }
 
-
-// Import database connection and class
 require_once('../config.php');
-// Import JWT script
 require_once('jwt.php');
 
 $db = new Database;
@@ -46,8 +40,6 @@ function checkTelegramAuthorization($auth_data)
     return $auth_data;
 }
 
-
-// User authentication - function
 function userAuthentication($db, $auth_data)
 {
     function createNewUser($db, $auth_data, $token)
@@ -71,7 +63,6 @@ function userAuthentication($db, $auth_data)
 
     function updateExistedUser($db, $auth_data, $token)
     {
-        // User found, so update it
         $db->Update(
             "UPDATE `users`
                 SET `first_name`        = :first_name,
@@ -93,7 +84,6 @@ function userAuthentication($db, $auth_data)
         );
     }
 
-    // User checker - function
     function checkUserExists($db, $auth_data)
     {
         // Get the user Telegram ID
@@ -142,6 +132,4 @@ try {
     die($e->getMessage());
 }
 
-$redirect_url = $_SESSION['redirect_url'] ?? '/me';
-unset($_SESSION['redirect_url']);
 die(header('Location: ' . $_SERVER['HTTP_REFERER']));

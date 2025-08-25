@@ -2,6 +2,7 @@
 session_start();
 require_once('../swad/config.php');
 require_once('../swad/controllers/user.php');
+require_once('../swad/controllers/tg_bot.php');
 
 $curr_user = new User();
 $db = new Database();
@@ -107,7 +108,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
                     $db->Insert($staffSql, array_values($staffData));
 
                     unset($_SESSION['form_token']);
-                    echo ("<script>alert('Чтобы получить уведомление об активации вашей студии, Вы можете запустить нашего Telegram-бота: @dustore_auth_bot')</script>");
+                    echo ("<script>alert('Чтобы получить уведомление об активации вашей студии, Вы можете просто запустить нашего Telegram-бота: @dustore_auth_bot')</script>");
+                    send_group_message(-1002916906978, "Получена новая заяка на регистрацию студии!\n
+Название: <i>". $data['name'] . "</i>
+Описание: <i>" . $data['description']."</i>
+Почта для связи: <i>".$data['contact_email']."</i>
+ВК группа: <i>".$data['vk_link']."</i>
+Telegram: <i>".$data['tg_link']."</i>", true, "https://dustore.ru/devs/recentorgs");
+                    send_private_message($user_data['telegram_id'], 
+"Заявка на регистрацию вашей студии была отправлена на модерацию. А теперь - будем знакомиться! 😊\n
+Меня зовут Дасти 😎 - я бот-ассистент на Платформе Dustore.Ru.
+Я буду присылать вам важные уведомления. А ещё вы можете добавить меня в чат вашей студии, куда я буду присылать еженедельную статистику, новости и уведомления. 
+О том, как это сделать, <a href='https://github.com/AlexanderLivanov/dustore-docs/wiki/Добавление-бота-в-чат-вашей-студии'>читайте здесь.</a>\n
+Спасибо, что пользуетесь Dustore ❤
+
+[ <a href='https://dustore.ru'>Сайт Платформы</a> ] [ <a href='https://t.me/dustore_official'>Новостной канал Платформы</a> ] [ <a href='https://vk.com/crazyprojectslab'>Crazy Projects Lab</a> ] [ <a href='https://vk.com/dgscorp'>Dust Studio</a> ]");
                     echo "<script>window.location.replace('/devs/select');</script>";
                     exit;
                 } catch (Exception $e) {

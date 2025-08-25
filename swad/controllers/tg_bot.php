@@ -26,22 +26,32 @@ function send_private_message($uid, $message){
     return $result;
 }
 
-function send_group_message($group_id, $message){
-    $keyboard = [
-        'inline_keyboard' => [
-            [
-                ['text' => 'Открыть панель управления', 'url' => 'https://dustore.ru/devs/recentorgs']
+function send_group_message($group_id, $message, $keyboard_flag, $link){
+    if($keyboard_flag == true and $link != ""){
+        $keyboard = [
+            'inline_keyboard' => [
+                [
+                    ['text' => 'Открыть страницу', 'url' => $link]
+                ]
             ]
-        ]
-    ];
+        ];
 
-    $data = [
-        'chat_id' => $group_id,
-        'text' => $message,
-        'parse_mode' => 'HTML',
-        'reply_markup' => json_encode($keyboard),
-        'disable_web_page_preview' => True
-    ];
+        $data = [
+            'chat_id' => $group_id,
+            'text' => $message,
+            'parse_mode' => 'HTML',
+            'reply_markup' => json_encode($keyboard),
+            'disable_web_page_preview' => true
+        ];
+    }else{
+        $data = [
+            'chat_id' => $group_id,
+            'text' => $message,
+            'parse_mode' => 'HTML',
+            'disable_web_page_preview' => true
+        ];
+    }
+
 
     $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendMessage";
     $ch = curl_init();

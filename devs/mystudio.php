@@ -57,6 +57,14 @@ $curr_user = new User();
     .row .col.s12.m6 {
       margin-bottom: 20px;
     }
+
+    .token-warning {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
   </style>
   <script src="https://cdn.tiny.cloud/1/qz8i2t9v3yqmvp0hyjlv95kybrn89u3py39nj1efjraq0e9p/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 </head>
@@ -103,6 +111,16 @@ $curr_user = new User();
     $specialization = $_POST['specialization'];
     $pre_alpha_program = isset($_POST['pre_alpha_program']) ? 1 : 0;
 
+    // Обработка API токена
+    $api_token = $_POST['api_token'] ?? '';
+    $update_api_token = false;
+    $hashed_token = '';
+
+    if (!empty($api_token)) {
+      $hashed_token = password_hash($api_token, PASSWORD_DEFAULT);
+      $update_api_token = true;
+    }
+
     $sql = "UPDATE studios SET 
             name = :name, 
             description = :description, 
@@ -118,8 +136,14 @@ $curr_user = new User();
             foundation_date = :foundation_date,
             team_size = :team_size,
             specialization = :specialization,
-            pre_alpha_program = :pre_alpha_program
-            WHERE id = :id";
+            pre_alpha_program = :pre_alpha_program";
+
+    // Добавляем обновление токена, если он был введен
+    if ($update_api_token) {
+      $sql .= ", api_token = :api_token";
+    }
+
+    $sql .= " WHERE id = :id";
 
     try {
       $stmt = $db->connect()->prepare($sql);
@@ -138,6 +162,12 @@ $curr_user = new User();
       $stmt->bindParam(':team_size', $team_size);
       $stmt->bindParam(':specialization', $specialization);
       $stmt->bindParam(':pre_alpha_program', $pre_alpha_program);
+
+      // Привязываем хешированный токен, если он был введен
+      if ($update_api_token) {
+        $stmt->bindParam(':api_token', $hashed_token);
+      }
+
       $stmt->bindParam(':id', $studio_id);
       $stmt->execute();
 
@@ -282,6 +312,17 @@ $curr_user = new User();
                   <option value="software" <?= $studio_info['specialization'] == 'software' ? 'selected' : '' ?>>ПО и утилиты</option>
                 </select>
                 <label>Специализация</label>
+              </div>
+
+              <!-- Поле для ввода API токена -->
+              <div class="input-field">
+                <input type="password" name="api_token" id="api_token"
+                  placeholder="<?= !empty($studio_info['api_token']) ? 'Токен установлен. Введите новый токен для изменения' : 'Введите API токен' ?>">
+                <label for="api_token">API Токен</label>
+                <div class="token-warning">
+                  <i class="material-icons left">warning</i>
+                  <span>Перед сохранением обязательно сохраните токен в надежном месте, так как после сохранения он будет скрыт.</span>
+                </div>
               </div>
 
               <p>

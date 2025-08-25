@@ -29,6 +29,7 @@
   if (isset($_GET['approve'])) {
     $org_id = (int)$_GET['approve'];
     $tg_id = $_GET['tg_id'];
+    $org_name = $_GET['name'];
 
     $stmt = $db->connect()->prepare("UPDATE studios SET status = 'active' WHERE id = ?");
     $stmt->execute([$org_id]);
@@ -36,7 +37,8 @@
     $stmt = $db->connect()->prepare("UPDATE users SET global_role = 2 WHERE id = (SELECT owner_id FROM studios WHERE id = ?)");
     $stmt->execute([$org_id]);
 
-    send_private_message($tg_id, "Ваша студия была подтверждена. Благодарим за регистрацию на нашей платформе! ❤");
+    send_private_message($tg_id, "Ваша студия была подтверждена. Теперь вы можете создать свой первый проект!\n\nБлагодарим за регистрацию на нашей платформе! ❤");
+    send_group_message(-1002916906978, "<i>❗ #подтверждение</i>\n@" . $_SESSION['USERDATA']['telegram_username'] . " (" . $curr_user->getRoleName($_SESSION['USERDATA']['global_role']) . ") подтвердил студию ". $org_name ." (" . $org_id . ").", false, "");
     echo ("<script>alert('Студия успешно подтверждена!'); window.location.href = 'recentorgs';</script>");
     exit();
   }
@@ -44,12 +46,14 @@
   if (isset($_GET['reject'])) {
     $org_id = (int)$_GET['reject'];
     $tg_id = $_GET['tg_id'];
+    $org_name = $_GET['name'];
     $reason = isset($_GET['reject_reason']) ? trim($_GET['reject_reason']) : '';
 
     $stmt = $db->connect()->prepare("UPDATE studios SET status = 'suspended', ban_reason = ? WHERE id = ?");
     $stmt->execute([$reason, $org_id]);
 
-    send_private_message($tg_id, "Ваша заявка на регистрацию студии была отклонена. Причина отклонения: " . trim($_GET['reject_reason']) . ". Вы можете изменить вашу заявку на странице https://dustore.ru/devs/regorg и отправить её заново!");
+    send_group_message(-1002916906978, "<i>❗ #отказ</i>\n@" . $_SESSION['USERDATA']['telegram_username'] . "(" . $curr_user->getRoleName($_SESSION['USERDATA']['global_role']) . ") отклонил студию " . $org_name . " (" . $org_id . ") по причине: ". $reason .".", false, "");
+    send_private_message($tg_id, "Ваша заявка на регистрацию студии была отклонена. Причина отклонения: <i>" . trim($_GET['reject_reason']) . "</i>. Вы можете изменить вашу заявку на странице https://dustore.ru/devs/regorg и отправить её заново!");
     echo ("<script>alert('Студия отклонена!'); window.location.href = 'recentorgs';</script>");
     exit();
   }
@@ -116,8 +120,8 @@
                   <td><?= htmlspecialchars($org['city'] ?? '-') ?></td>
                   <td><?= htmlspecialchars($org['contact_email'] ?? '-') ?></td>
                   <td>
-                    <a href="?approve=<?= $org['id'] ?>&tg_id=<?= $org['telegram_id'] ?>" class="btn green"><i class="material-icons">done</i></a>
-                    <a href="?reject=<?= $org['id'] ?>&tg_id=<?= $org['telegram_id'] ?>" class="btn red btn-reject"><i class="material-icons">remove</i></a>
+                    <a href="?approve=<?= $org['id'] ?>&tg_id=<?= $org['telegram_id'] ?>&name=<?= $org['name'] ?>" class="btn green"><i class="material-icons">done</i></a>
+                    <a href="?reject=<?= $org['id'] ?>&tg_id=<?= $org['telegram_id'] ?>&name=<?= $org['name'] ?>" class="btn red btn-reject"><i class="material-icons">remove</i></a>
                   </td>
                 </tr>
               <?php endforeach;

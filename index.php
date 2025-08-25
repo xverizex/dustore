@@ -370,7 +370,7 @@
         $db = new Database();
         $conn = $db->connect();
         $sql = "SELECT 
-            (SELECT COUNT(*) FROM user_organization) AS count_user_organization,
+            (SELECT COUNT(*) FROM studios) AS count_user_organization,
             (SELECT COUNT(*) FROM users) AS count_users,
             (SELECT COUNT(*) FROM games) AS count_games";
 
