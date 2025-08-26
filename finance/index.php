@@ -338,7 +338,7 @@
                 <h3>Информация</h3>
                 <ul>
                     <!-- <li><a href="#">Доставка и возврат</a></li> -->
-                    <li><a href="/oferta">Публичная оферта</a></li>
+                    <li><a href="/oferta.txt">Публичная оферта</a></li>
                     <li><a href="/privacy">Обработка персональных данных</a></li>
                     <li><a href="/agreement">Пользовательское соглашение</a></li>
                     <!-- <li><a href="#">Юридическая информация</a></li> -->
@@ -348,15 +348,17 @@
             <div class="footer-section">
                 <h3>Юридическая информация</h3>
                 <div class="contact-info">
-                    <div>ИП Ливанов А. А.</div>
+                    <div>ИП Ливанов Александр Алексеевич</div>
                     <div>ИНН: 771392840109</div>
-                    <div>ОГРН: 325774600520418</div>
+                    <div>ОГРН/ОГРНИП: 325774600520418</div>
                     <div>г. Москва</div>
                 </div>
             </div>
         </div>
 
         <div class="legal-info">
+            <img src="logo3h.png" alt="">
+            <br>
             &copy; 2025 Dust Studio. Все права защищены. <br>
             Dustore.Finance является частью экосистемы Dustore
         </div>
