@@ -146,6 +146,57 @@ $curr_user->checkAuth();
             });
         });
     </script>
+
+    <script>
+        // Функция для обновления активности
+        function updateUserActivity() {
+            fetch('/swad/controllers/activity.php', {
+                    method: 'POST',
+                    credentials: 'same-origin' // Важно для передачи сессионных куков
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Activity updated:', data.last_activity);
+                    } else {
+                        console.error('Failed to update activity:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating activity:', error);
+                });
+        }
+
+        // Обновляем активность при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUserActivity();
+        });
+
+        // Обновляем активность при взаимодействии с страницей
+        let activityTimeout;
+
+        function resetActivityTimer() {
+            clearTimeout(activityTimeout);
+            activityTimeout = setTimeout(updateUserActivity, 30000); // 30 секунд
+        }
+
+        // Слушаем события взаимодействия
+        ['mousemove', 'keypress', 'click', 'scroll'].forEach(event => {
+            document.addEventListener(event, resetActivityTimer, {
+                passive: true
+            });
+        });
+
+        // Также обновляем активность при изменении видимости страницы
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateUserActivity();
+            }
+        });
+
+        // Обновляем активность каждые 5 минут, даже если пользователь неактивен
+        setInterval(updateUserActivity, 300000); // 5 минут
+    </script>
 </body>
 
 </html>

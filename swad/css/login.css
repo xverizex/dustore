@@ -93,3 +93,26 @@ button[type="submit"]:hover {
         padding: 0.8rem;
     }
 }
+
+.error-message {
+    color: #d9534f;
+    background-color: #fdf7f7;
+    border: 1px solid #d9534f;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.form-footer {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.form-footer a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}

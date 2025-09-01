@@ -8,20 +8,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-if (!isset($_GET['studio_id'])) {
-    http_response_code(400);
-    echo json_encode(['error' => 'No studio ID provided']);
-    exit;
-}
-
-$studio_id = intval($_GET['studio_id']);
-
 $db = new Database();
 $pdo = $db->connect();
 
 // Получаем список игр студии
-$stmt = $pdo->prepare("SELECT id, name, description FROM games WHERE studio_id = :studio_id");
-$stmt->execute(['studio_id' => $studio_id]);
+$stmt = $pdo->prepare("SELECT * FROM games;");
+$stmt->execute();
 $games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($games !== false) {

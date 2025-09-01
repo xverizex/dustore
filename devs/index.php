@@ -34,7 +34,7 @@ $org = new Organization();
   $curr_user_org_data = $curr_user->getOrgData($_SESSION['studio_id']);
   $_SESSION['STUDIODATA'] = $curr_user_org_data;
 
-  
+
   ?>
   <main>
     <section class="content">
@@ -48,8 +48,7 @@ $org = new Organization();
           <!-- small box -->
           <div class="small-box bg-aqua">
             <div class="inner">
-              <?= print_r($org->getAllStaff(5)) ?>
-              <h3><?= print_r($curr_user_org_data['id']) ?></h3>
+              <h3><?= count($org->getAllStaff($_SESSION['STUDIODATA']['id'])) ?></h3>
               <p>Сотрудники</p>
             </div>
             <div class="icon">
@@ -62,7 +61,7 @@ $org = new Organization();
           <!-- small box -->
           <div class="small-box bg-green">
             <div class="inner">
-              <h3><?= 0 ?></h3>
+              <h3><?= count($org->getAllProjects($_SESSION['STUDIODATA']['id'])) ?></h3>
               <p>Созданные проекты</p>
             </div>
             <div class="icon">
@@ -103,9 +102,9 @@ $org = new Organization();
             <h3>Быстрые ссылки</h3>
             <div class="row">
               <div class="col l3 s12 tooltipped" data-position="top" data-delay="50" data-tooltip="Документация для разработчиков"><a class="waves-effect waves-light btn-large" target="_blank" href="https://github.com/AlexanderLivanov/dustore-docs/wiki">Документация</a></div>
-              <div class="col l3 s12 tooltipped" data-position="top" data-delay="50" data-tooltip="Правила пользования"><a class="waves-effect waves-light btn-large" href="#">Правила</a></div>
+              <div class="col l3 s12 tooltipped" data-position="top" data-delay="50" data-tooltip="Правила пользования"><a class="waves-effect waves-light btn-large" href="/legal">Правила</a></div>
               <div class="col l3 s12 tooltipped" data-position="top" data-delay="50" data-tooltip="Рейтинг студий"><a class="waves-effect waves-light btn-large" href="#">Рейтинг</a></div>
-              <div class="col l3 s12 tooltipped" data-position="top" data-delay="50" data-tooltip="Отправить отчёт о проблеме"><a class="waves-effect waves-light btn-large" href="#">Отчёт&nbsp;о&nbsp;проблеме</a></div>
+              <div class="col l3 s12 tooltipped" data-position="top" data-delay="50" data-tooltip="Отправить отчёт о проблеме"><a class="waves-effect waves-light btn-large" href="mailto:support@dustore.ru">Отчёт&nbsp;о&nbsp;проблеме</a></div>
               <!-- <div class="col l4 offset-l4 s12 tooltipped" data-position="top" data-delay="50" data-tooltip="OTRS Support Site"><a class="waves-effect waves-light btn-large" href="#">Support Site</a></div> -->
             </div>
           </div>
@@ -118,16 +117,19 @@ $org = new Organization();
                   <th>Имя пользователя</th>
                   <th>Должность</th>
                   <th>Последний вход</th>
-                  <th>???</th>
+                  <!-- <th>???</th> -->
                 </tr>
               </thead>
               <tbody>
+                <?php $staff = $org->getAllStaff($_SESSION['STUDIODATA']['id']); ?>
+                <?php foreach($staff as $s): ?>
                 <tr>
-                  <td>@crazya11my1if3</td>
-                  <td>Создатель</td>
-                  <td>1 час назад</td>
-                  <td><i class="text-green material-icons">check</i></td>
+                  <td><?php echo($curr_user->getUsername($s['telegram_id'])); ?></td>
+                  <td><?php echo($s['role']); ?></td>
+                  <td>-</td>
+                  <!-- <td><i class="text-green material-icons">check</i></td> -->
                 </tr>
+                <?php endforeach ?>
               </tbody>
             </table>
           </div>

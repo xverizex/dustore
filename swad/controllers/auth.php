@@ -118,7 +118,8 @@ function userAuthentication($db, $auth_data)
     $_SESSION = [
         'logged-in' => TRUE,
         'telegram_id' => $auth_data['id'],
-        'auth_token' => $token
+        'auth_token' => $token,
+        'usernm' => ''
     ];
 
     setcookie('auth_token', $token, time() + 86400 * 30, '/', '', true, true);

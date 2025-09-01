@@ -36,6 +36,25 @@ class User
         return $result ? $result['telegram_username'] : null;
     }
 
+    // 01.09.2025 (c) Alexander Livanov - new 
+
+    // Добавьте этот метод в класс User
+    public function getUserByUsername($username)
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT * FROM users WHERE username = :username LIMIT 1;"
+            );
+            $stmt->execute(['username' => $username]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getting user by username: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // end new
+
     // 19.05.2025 (c) Alexander Livanov
     public function printUserPrivileges($role){
         switch($role){
@@ -203,6 +222,100 @@ class User
         $stmt->execute(['id' => $org_id]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // 30.08.2025 (c) Alexander Livanov
+
+    public function checkUsernameExists($username)
+    {
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) as count FROM users WHERE username = :username LIMIT 1;"
+        );
+        $stmt->execute(['username' => $username]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result['count'] > 0;
+    }
+
+    public function updateUsername($userID, $new_username)
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "UPDATE users SET username = :username, updated = NOW() WHERE telegram_id = :user_id;"
+            );
+            $stmt->execute([
+                'username' => $new_username,
+                'user_id' => $userID
+            ]);
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Error updating username: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // 01.09.2025 (с) Alexander Livanov
+
+    public function updatePassphrase($userID, $hashed_passphrase)
+    {
+        try {
+            // Если передано null - очищаем passphrase (отключаем)
+            if ($hashed_passphrase === null) {
+                $stmt = $this->db->prepare(
+                    "UPDATE users SET passphrase = NULL, updated = NOW() WHERE telegram_id = :user_id;"
+                );
+                return $stmt->execute(['user_id' => $userID]);
+            }
+
+            // Если передана passphrase - обновляем
+            $stmt = $this->db->prepare(
+                "UPDATE users SET passphrase = :passphrase, updated = NOW() WHERE telegram_id = :user_id;"
+            );
+            return $stmt->execute([
+                'passphrase' => $hashed_passphrase,
+                'user_id' => $userID
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error updating passphrase: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function hasPassphrase($userID)
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT passphrase FROM users WHERE telegram_id = :user_id LIMIT 1;"
+            );
+            $stmt->execute(['user_id' => $userID]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return !empty($result['passphrase']);
+        } catch (PDOException $e) {
+            error_log("Error checking passphrase: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function verifyPassphrase($userID, $passphrase)
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT passphrase FROM users WHERE telegram_id = :user_id AND passphrase IS NOT NULL LIMIT 1;"
+            );
+            $stmt->execute(['user_id' => $userID]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$result || empty($result['passphrase'])) {
+                return false;
+            }
+
+            return password_verify($passphrase, $result['passphrase']);
+        } catch (PDOException $e) {
+            error_log("Error verifying passphrase: " . $e->getMessage());
+            return false;
+        }
     }
 }
 
