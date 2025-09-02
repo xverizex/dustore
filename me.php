@@ -5,7 +5,6 @@ require_once('swad/controllers/time.php');
 require_once('swad/controllers/user.php');
 
 // Проверяем, установлена ли passphrase у пользователя
-// print_r($_SESSION);
 $has_passphrase = $curr_user->hasPassphrase($_SESSION['USERDATA']['telegram_id']);
 
 // Получение обновленных данных пользователя
@@ -24,7 +23,7 @@ $username         = isset($user_data['username']) ? $user_data['username'] : '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_username'])) {
         $new_username = trim($_POST['username']);
-        $username = $_SESSION['usernm'];
+        $current_username = $user_data['username'] ?? '';
         $errors = [];
 
         // Валидация имени пользователя
@@ -35,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', $new_username)) {
             $errors[] = "Имя пользователя может содержать только латинские буквы, цифры и символ подчеркивания";
         } else {
-            if ($new_username !== $username) {
+            if ($new_username !== $current_username) {
                 $is_username_taken = $curr_user->checkUsernameExists($new_username);
                 if ($is_username_taken) {
                     $errors[] = "Это имя пользователя уже занято";
@@ -44,14 +43,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
-            $update_success = $curr_user->updateUsername($_SESSION['telegram_id'], $new_username);
+            $update_success = $curr_user->updateUsername($telegramID, $new_username);
             if ($update_success) {
                 $_SESSION['USERDATA']['username'] = $new_username;
-                $username = $new_username; // Обновляем переменную для отображения
-                $success_message = "Имя пользователя успешно обновлено";
+                $_SESSION['success_message'] = "Имя пользователя успешно обновлено";
+                // Перенаправляем чтобы избежать повторной отправки формы
+                echo ("<script>window.location.replace('/me');</script>");
+                exit;
             } else {
                 $errors[] = "Ошибка при обновлении имени пользователя";
+                $_SESSION['errors'] = $errors;
             }
+        } else {
+            $_SESSION['errors'] = $errors;
         }
     } else if (isset($_POST['update_passphrase'])) {
         $passphrase = trim($_POST['passphrase']);
@@ -60,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors_pp = [];
 
         // Получаем текущее состояние passphrase из базы
-        $current_has_passphrase = $curr_user->hasPassphrase($userID);
+        $current_has_passphrase = $curr_user->hasPassphrase($telegramID);
 
         if ($enable_passphrase) {
             // Валидация passphrase только если она включена
@@ -83,40 +87,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($enable_passphrase) {
                 // Хеширование и сохранение passphrase в БД
                 $hashed_passphrase = password_hash($passphrase, PASSWORD_DEFAULT);
-                $update_success = $curr_user->updatePassphrase($userID, $hashed_passphrase);
+                $update_success = $curr_user->updatePassphrase($telegramID, $hashed_passphrase);
                 if ($update_success) {
                     // Обновляем сессию
                     $_SESSION['USERDATA']['passphrase'] = $hashed_passphrase;
-                    $success_message_pp = $current_has_passphrase ?
+                    $_SESSION['success_message_pp'] = $current_has_passphrase ?
                         "Passphrase успешно обновлена" :
                         "Passphrase успешно установлена и включена";
+                    echo ("<script>window.location.replace('/me');</script>");
+                    exit;
                 } else {
                     $errors_pp[] = "Ошибка при установке passphrase";
+                    $_SESSION['errors_pp'] = $errors_pp;
                 }
             } else {
                 // Отключение passphrase
-                $update_success = $curr_user->updatePassphrase($userID, null);
+                $update_success = $curr_user->updatePassphrase($telegramID, null);
                 if ($update_success) {
                     // Обновляем сессию
                     unset($_SESSION['USERDATA']['passphrase']);
-                    $success_message_pp = "Passphrase отключена";
+                    $_SESSION['success_message_pp'] = "Passphrase отключена";
+                    // Перенаправляем чтобы избежать повторной отправки формы
+                    echo ("<script>window.location.replace('/me');</script>");
+
+                    exit;
                 } else {
                     $errors_pp[] = "Ошибка при отключении passphrase";
+                    $_SESSION['errors_pp'] = $errors_pp;
                 }
             }
-
-            // Обновляем состояние для отображения
-            $has_passphrase = $enable_passphrase;
+        } else {
+            $_SESSION['errors_pp'] = $errors_pp;
         }
     }
+}
 
-    if (isset($_SESSION['USERDATA']['passphrase'])) {
-        $has_passphrase = true;
-    } else {
-        $has_passphrase = $curr_user->hasPassphrase($userID);
-        if ($has_passphrase) {
-            $_SESSION['USERDATA']['passphrase'] = true;
-        }
+// Получаем сообщения из сессии и очищаем их
+$success_message = $_SESSION['success_message'] ?? '';
+$errors = $_SESSION['errors'] ?? [];
+$success_message_pp = $_SESSION['success_message_pp'] ?? '';
+$errors_pp = $_SESSION['errors_pp'] ?? [];
+
+unset(
+    $_SESSION['success_message'],
+    $_SESSION['errors'],
+    $_SESSION['success_message_pp'],
+    $_SESSION['errors_pp']
+);
+
+// Проверяем, установлена ли passphrase у пользователя
+if (isset($_SESSION['USERDATA']['passphrase'])) {
+    $has_passphrase = true;
+} else {
+    $has_passphrase = $curr_user->hasPassphrase($telegramID);
+    if ($has_passphrase) {
+        $_SESSION['USERDATA']['passphrase'] = true;
     }
 }
 ?>
@@ -178,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p title="<?= $updated; ?>">Последний вход: <?= time_ago($updated); ?></p>
 
                     <h3>Уникальное имя пользователя</h3>
-                    <?php if (isset($success_message)): ?>
+                    <?php if (!empty($success_message)): ?>
                         <div class="success-message"><?= $success_message ?></div>
                     <?php endif; ?>
                     <?php if (!empty($errors)): ?>
@@ -189,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST" action="#username-section">
+                    <form method="POST" action="">
                         <div class="form-group">
                             <label for="username">Имя пользователя:</label>
                             <input type="text" id="username" name="username" value="<?= htmlspecialchars($username) ?>"
@@ -215,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="info-card">
                     <h3>Безопасность</h3>
 
-                    <?php if (isset($success_message_pp)): ?>
+                    <?php if (!empty($success_message_pp)): ?>
                         <div class="success-message"><?= $success_message_pp ?></div>
                     <?php endif; ?>
                     <?php if (!empty($errors_pp)): ?>
@@ -226,7 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST" action="#security-section">
+                    <form method="POST" action="">
                         <div class="form-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" name="enable_passphrase" id="enable_passphrase"
@@ -317,47 +342,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 element.innerHTML = element.innerHTML.replace('►', '▼');
             }
         }
-
-        // Валидация форм
-        document.addEventListener('DOMContentLoaded', function() {
-            const usernameForm = document.querySelector('form[action=""]');
-            if (usernameForm) {
-                usernameForm.addEventListener('submit', function(e) {
-                    const usernameInput = document.getElementById('username');
-                    const usernameRegex = /^[a-zA-Z0-9_]{3,}$/;
-
-                    if (!usernameRegex.test(usernameInput.value)) {
-                        e.preventDefault();
-                        alert('Имя пользователя должно содержать только латинские буквы, цифры и символ подчеркивания, и быть не менее 3 символов в длину.');
-                    }
-                });
-            }
-
-            const passphraseForm = document.querySelector('form[action=""]');
-            if (passphraseForm) {
-                passphraseForm.addEventListener('submit', function(e) {
-                    const passphraseInput = document.getElementById('passphrase');
-                    const confirmInput = document.getElementById('confirm_passphrase');
-
-                    if (passphraseInput.value.length < 8) {
-                        e.preventDefault();
-                        alert('Passphrase должна содержать минимум 8 символов.');
-                        return;
-                    }
-
-                    if (!/\s/.test(passphraseInput.value)) {
-                        e.preventDefault();
-                        alert('Passphrase должна содержать пробелы между словами.');
-                        return;
-                    }
-
-                    if (passphraseInput.value !== confirmInput.value) {
-                        e.preventDefault();
-                        alert('Passphrase и подтверждение не совпадают.');
-                    }
-                });
-            }
-        });
 
         function togglePassphraseFields() {
             const enableCheckbox = document.getElementById('enable_passphrase');
