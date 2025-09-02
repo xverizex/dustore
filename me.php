@@ -5,7 +5,8 @@ require_once('swad/controllers/time.php');
 require_once('swad/controllers/user.php');
 
 // Проверяем, установлена ли passphrase у пользователя
-$has_passphrase = $curr_user->hasPassphrase($_SESSION['telegram_id']);
+// print_r($_SESSION);
+$has_passphrase = $curr_user->hasPassphrase($_SESSION['USERDATA']['telegram_id']);
 
 // Получение обновленных данных пользователя
 $user_data = $_SESSION['USERDATA'];
