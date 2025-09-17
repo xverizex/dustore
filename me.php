@@ -201,10 +201,7 @@ if (isset($_SESSION['USERDATA']['passphrase'])) {
                         <?php endif; ?>
                     </p>
                     <p title="<?= $added; ?>">Присоединился к проекту: <?= $added ?></p>
-                    <p title="<?= $updated; ?>">Статус: <?= time_ago($updated); ?></p>
-                    <?php
-                echo $updated;
-                    ?>
+                    <p title="<?= $updated; ?>">Был(а): <?= time_ago($updated); ?></p>
 
                     <h3>Уникальное имя пользователя</h3>
                     <?php if (!empty($success_message)): ?>
