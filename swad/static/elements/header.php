@@ -54,6 +54,7 @@ $curr_user->checkAuth();
     <meta name="robots" content="index,follow">
     <meta name="generator" content="SWAD Framework">
     <meta name="google" content="notranslate">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 </head>
 
 <body>
@@ -93,7 +94,7 @@ $curr_user->checkAuth();
                 <!-- <button class="button" onclick="location.href='/'"></button> -->
                 <?php
                 $curr_user->checkAuth();
-                if (empty($_SESSION['USERDATA'])) {
+                if (empty($_SESSION['USERDATA']['telegram_id'])) {
                     echo ("<button class=\"button\" onclick=\"location.href='/login'\">");
                     echo ("Войти в аккаунт");
                     echo ("</button>");
@@ -148,11 +149,10 @@ $curr_user->checkAuth();
     </script>
 
     <script>
-        // Функция для обновления активности
         function updateUserActivity() {
-            fetch('/swad/controllers/activity.php', {
+            fetch('swad/controllers/activity.php', {
                     method: 'POST',
-                    credentials: 'same-origin' // Важно для передачи сессионных куков
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -167,12 +167,10 @@ $curr_user->checkAuth();
                 });
         }
 
-        // Обновляем активность при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             updateUserActivity();
         });
 
-        // Обновляем активность при взаимодействии с страницей
         let activityTimeout;
 
         function resetActivityTimer() {
@@ -180,21 +178,18 @@ $curr_user->checkAuth();
             activityTimeout = setTimeout(updateUserActivity, 30000); // 30 секунд
         }
 
-        // Слушаем события взаимодействия
         ['mousemove', 'keypress', 'click', 'scroll'].forEach(event => {
             document.addEventListener(event, resetActivityTimer, {
                 passive: true
             });
         });
 
-        // Также обновляем активность при изменении видимости страницы
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
                 updateUserActivity();
             }
         });
 
-        // Обновляем активность каждые 5 минут, даже если пользователь неактивен
         setInterval(updateUserActivity, 300000); // 5 минут
     </script>
 </body>

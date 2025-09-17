@@ -3,6 +3,7 @@ session_start();
 require_once('swad/static/elements/header.php');
 require_once('swad/controllers/time.php');
 require_once('swad/controllers/user.php');
+require_once('swad/controllers/get_user_activity.php');
 
 // Проверяем, установлена ли passphrase у пользователя
 $has_passphrase = $curr_user->hasPassphrase($_SESSION['USERDATA']['telegram_id']);
@@ -200,7 +201,10 @@ if (isset($_SESSION['USERDATA']['passphrase'])) {
                         <?php endif; ?>
                     </p>
                     <p title="<?= $added; ?>">Присоединился к проекту: <?= $added ?></p>
-                    <p title="<?= $updated; ?>">Последний вход: <?= time_ago($updated); ?></p>
+                    <p title="<?= $updated; ?>">Статус: <?= time_ago($updated); ?></p>
+                    <?php
+                echo $updated;
+                    ?>
 
                     <h3>Уникальное имя пользователя</h3>
                     <?php if (!empty($success_message)): ?>

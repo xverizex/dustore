@@ -2,6 +2,8 @@
 // (c) 19.05.2025 Alexander Livanov
 require_once('swad/config.php');
 require_once('swad/controllers/user.php');
+require_once('swad/controllers/time.php');
+require_once('swad/controllers/get_user_activity.php');
 
 session_start();
 
@@ -414,8 +416,13 @@ $stats = $stmt->fetch();
                     <?php endif; ?>
 
                     <p>
-                        <strong>На платформе с:</strong><br>
+                        <strong>На платформе с:</strong>
                         <?= date('d.m.Y', strtotime($user['added'])) ?>
+                    </p>
+
+                    <p>
+                        <strong>Был(а):</strong>
+                        <?= time_ago(getUserLastActivity($user['telegram_id'])) ?>
                     </p>
 
                     <div class="social-links">

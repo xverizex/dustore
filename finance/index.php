@@ -1,3 +1,7 @@
+<?php
+require_once('../swad/controllers/payment.php');
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -236,6 +240,7 @@
         }
     </style>
     <link rel="shortcut icon" href="../swad/static/img/DF.svg" type="image/x-icon">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 </head>
 
 <body>
@@ -268,7 +273,48 @@
                     </p>Вы можете пополненить свой баланс на любую сумму от 50₽
                     <br><u>50% с ваших пополнений идёт в Фонд Платформы. Эти деньги идут на поддержку разработчиков.</u>
                     <div class="product-price">От 50₽</div>
-                    <button class="btn-buy" onclick="window.location.replace('/payment');">Пополнить</button>
+                    <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+                        <input type="number" name="amount" id="amountInput" min="50" step="1" placeholder="Введите сумму" required
+                            style="padding: 8px; flex: 1; border: 1px solid #ccc; border-radius: 4px;">
+                        <button type="button" class="btn-buy" style="white-space: nowrap;" onclick="generatePayment()"><span>Создать кнопку</span></button>
+                    </div>
+                    <div id="paymentButtonContainer"></div>
+
+                    <script>
+                        function generatePayment() {
+                            const amountInput = document.getElementById('amountInput');
+                            const amount = parseInt(amountInput.value);
+
+                            if (!amount || amount < 50) {
+                                alert('Минимальная сумма - 50₽');
+                                amountInput.value = 50;
+                                amountInput.focus();
+                                return;
+                            }
+
+                            // Отправляем запрос на сервер
+                            fetch('core/generate-payment.php', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                    },
+                                    body: 'amount=' + amount
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Ошибка сервера');
+                                    }
+                                    return response.text();
+                                })
+                                .then(html => {
+                                    document.getElementById('paymentButtonContainer').innerHTML = html;
+                                })
+                                .catch(error => {
+                                    console.error('Ошибка:', error);
+                                    alert('Произошла ошибка при создании платежа');
+                                });
+                        }
+                    </script>
                 </div>
             </div>
             <div class="product-card">
@@ -285,7 +331,9 @@
                     <br>
                     <u>50% с вашей подписки идёт в Фонд Платформы. Эти деньги идут на поддержку разработчиков.</u>
                     <div class="product-price">399 ₽/месяц</div>
-                    <button class="btn-buy">Купить подписку</button>
+                    <?php
+                    renderPaymentButton("dustore", "U9D47ayD4y0luzFDgdrf", rand(2 ** 1, 2 * 36), "Подписка для игроков Dust Priority", [["Подписка для игроков Dust Priority с преимуществами на 1 месяц", 399]], "", 0.00, 1, "My_param=julia", "Купить подписку");
+                    ?>
                 </div>
             </div>
 
@@ -304,7 +352,9 @@
                         <br>
                     </p><u>50% с вашей подписки идёт в Фонд Платформы. Фонд устраивает розыгрыши, спонсирует лучшие проекты, развивает Платформу, а также занимается рекламой ваших проектов.</u>
                     <div class="product-price">600 ₽/месяц</div>
-                    <button class="btn-buy">Приобрести доступ</button>
+                    <?php
+                    renderPaymentButton("dustore", "U9D47ayD4y0luzFDgdrf", rand(2 ** 1, 2 * 36), "Подписка для разработчиков Dust Pass", [["Подписка для разработчиков Dust Pass на 1 месяц", 600]], "", 0.00, 1, "My_param=julia", "Приобрести");
+                    ?>
                 </div>
             </div>
         </div>
