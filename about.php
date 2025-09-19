@@ -115,9 +115,17 @@
 
             <h1>Партнёры</h1>
             <p>Тут могли бы быть вы</p>
+            Можете связаться <a href="https://t.me/crazya11my1if3">тут</a> или <a href="mailto:a.livanov@dustore.ru">тут</a>
             <!-- <marquee behavior="alternate">
                 <img src="/swad/static/img/team/alexanderpartikevich_cplrus.webp" alt="" class="team-avatar">
             </marquee> -->
+
+            <!-- <div>
+                Наша Платформа, как и сотни других проектов нуждается в вашей поддержке! Пожертвуете 500 рублей?) :) <br>
+                <br>
+                <br>
+                <iframe src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1CS0BRQJ4TL.250918&" width="300" height="480" frameborder="0" allowtransparency="true" scrolling="no"></iframe>
+            </div> -->
         </section>
 
         <section class="values">

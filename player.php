@@ -87,6 +87,7 @@ $stats = $stmt->fetch();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль <?= htmlspecialchars($user['username']) ?> | Dustore</title>
+    <link rel="shortcut icon" href="/swad/static/img/logo.svg" type="image/x-icon">
     <style>
         :root {
             --primary: #c32178;
@@ -424,7 +425,7 @@ $stats = $stmt->fetch();
                         <strong>Был(а):</strong>
                         <?= time_ago(getUserLastActivity($user['telegram_id'])) ?>
                     </p>
-                    
+
 
                     <div class="social-links">
                         <?php if (!empty($user['website'])): ?>

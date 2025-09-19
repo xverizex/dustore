@@ -318,19 +318,77 @@ class User
     }
 
     // 02.09.2025
-    // Добавьте этот метод в класс User
     public function logout()
     {
-        // Уничтожаем сессию
         session_unset();
         session_destroy();
 
-        // Удаляем куку auth_token
         setcookie('auth_token', '', time() - 3600, '/');
 
-        // Перенаправляем на главную
         header('Location: /');
         exit;
+    }
+
+    // 19.09.2025  
+    public function updateUserCart($game_id, $method)
+    {
+        // Инициализируем корзину
+        if (!isset($_COOKIE['USERCART'])) {
+            $cart = [];
+        } else {
+            $cart = json_decode($_COOKIE['USERCART'], true);
+            if ($cart === null) {
+                $cart = [];
+            }
+        }
+
+        if (!empty($game_id) && !empty($method)) {
+            if ($method == "ADD") {
+                // Добавляем игру в корзину
+                if (isset($cart[$game_id])) {
+                    $cart[$game_id]['quantity'] += 1;
+                } else {
+                    $cart[$game_id] = [
+                        'game_id' => $game_id,
+                        'quantity' => 1,
+                        'added_at' => time()
+                    ];
+                }
+            } elseif ($method == "REMOVE") {
+                // Полностью удаляем игру из корзины
+                if (isset($cart[$game_id])) {
+                    unset($cart[$game_id]);
+                }
+            } elseif ($method == "DECREASE") {
+                // Уменьшаем количество на 1
+                if (isset($cart[$game_id])) {
+                    if ($cart[$game_id]['quantity'] > 1) {
+                        $cart[$game_id]['quantity'] -= 1;
+                    } else {
+                        unset($cart[$game_id]);
+                    }
+                }
+            }
+
+            // Сохраняем обновленную корзину
+            setcookie("USERCART", json_encode($cart), time() + 60 * 60 * 24 * 30, "/");
+
+            return [
+                'success' => true,
+                'cart' => $cart,
+                'count' => count($cart),
+                'total_items' => array_sum(array_column($cart, 'quantity'))
+            ];
+        }
+
+        return [
+            'success' => false,
+            'error' => 'Invalid parameters'
+        ];
+    }
+
+    public function getUserCart(){
+
     }
 }
 

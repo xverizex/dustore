@@ -130,7 +130,7 @@
         <section class="slider-section" style="padding: 0">
             <div class="slider-container">
                 <div class="slider-track">
-                    <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
+                    <!-- <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
                         <div class="slide-overlay"></div>
                         <div class="slide-content">
                             <h2>3 сентября состоится презентация проекта!</h2>
@@ -146,7 +146,7 @@
                             <p>Загрузите свои проекты до 3 сентября и получите уникальные бейджи!</p>
                             <a href="https://github.com/AlexanderLivanov/dustore-docs/wiki/Программа-Предварительной-Оценки" target="_blank" class="btn">Подробнее</a>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="slider-slide" style="background-image: url('https://images.unsplash.com/photo-1552820728-8b83bb6b773f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');">
                         <div class="slide-overlay"></div>
@@ -175,8 +175,8 @@
                 <div class="slider-nav">
                     <div class="slider-dot active"></div>
                     <div class="slider-dot"></div>
-                    <div class="slider-dot"></div>
-                    <div class="slider-dot"></div>
+                    <!-- <div class="slider-dot"></div>
+                    <div class="slider-dot"></div> -->
                 </div>
             </div>
         </section>

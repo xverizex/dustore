@@ -72,6 +72,7 @@ $platforms = !empty($game['platforms']) ? explode(',', $game['platforms']) : [];
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
     </style>
+    <script src="/swad/js/CartManager.js"></script>
 </head>
 
 <body>
@@ -199,8 +200,13 @@ $platforms = !empty($game['platforms']) ? explode(',', $game['platforms']) : [];
                     <div class="game-sidebar">
                         <div class="purchase-section">
                             <div class="game-price"><?= number_format($game['price'], 0, ',', ' ') ?> ₽</div>
+
+                            <div class="cart-controls" id="cart-controls-<?= $game_id ?>">
+                                <!-- Будет заполнено JavaScript -->
+                            </div>
+
                             <button class="btn" style="width: 100%; margin-bottom: 15px;">Купить сейчас</button>
-                            <button class="btn btn-secondary" style="width: 100%;">Добавить в корзину</button>
+
                             <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
                                 <?php if ($game['in_subscription']): ?>
                                     <p>✔️ Есть в подписке</p>
@@ -330,6 +336,12 @@ $platforms = !empty($game['platforms']) ? explode(',', $game['platforms']) : [];
                     document.body.appendChild(lightbox);
                 });
             });
+        });
+    </script>
+    <script>    
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameId = <?= $game_id ?>;
+            window.gameCartManager = new GameCartManager(gameId);
         });
     </script>
 </body>

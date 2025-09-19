@@ -58,14 +58,14 @@ $curr_user->checkAuth();
 </head>
 
 <body>
-    <div class="top-banner" id="top-banner">
+    <!-- <div class="top-banner" id="top-banner">
         <div class="banner-content">
             <div class="banner-text">
                 ⚠️ Важное уведомление! С 1 июля по 3 сентября Платформа работает в тестовом режиме. Возможны перебои в работе сервиса.
             </div>
             <button class="close-banner" id="close-banner">&times;</button>
         </div>
-    </div>
+    </div> -->
     <div class="header">
         <div class="section left-section">
             <div>
@@ -91,7 +91,7 @@ $curr_user->checkAuth();
         </div>
         <div class="section right-section">
             <div class="buttons-right">
-                <!-- <button class="button" onclick="location.href='/'"></button> -->
+                <button class="button" onclick="location.href='/wallet'"><?= "0 ₽" ?></button>
                 <?php
                 $curr_user->checkAuth();
                 if (empty($_SESSION['USERDATA']['telegram_id'])) {
@@ -150,20 +150,20 @@ $curr_user->checkAuth();
 
     <script>
         function updateUserActivity() {
-            fetch('swad/controllers/activity.php', {
+            fetch('/swad/controllers/activity.php', {
                     method: 'POST',
                     credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        console.log('Activity updated:', data.last_activity);
+                        // console.log('Activity updated:', data.last_activity);
                     } else {
-                        console.error('Failed to update activity:', data.message);
+                        // console.error('Failed to update activity:', data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Error updating activity:', error);
+                    // console.error('Error updating activity:', error);
                 });
         }
 
@@ -190,7 +190,7 @@ $curr_user->checkAuth();
             }
         });
 
-        setInterval(updateUserActivity, 300000); // 5 минут
+        setInterval(updateUserActivity, 60000);
     </script>
 </body>
 
