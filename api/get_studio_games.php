@@ -22,14 +22,18 @@ $pdo = $db->connect();
 // Получаем данные студии
 $stmt = $pdo->prepare("SELECT * FROM games WHERE developer = :id");
 $stmt->execute(['id' => $studio_id]);
-$studio = $stmt->fetch(PDO::FETCH_ASSOC);
+$studio = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// print_r($studio);
 
 if ($studio) {
-    echo json_encode([
-        'id' => $studio['id'],
-        'name' => $studio['name'],
-        'status' => $studio['status']
-    ]);
+    foreach($studio as $st){
+        echo json_encode([
+            'id' => $st['id'],
+            'name' => $st['name'],
+            'status' => $st['status']
+        ]);
+    }
 } else {
     http_response_code(404);
     echo json_encode(['error' => 'Studio not found']);
