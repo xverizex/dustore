@@ -15,8 +15,8 @@ $isTest = $_GET['IsTest'] ?? 0;
 $userId = $_GET['shp_user_id'] ?? null;
 $itemId = $_GET['shp_item_id'] ?? null;
 
-// Проверяем подпись (используйте ваш секретный ключ №2 для проверки)
-$secretKey2 = 'EDwnV6y9CPFH4sjO44GB'; // Секретный ключ №2 из Robokassa
+// Проверяем подпись (используйте ваш секретный ключ для проверки)
+$secretKey = 'U9D47ayD4y0luzFDgdrf'; // Секретный ключ из Robokassa
 $shpParams = [];
 foreach ($_GET as $key => $value) {
     if (strpos($key, 'shp_') === 0) {
@@ -24,7 +24,11 @@ foreach ($_GET as $key => $value) {
     }
 }
 
-$expectedSignature = generateSignature($outSum, $invId, $secretKey2, $shpParams);
+if ($expectedSignature !== strtolower($signatureValue)) {
+    die('Неверная подпись платежа');
+}
+
+$expectedSignature = generateSignature($outSum, $invId, $secretKey, $shpParams);
 
 // Обновляем статус платежа в БД
 try {
