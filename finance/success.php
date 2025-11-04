@@ -16,7 +16,7 @@ $userId = $_GET['shp_user_id'] ?? null;
 $itemId = $_GET['shp_item_id'] ?? null;
 
 // Проверяем подпись (используйте ваш секретный ключ №2 для проверки)
-$secretKey2 = 'your_secret_key2'; // Секретный ключ №2 из Robokassa
+$secretKey2 = 'EDwnV6y9CPFH4sjO44GB'; // Секретный ключ №2 из Robokassa
 $shpParams = [];
 foreach ($_GET as $key => $value) {
     if (strpos($key, 'shp_') === 0) {
