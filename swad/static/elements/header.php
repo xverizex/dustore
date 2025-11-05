@@ -77,8 +77,8 @@ $curr_user->checkAuth();
             </div>
             <div class="buttons-left">
                 <button class="button" onclick="location.href='/explore'">Игры</button>
-                <button class="button disabled-btn tooltip">Приложения<span class="tooltiptext">Скоро</span></button>
-                <button class="button" onclick="location.href='https:\/\/media.dustore.ru'">Медиа</button>
+                <button class="button" onclick="location.href='/magazine'">Журнал</button>
+                <!-- <button class="button" onclick="location.href='https:\/\/media.dustore.ru'">Медиа</button> -->
                 <button class="button" onclick="location.href='/about'">О платформе</button>
                 <button class="button" onclick="location.href='/finance'">Финансы</button>
             </div>

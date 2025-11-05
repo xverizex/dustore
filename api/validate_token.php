@@ -10,29 +10,33 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 
-if (!$input || !isset($input['token'])) {
+if (!$input || !isset($input['token_hash'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'No token provided']);
+    echo json_encode(['error' => 'No token_hash provided']);
     exit;
 }
 
-$token = trim($input['token']);
+$token_hash = trim($input['token_hash']);
 
 $db = new Database();
 $pdo = $db->connect();
 
-// Проверяем токен
-$stmt = $pdo->prepare("SELECT id, name FROM studios WHERE api_token = :token");
-$stmt->execute(['token' => $token]);
-$studio = $stmt->fetch(PDO::FETCH_ASSOC);
+// Получаем все студии с их токенами
+$stmt = $pdo->prepare("SELECT id, name, api_token FROM studios");
+$stmt->execute();
+$studios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if ($studio) {
-    echo json_encode([
-        'status' => 'ok',
-        'studio_id' => $studio['id'],
-        'studio_name' => $studio['name']
-    ]);
-} else {
-    http_response_code(401);
-    echo json_encode(['error' => 'Invalid token']);
+// Проверяем хеш каждого токена
+foreach ($studios as $studio) {
+    if (hash('sha256', $studio['api_token']) === $token_hash) {
+        echo json_encode([
+            'status' => 'ok',
+            'studio_id' => $studio['id'],
+            'studio_name' => $studio['name']
+        ]);
+        exit;
+    }
 }
+
+http_response_code(401);
+echo json_encode(['error' => 'Invalid token']);
