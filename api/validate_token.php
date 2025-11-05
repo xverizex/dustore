@@ -21,14 +21,14 @@ $token_hash = trim($input['token_hash']);
 $db = new Database();
 $pdo = $db->connect();
 
-// Получаем все студии с их токенами
+// Получаем все студии с их токенами (в api_token хранится ХЕШ)
 $stmt = $pdo->prepare("SELECT id, name, api_token FROM studios");
 $stmt->execute();
 $studios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Проверяем хеш каждого токена
+// Сравниваем хеши напрямую (api_token уже хеш)
 foreach ($studios as $studio) {
-    if (hash('sha256', $studio['api_token']) === $token_hash) {
+    if ($studio['api_token'] === $token_hash) {
         echo json_encode([
             'status' => 'ok',
             'studio_id' => $studio['id'],
