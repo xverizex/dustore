@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
         $bank_name = $_POST['bank_name'] ?? '';
         $BIC = $_POST['BIC'] ?? '';
         $account_number = $_POST['account_number'] ?? '';
-        $INN = $_POST['tax_id'] ?? ''; // Исправлено: было $tax_id
+        $INN = $_POST['tax_id'] ?? '';
 
         if ($specialization === 'soft') {
             $specialization = 'software';
@@ -253,7 +253,7 @@ Telegram: <i>" . $data['tg_link'] . "</i>", true, "https://dustore.ru/devs/recen
                         </div>
 
                         <div class="form-group">
-                            <label for="team_size">Размер команды</label>
+                            <label for="team_size" required>Размер команды</label>
                             <select id="team_size" name="team_size">
                                 <option value="">Выберите размер команды</option>
                                 <option value="1">1 человек (инди-разработчик)</option>
