@@ -200,7 +200,9 @@ $platforms = !empty($game['platforms']) ? explode(',', $game['platforms']) : [];
                     <div class="game-sidebar">
                         <div class="purchase-section">
                             <div class="game-price"><?= number_format($game['price'], 0, ',', ' ') ?> ₽</div>
-
+                            <h3 style="color: coral;">Оплата и покупка игры пока не работают!</h3>
+                            <p>Мы всё ещё разрабатываем Платформу...</p>
+                            <br>
                             <div class="cart-controls" id="cart-controls-<?= $game_id ?>">
                                 <!-- Будет заполнено JavaScript -->
                             </div>
