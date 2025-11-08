@@ -16,13 +16,16 @@ if ($game_id <= 0) {
 $gameController = new Game();
 $game = $gameController->getGameById($game_id);
 
-// Если игра не найдена - редирект
 if (!$game) {
     header('Location: /explore');
     exit();
 }
 
-// Получаем скриншоты
+if (empty($game['status']) || strtolower($game['status']) !== 'published') {
+    header('Location: /explore');
+    exit();
+}
+
 $screenshots = json_decode($game['screenshots'], true) ?: [];
 
 // Получаем особенности
@@ -39,6 +42,19 @@ $badges = !empty($game['badges']) ? explode(',', $game['badges']) : [];
 
 // Получаем платформы
 $platforms = !empty($game['platforms']) ? explode(',', $game['platforms']) : [];
+
+function formatFileSize($bytes)
+{
+    if ($bytes < 1024) {
+        return $bytes . ' Б';
+    } elseif ($bytes < 1048576) { // 1024 * 1024
+        return round($bytes / 1024, 2) . ' КБ';
+    } elseif ($bytes < 1073741824) { // 1024^3
+        return round($bytes / 1048576, 2) . ' МБ';
+    } else {
+        return round($bytes / 1073741824, 2) . ' ГБ';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -199,24 +215,48 @@ $platforms = !empty($game['platforms']) ? explode(',', $game['platforms']) : [];
 
                     <div class="game-sidebar">
                         <div class="purchase-section">
-                            <div class="game-price"><?= number_format($game['price'], 0, ',', ' ') ?> ₽</div>
-                            <h3 style="color: coral;">Оплата и покупка игры пока не работают!</h3>
-                            <p>Мы всё ещё разрабатываем Платформу...</p>
-                            <br>
-                            <div class="cart-controls" id="cart-controls-<?= $game_id ?>">
-                                <!-- Будет заполнено JavaScript -->
-                            </div>
+                            <?php if ($game['price'] > 0): ?>
+                                <div class="game-price"><?= number_format($game['price'], 0, ',', ' ') ?> ₽</div>
+                                <h3 style="color: coral;">Оплата и покупка игры пока не работают!</h3>
+                                <p>Мы всё ещё разрабатываем Платформу...</p>
+                                <br>
+                                <div class="cart-controls" id="cart-controls-<?= $game_id ?>">
+                                    <!-- Будет заполнено JavaScript -->
+                                </div>
 
-                            <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="location.href='/checkout'">Купить сейчас</button>
+                                <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="location.href='/checkout'">Купить сейчас</button>
 
+                                <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                                    <?php if ($game['in_subscription']): ?>
+                                        <p>✔️ Есть в подписке</p>
+                                    <?php endif; ?>
+                                    <p>✔️ Высокий рейтинг</p>
+                                </div>
 
-                            <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
-                                <?php if ($game['in_subscription']): ?>
-                                    <p>✔️ Есть в подписке</p>
-                                <?php endif; ?>
-                                <p>✔️ Высокий рейтинг</p>
-                            </div>
+                            <?php else: ?>
+                                <!-- Бесплатная игра -->
+                                <div style="text-align: center;">
+                                    <div class="game-price" style="font-size: 1.4rem; color: #00ff99; margin-bottom: 10px;">
+                                        Бесплатно
+                                    </div>
+
+                                    <?php if (!empty($game['game_zip_url'])): ?>
+                                        <button class="btn" style="width: 100%; margin-bottom: 10px;"
+                                            onclick="window.location.href='<?= htmlspecialchars($game['game_zip_url']) ?>'">
+                                            Скачать игру
+                                        </button>
+                                        <?php if (!empty($game['game_zip_size'])): ?>
+                                            <div style="font-size: 0.9rem; opacity: 0.8;">
+                                                Размер: <?= htmlspecialchars(formatFileSize((int)$game['game_zip_size'])) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <p style="color: orange;">Файл игры пока не загружен</p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
+
 
                         <!-- Информация о разработчике -->
                         <div class="developer-info">
