@@ -18,6 +18,7 @@
         <section class="balance-hero">
             <div class="container">
                 <h1 style="font-family: 'PixelizerBold', 'Gill Sans', sans-serif;">Мой баланс</h1>
+                <h2 style="color: red;">Это демо страница, она не показывает реальные данные!</h2>
                 <p>Управляйте своими финансами и подпиской Dustore</p>
             </div>
         </section>

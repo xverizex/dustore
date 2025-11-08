@@ -120,6 +120,7 @@ foreach ($cart as $gameId => $cartItem) {
         <section class="cart-hero">
             <div class="container">
                 <h1 style="font-family: 'PixelizerBold', 'Gill Sans', sans-serif;">Корзина</h1>
+                <h2 style="color: red">Это демо страница, она не показывает реальные данные!</h2>
                 <p>Ваши выбранные игры готовы к покупке</p>
             </div>
         </section>

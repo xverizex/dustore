@@ -376,8 +376,110 @@ class User
         ];
     }
 
-    public function getUserCart(){
+    // 08.11.2025 (c) Alexander Livanov (по многочисленным запросам - делаю вход по почте. Заебали меня)
+    public function checkEmailExists($email)
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) as count FROM users WHERE email = :email LIMIT 1;"
+            );
+            $stmt->execute(['email' => $email]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
+            return $result['count'] > 0;
+        } catch (PDOException $e) {
+            error_log("Error checking email: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Получение пользователя по email
+     */
+    public function getUserByEmail($email)
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT * FROM users WHERE email = :email LIMIT 1;"
+            );
+            $stmt->execute(['email' => $email]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getting user by email: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Обновление email пользователя
+     */
+    public function updateEmail($userID, $newEmail)
+    {
+        try {
+            // Проверка, не занят ли email
+            if ($this->checkEmailExists($newEmail)) {
+                return false;
+            }
+
+            $stmt = $this->db->prepare(
+                "UPDATE users SET email = :email, email_verified = 0, updated = NOW() 
+             WHERE telegram_id = :user_id;"
+            );
+            return $stmt->execute([
+                'email' => $newEmail,
+                'user_id' => $userID
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error updating email: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Обновление пароля пользователя
+     */
+    public function updatePassword($userID, $newPassword)
+    {
+        try {
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+            $stmt = $this->db->prepare(
+                "UPDATE users SET password = :password, updated = NOW() 
+             WHERE telegram_id = :user_id;"
+            );
+            return $stmt->execute([
+                'password' => $hashedPassword,
+                'user_id' => $userID
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error updating password: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Проверка пароля пользователя
+     */
+    public function verifyPassword($userID, $password)
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT password FROM users 
+             WHERE telegram_id = :user_id AND password IS NOT NULL 
+             LIMIT 1;"
+            );
+            $stmt->execute(['user_id' => $userID]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$result || empty($result['password'])) {
+                return false;
+            }
+
+            return password_verify($password, $result['password']);
+        } catch (PDOException $e) {
+            error_log("Error verifying password: " . $e->getMessage());
+            return false;
+        }
     }
 }
 

@@ -15,7 +15,7 @@ if ($curr_user->checkAuth() > 0) {
 
 $user_data = $_SESSION['USERDATA'];
 $userId = $user_data['id'];
-$error = null; // Инициализация переменных
+$error = null;
 $success = null;
 
 if (empty($_SESSION['form_token'])) {
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
         $bank_name = $_POST['bank_name'] ?? '';
         $BIC = $_POST['BIC'] ?? '';
         $account_number = $_POST['account_number'] ?? '';
-        $INN = $_POST['tax_id'] ?? '';
+        $INN = $_POST['tax_id'] ?? ''; // Исправлено: было $tax_id
 
         if ($specialization === 'soft') {
             $specialization = 'software';
@@ -73,6 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
 
             if (empty($error)) {
                 try {
+                    // Исправлены названия полей согласно структуре БД
                     $data = [
                         'status' => 'pending',
                         'ban_reason' => '',
@@ -91,8 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
                         'pre_alpha_program' => $preAlpha,
                         'bank_name' => $bank_name,
                         'BIC' => $BIC,
-                        'acc_num' => $account_number,
-                        'INN' => $tax_id
+                        'acc_num' => $account_number, // Исправлено: было 'account_number'
+                        'INN' => $INN // Исправлено: было 'tax_id'
                     ];
 
                     $columns = implode(', ', array_keys($data));
@@ -374,7 +375,6 @@ Telegram: <i>" . $data['tg_link'] . "</i>", true, "https://dustore.ru/devs/recen
             }
         });
 
-        // Подсветка полей при фокусе
         const inputs = document.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
             input.addEventListener('focus', function() {
