@@ -5,6 +5,13 @@ require_once('../config.php');
 $db = new Database();
 $pdo = $db->connect();
 
+try {
+    $stmt = $pdo->prepare("SELECT ...");
+    $stmt->execute([...]);
+} catch (PDOException $e) {
+    die("Query error: " . $e->getMessage());
+}
+
 if (empty($_SESSION['USERDATA']['id'])) {
     header('Location: /login');
     exit();
