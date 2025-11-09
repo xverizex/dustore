@@ -238,7 +238,7 @@ function formatFileSize($bytes)
                             <p><?= nl2br(htmlspecialchars($game['description'])) ?></p>
                         </div>
 
-                        <?php if (!empty($_SESSION['USERDATA']['id'])): ?>
+                        <!-- <?php if (!empty($_SESSION['USERDATA']['id'])): ?>
                             <div class="rating-section" style="margin-top: 20px;">
                                 <h2>Ваша оценка игре</h2>
                                 <div id="rating-stars" data-game-id="<?= $game_id ?>" data-user-rating="<?= $userRating ?>"></div>
@@ -248,7 +248,7 @@ function formatFileSize($bytes)
                                 <h2>Оценить игру</h2>
                                 <p>Войдите в аккаунт, чтобы поставить оценку.</p>
                             </div>
-                        <?php endif; ?>
+                        <?php endif; ?> -->
 
                         <!-- Особенности игры -->
                         <?php if (!empty($features)): ?>
@@ -566,10 +566,11 @@ function formatFileSize($bytes)
                         reviewsContainer.innerHTML = '<p>Отзывы пока отсутствуют. Будьте первым!</p>';
                     } else {
                         reviewsContainer.innerHTML = '';
+                        const currentUserId = <?= $_SESSION['USERDATA']['id'] ?? 'null' ?>;
                         let userHasReview = false;
 
                         reviews.forEach(review => {
-                            if (review.user_id == <?= $_SESSION['USERDATA']['id'] ?? 0 ?>) {
+                            if (currentUserId && review.user_id == currentUserId) {
                                 userHasReview = true;
                             }
                             const div = document.createElement('div');
@@ -674,8 +675,7 @@ function formatFileSize($bytes)
                                 const div = document.createElement('div');
                                 div.className = 'review-card';
                                 const now = new Date();
-                                const reviewDate = new Date(review.created_at.replace(' ', 'T'));
-                                const dateStr = reviewDate.toLocaleString('ru-RU', {
+                                const dateStr = now.toLocaleString('ru-RU', {
                                     day: '2-digit',
                                     month: '2-digit',
                                     year: 'numeric',
