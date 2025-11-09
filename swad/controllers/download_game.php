@@ -13,7 +13,7 @@ try {
 }
 
 if (empty($_SESSION['USERDATA']['id'])) {
-    header('Location: /login');
+    echo("<script>window.location.href('/login')</script>");
     exit();
 }
 
@@ -21,7 +21,7 @@ $game_id = (int)($_GET['game_id'] ?? 0);
 $user_id = $_SESSION['USERDATA']['id'];
 
 if ($game_id <= 0) {
-    header('Location: /explore');
+    echo ("<script>window.location.href('/explore')</script>");
     exit();
 }
 
@@ -40,7 +40,7 @@ $stmt->execute([$game_id]);
 $game = $stmt->fetch();
 
 if ($game && $game['game_zip_url']) {
-    header("Location: " . $game['game_zip_url']);
+    echo ("<script>window.location.href('". $game['game_zip_url'] . "')</script>");
     exit();
 } else {
     die("Файл игры не найден");
