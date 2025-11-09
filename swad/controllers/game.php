@@ -69,9 +69,14 @@ class Game
 
     public function getAverageRating($gameId)
     {
-        $stmt = $this->db->connect()->prepare("SELECT AVG(rating) AS avg_rating, COUNT(*) AS total FROM ratings WHERE game_id = ?");
+        $stmt = $this->db->connect()->prepare("
+        SELECT AVG(rating) AS avg_rating, COUNT(*) AS total 
+        FROM game_reviews 
+        WHERE game_id = ?
+    ");
         $stmt->execute([$gameId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
         return [
             'avg' => $row['avg_rating'] ? round($row['avg_rating'], 1) : 0,
             'count' => $row['total'] ?? 0

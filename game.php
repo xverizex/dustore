@@ -309,18 +309,31 @@ function formatFileSize($bytes)
                                 <!-- Здесь JS добавляет отзывы -->
                                 <p>Загрузка отзывов...</p>
                             </div>
-                            <?php if (!empty($_SESSION['USERDATA']['id'])): ?>
+                            <?php
+                            $userHasGame = false;
+                            $db = new Database();
+                            $pdo = $db->connect();
+                            if (!empty($_SESSION['USERDATA']['id'])) {
+                                $stmt = $pdo->prepare("SELECT id FROM library WHERE player_id = ? AND game_id = ?");
+                                $stmt->execute([$_SESSION['USERDATA']['id'], $game_id]);
+                                $userHasGame = (bool) $stmt->fetch();
+                            }
+                            ?>
+                            <?php if (!empty($_SESSION['USERDATA']['id']) && $userHasGame): ?>
                                 <div class="review-form" style="margin-top: 30px;">
                                     <h2>Оставить отзыв</h2>
-                                    <textarea id="review-text" placeholder="Напишите ваш отзыв... Мат, спам и оскорбления будут удалены модераторами" rows="4"></textarea>
+                                    <textarea id="review-text" placeholder="Напишите ваш отзыв..." rows="4"></textarea>
                                     <div style="margin-top:10px;">
                                         <label>Ваша оценка: </label>
                                         <div id="review-stars" style="display:inline-block;"></div>
                                     </div>
                                     <button class="btn" style="margin-top:10px;" id="submit-review">Отправить</button>
                                 </div>
+                            <?php elseif (!empty($_SESSION['USERDATA']['id'])): ?>
+                                <p style="color: orange; margin-top: 20px;">Сначала скачайте игру, чтобы оставить отзыв.</p>
+                            <?php else: ?>
+                                <p style="color: orange; margin-top: 20px;">Войдите в аккаунт, чтобы скачать игру и оставить отзыв.</p>
                             <?php endif; ?>
-
                         </div>
 
                     </div>
@@ -354,9 +367,10 @@ function formatFileSize($bytes)
 
                                     <?php if (!empty($game['game_zip_url'])): ?>
                                         <button class="btn" style="width: 100%; margin-bottom: 10px;"
-                                            onclick="window.location.href='<?= htmlspecialchars($game['game_zip_url']) ?>'">
+                                            onclick="window.location.href='/swad/controllers/download_game.php?game_id=<?= $game_id ?>'">
                                             Скачать игру
                                         </button>
+
                                         <?php if (!empty($game['game_zip_size'])): ?>
                                             <div style="font-size: 0.9rem; opacity: 0.8;">
                                                 Размер: <?= htmlspecialchars(formatFileSize((int)$game['game_zip_size'])) ?>
