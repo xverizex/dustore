@@ -590,10 +590,10 @@ function formatFileSize($bytes)
                             const div = document.createElement('div');
                             div.className = 'review-card';
                             div.innerHTML = `
-                    <div class="review-header">
+                    <div class="review-header" >
                         <div class="review-author">
                             <div class="author-avatar">
-                                <img style="width: 100%; border-radius: 10000px;" src="${review.profile_picture || '/swad/static/img/logo_new.png'}" alt="${review.username}">
+                                <img style="width: 100%; border-radius: 10000px;" src="${review.profile_picture || '/swad/static/img/logo.svg'}" alt="${review.username}">
                             </div>
                             <div>
                                 <h3>${review.username || "Аноним"}</h3>
@@ -630,6 +630,7 @@ function formatFileSize($bytes)
                                 notice.style.color = '#ffcc00';
                                 form.innerHTML = '';
                                 form.appendChild(notice);
+                                location.reload();
                             }
                         }
 
@@ -701,7 +702,7 @@ function formatFileSize($bytes)
                         <div class="review-header">
                             <div class="review-author">
                                 <div class="author-avatar">
-                                    <img style="width: 100%; border: 10000px;" src="<?= !empty($_SESSION['USERDATA']['']) ? $_SESSION['USERDATA']['avatar'] : 'swad/static/img/logo_new.png' ?>" alt="<?= $_SESSION['USERDATA']['profile_picture'] ?>">
+                                    <img style="width: 100%; border: 10000px;" src="<?= !empty($_SESSION['USERDATA']['']) ? $_SESSION['USERDATA']['avatar'] : 'swad/static/img/logo.svg' ?>" alt="<?= $_SESSION['USERDATA']['profile_picture'] ?>">
                                 </div>
                                 <div>
                                     <h3><?= $_SESSION['USERDATA']['username'] ?></h3>
@@ -722,6 +723,7 @@ function formatFileSize($bytes)
                                 document.getElementById('review-text').value = '';
                                 selectedRating = 10;
                                 highlightStars(selectedRating);
+                                location.reload();
                             } else {
                                 alert('Ошибка: ' + data.error);
                             }

@@ -40,16 +40,27 @@ if (!$user) {
     die("Пользователь не найден");
 }
 
-// Получаем игры пользователя
 $stmt = $pdo->prepare("
-    SELECT g.id, g.name, g.description, g.path_to_cover, g.price, g.GQI, g.release_date
-    FROM games g
-    WHERE g.developer = :user_id AND g.status = 'published'
-    ORDER BY g.created_at DESC
+    SELECT 
+        g.id,
+        g.name,
+        g.description AS description,
+        g.path_to_cover,
+        g.price,
+        g.GQI,
+        g.release_date,
+        COALESCE(AVG(r.rating), 0) AS rating
+    FROM library l
+    JOIN games g ON g.id = l.game_id
+    LEFT JOIN game_reviews r ON r.game_id = g.id
+    WHERE l.player_id = :user_id AND l.purchased = 1
+    GROUP BY g.id
+    ORDER BY l.date DESC
     LIMIT 6
 ");
 $stmt->execute([':user_id' => $user['id']]);
-$games = $stmt->fetchAll();
+$games = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 // Получаем отзывы пользователя
 $stmt = $pdo->prepare("
@@ -62,17 +73,17 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([':user_id' => $user['id']]);
 $reviews = $stmt->fetchAll();
-
 // Проверяем, является ли текущий пользователь владельцем профиля
 $is_owner = false;
-if (!empty($_SESSION['logged-in']) && !empty($_SESSION['user_id'])) {
-    $is_owner = ($_SESSION['user_id'] == $user['id']);
+if (!empty($_SESSION['logged-in']) && !empty($_SESSION['USERDATA']['id'])) {
+    $is_owner = ($_SESSION['USERDATA']['id'] == $user['id']);
 }
 
 $stmt = $pdo->prepare("
 SELECT 
     (SELECT COUNT(*) FROM library WHERE player_id = :user_id) as library_count,
     (SELECT COUNT(*) FROM achievements WHERE player_id = :user_id) as achievements_count,
+    (SELECT COUNT(*) FROM game_reviews WHERE user_id = :user_id) as reviews_count,
     (SELECT COUNT(*) FROM friends WHERE 
         (player_id = :user_id OR friend_id = :user_id) AND status = 'accepted') as friends_count
 ");
@@ -390,13 +401,13 @@ $stats = $stmt->fetch();
     <div class="profile-header">
         <div class="container">
             <div class="user-info">
-                <img src="<?= !empty($user['avatar']) ? htmlspecialchars($user['avatar']) : '/swad/static/img/logo.svg' ?>"
+                <img src="<?= !empty($user['profile_picture']) ? htmlspecialchars($user['profile_picture']) : '/swad/static/img/logo.svg' ?>"
                     alt="Аватар" class="user-avatar">
                 <h1><?= htmlspecialchars($user['username']) ?></h1>
                 <p><?= !empty($user['bio']) ? htmlspecialchars($user['bio']) : 'Этот пользователь пока не добавил описание' ?></p>
 
                 <?php if ($is_owner): ?>
-                    <a href="/settings/profile" class="edit-profile-btn">Редактировать профиль</a>
+                    <a href="/me" class="edit-profile-btn">Редактировать профиль</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -445,58 +456,47 @@ $stats = $stmt->fetch();
                     <h3>Статистика</h3>
                     <div class="user-stats">
                         <div class="stat-item">
-                            <!-- <span class="stat-number"><?= (int)$stats['games_count'] ?></span> -->
-                            <span class="stat-number"><?= "0" ?></span>
-                            <span class="stat-label">Игр</span>
-                        </div>
-                        <div class="stat-item">
-                            <!-- <span class="stat-number"><?= (int)$stats['reviews_count'] ?></span> -->
-                            <span class="stat-number"><?= "0" ?></span>
-                            <span class="stat-label">Отзывов</span>
+                            <span class="stat-number"><?= (int)$stats['reviews_count'] ?></span>
+                            <span class="stat-label">Отзывов:</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-number"><?= (int)$stats['friends_count'] ?></span>
-                            <span class="stat-label">Друзей</span>
+                            <span class="stat-label">Друзей:</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-number"><?= (int)$stats['library_count'] ?></span>
-                            <span class="stat-label">Игр в библиотеке</span>
+                            <span class="stat-label">Игр в библиотеке:</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-number"><?= (int)$stats['achievements_count'] ?></span>
-                            <span class="stat-label">Достижений</span>
+                            <span class="stat-label">Достижений:</span>
                         </div>
                     </div>
                 </div>
-
-                <?php if ($is_owner): ?>
-                    <div class="profile-card">
-                        <h3>Быстрые действия</h3>
-                        <a href="/devs/create" class="edit-profile-btn">➕ Добавить игру</a>
-                        <a href="/settings/profile" class="edit-profile-btn">⚙️ Настройки</a>
-                    </div>
-                <?php endif; ?>
             </div>
 
             <div class="profile-main">
                 <div class="profile-card">
-                    <h2 class="section-title">Игры</h2>
+                    <h2 class="section-title">Игры в Коллекции пользователя</h2>
 
                     <?php if (!empty($games)): ?>
                         <div class="games-grid">
                             <?php foreach ($games as $game): ?>
-                                <div class="game-card">
-                                    <img src="<?= !empty($game['cover_image']) ? htmlspecialchars($game['cover_image']) : '/assets/default-game-cover.png' ?>"
-                                        alt="Обложка игры" class="game-cover">
-                                    <div class="game-info">
-                                        <h3 class="game-title"><?= htmlspecialchars($game['title']) ?></h3>
-                                        <p class="game-description"><?= htmlspecialchars($game['description']) ?></p>
-                                        <div class="game-meta">
-                                            <span class="game-rating">★ <?= number_format($game['rating'], 1) ?></span>
-                                            <span class="game-price"><?= $game['price'] > 0 ? $game['price'] . ' ₽' : 'Бесплатно' ?></span>
+                                <a href="/g/<?= $game['id'] ?>" class="game-card-link" style="text-decoration: none; color: inherit;">
+                                    <div class="game-card">
+                                        <img src="<?= !empty($game['path_to_cover']) ? htmlspecialchars($game['path_to_cover']) : '/assets/default-game-cover.png' ?>"
+                                            alt="Обложка игры" class="game-cover">
+                                        <div class="game-info">
+                                            <h3 class="game-title"><?= htmlspecialchars($game['name']) ?></h3>
+                                            <p class="game-description"><?= htmlspecialchars($game['description']) ?></p>
+                                            <div class="game-meta">
+                                                <span class="game-rating">★ <?= number_format($game['rating'], 1) ?></span>
+                                                <span class="game-price"><?= $game['price'] > 0 ? $game['price'] . ' ₽' : 'Бесплатно' ?></span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
+
                             <?php endforeach; ?>
                         </div>
 
@@ -518,22 +518,25 @@ $stats = $stmt->fetch();
                     <?php if (!empty($reviews)): ?>
                         <div class="reviews-list">
                             <?php foreach ($reviews as $review): ?>
-                                <div class="review-item">
-                                    <div class="review-header">
-                                        <img src="<?= !empty($review['game_cover']) ? htmlspecialchars($review['game_cover']) : '/assets/default-game-cover.png' ?>"
-                                            alt="Обложка игры" class="review-game-cover">
-                                        <div>
-                                            <div class="review-game-title"><?= htmlspecialchars($review['game_title']) ?></div>
-                                            <div class="review-rating">★ <?= $review['rating'] ?>/10</div>
+                                <a href="/g/<?= $review['game_id'] ?>" class="review-item-link" style="text-decoration: none; color: inherit;">
+                                    <div class="review-item">
+                                        <div class="review-header">
+                                            <img src="<?= !empty($review['game_cover']) ? htmlspecialchars($review['game_cover']) : '/assets/default-game-cover.png' ?>"
+                                                alt="Обложка игры" class="review-game-cover">
+                                            <div>
+                                                <div class="review-game-title"><?= htmlspecialchars($review['game_title']) ?></div>
+                                                <div class="review-rating">★ <?= $review['rating'] ?>/10</div>
+                                            </div>
+                                        </div>
+                                        <div class="review-text">
+                                            <?= nl2br(htmlspecialchars($review['text'])) ?>
+                                        </div>
+                                        <div class="review-date">
+                                            <?= date('d.m.Y H:i', strtotime($review['created_at'])) ?>
                                         </div>
                                     </div>
-                                    <div class="review-text">
-                                        <?= nl2br(htmlspecialchars($review['comment'])) ?>
-                                    </div>
-                                    <div class="review-date">
-                                        <?= date('d.m.Y H:i', strtotime($review['created_at'])) ?>
-                                    </div>
-                                </div>
+                                </a>
+
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
