@@ -14,7 +14,6 @@ if (empty($username)) {
     header("HTTP/1.0 404 Not Found");
     die("Пользователь не найден");
 }
-
 // Подключаемся к базе данных
 $database = new Database();
 $pdo = $database->connect();
@@ -44,23 +43,25 @@ $stmt = $pdo->prepare("
     SELECT 
         g.id,
         g.name,
-        g.description AS description,
+        g.description,
         g.path_to_cover,
         g.price,
         g.GQI,
         g.release_date,
-        COALESCE(AVG(r.rating), 0) AS rating
+        COALESCE(AVG(r.rating), 0) AS rating,
+        MAX(l.date) AS last_added
     FROM library l
     JOIN games g ON g.id = l.game_id
     LEFT JOIN game_reviews r ON r.game_id = g.id
     WHERE l.player_id = :user_id AND l.purchased = 1
-    GROUP BY g.id
-    ORDER BY l.date DESC
-    LIMIT 6
+    GROUP BY 
+        g.id, g.name, g.description, g.path_to_cover, g.price, g.GQI, g.release_date
+    ORDER BY last_added DESC
+    LIMIT 10
 ");
+
 $stmt->execute([':user_id' => $user['id']]);
 $games = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 // Получаем отзывы пользователя
 $stmt = $pdo->prepare("
@@ -426,7 +427,6 @@ $stats = $stmt->fetch();
                             <?= !empty($user['country']) ? ', ' . htmlspecialchars($user['country']) : '' ?>
                         </p>
                     <?php endif; ?>
-
                     <p>
                         <strong>На платформе с:</strong>
                         <?= date('d.m.Y', strtotime($user['added'])) ?>

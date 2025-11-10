@@ -80,7 +80,7 @@ $curr_user->checkAuth();
                 <button class="button" onclick="location.href='/magazine'">Журнал</button>
                 <!-- <button class="button" onclick="location.href='https:\/\/media.dustore.ru'">Медиа</button> -->
                 <button class="button" onclick="location.href='/about'">О платформе</button>
-                <button class="button disabled-btn tooltip">Финансы<span class="tooltiptext">Скоро</span></button>
+                <button class="button disabled-btn tooltip">Финансы<span class="tooltiptext">Финансов пока нет</span></button>
             </div>
         </div>
         <div class="section center-section">
