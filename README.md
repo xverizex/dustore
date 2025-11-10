@@ -118,6 +118,33 @@ sudo nano /etc/apache2/sites-available/dustore.ru.conf
 </VirtualHost>
 ```
 
+###### Настройка доступа
+Создайте файл `/var/www/html/<your_domain>/swad/pass.php`. В него необходимо добавить свои настройки.
+```php
+<?php
+
+define('AWS_S3_KEY', 'YOUR_KEY');
+define('AWS_S3_SECRET', 'YOUR_SECRET');
+define('AWS_S3_REGION', 'YOUR_REGION');
+define('AWS_S3_BUCKET_GAMES', 'YOUR_BUCKET_GAMES');
+define('AWS_S3_BUCKET_USERCONTENT', 'YOUR_BUCKET_USERCONTENT');
+define('AWS_S3_ENDPOINT', 'YOUR_ENDPOINT');
+
+// TOKENS FOR TG BOTS (GLOBAL and LOCAL)
+define('BOT_TOKEN', 'YOUR_TELEGRAM_BOT_TOKEN');
+define('LOCAL_BOT_TOKEN', 'YOUR_LOCAL_TELEGRAM_BOT_TOKEN_(OPTIONAL)');
+
+
+function use_pack($server_type)
+{
+    if ($server_type == "PRODUCTION") {
+        return ['localhost', 'YOUR_DATABASE_NAME', 'YOUR_DATABASE_USER', 'YOUR_DATABASE_PASSWORD'];
+    } else if ($server_type == "LOCAL") {
+        return ['localhost', 'YOUR_LOCAL_DATABASE_NAME_(OPTIONAL)', 'YOUR_LOCAL_DATABASE_USER_(OPTIONAL)', 'YOUR_LOCAL_DATABASE_PASSWORD_(OPTIONAL)'];
+    }
+}
+```
+
 ###### Финиш
 ```bash
 a2ensite dustore.ru.conf 
