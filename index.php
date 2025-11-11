@@ -234,6 +234,7 @@
                 </div>
             </div>
         </section>
+        <?php $a = 2+2 ?>
 
         <!-- О платформе -->
         <section class="platform">
