@@ -18,6 +18,26 @@ $userId = $user_data['id'];
 $error = null;
 $success = null;
 
+function generateTicker($conn) {
+    $length = rand(4, 5);
+    $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+    do {
+        $ticker = '';
+        for ($i = 0; $i < $length; $i++) {
+            $ticker .= $characters[rand(0, strlen($characters) - 1)];
+        }
+
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM studios WHERE ticker = ?");
+        $stmt->execute([$ticker]);
+        $exists = $stmt->fetchColumn();
+
+    } while ($exists > 0);
+
+    return $ticker;
+}
+
+
 if (empty($_SESSION['form_token'])) {
     $_SESSION['form_token'] = bin2hex(random_bytes(32));
 }
@@ -73,12 +93,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
 
             if (empty($error)) {
                 try {
-                    // Исправлены названия полей согласно структуре БД
+                    $ticker = generateTicker($conn);
                     $data = [
                         'status' => 'pending',
                         'ban_reason' => '',
                         'name' => $name,
                         'owner_id' => $userId,
+                        'ticker' => $ticker,
                         'description' => $description,
                         'vk_link' => $vkLink,
                         'tg_link' => $tgLink,

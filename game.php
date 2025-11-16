@@ -3,6 +3,9 @@ session_start();
 require_once('swad/config.php');
 require_once('swad/controllers/game.php');
 
+$db = new Database();
+$pdo = $db->connect();
+
 // Получаем ID игры из URL
 $game_id = $_GET['name'] ?? '';
 
@@ -15,6 +18,11 @@ if ($game_id <= 0) {
 // Получаем информацию об игре
 $gameController = new Game();
 $game = $gameController->getGameById($game_id);
+
+// Иннформация сколько раз скачали
+$stmt = $db->connect()->prepare("SELECT * FROM library where game_id = ?");
+$stmt->execute([$game_id]);
+$downloaded = count($stmt->fetchAll(PDO::FETCH_ASSOC));
 
 if (!$game) {
     header('Location: /explore');
@@ -374,6 +382,8 @@ function formatFileSize($bytes)
                                         <?php if (!empty($game['game_zip_size'])): ?>
                                             <div style="font-size: 0.9rem; opacity: 0.8;">
                                                 Размер: <?= htmlspecialchars(formatFileSize((int)$game['game_zip_size'])) ?>
+                                                <br>
+                                                Скачали: <?= $downloaded ?> раз(а)
                                             </div>
                                         <?php endif; ?>
                                     <?php else: ?>
