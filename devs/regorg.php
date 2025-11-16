@@ -99,7 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
                         'ban_reason' => '',
                         'name' => $name,
                         'owner_id' => $userId,
-                        'ticker' => $ticker,
+                        'tiker' => $ticker,
                         'description' => $description,
                         'vk_link' => $vkLink,
                         'tg_link' => $tgLink,
