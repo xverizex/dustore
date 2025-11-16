@@ -28,7 +28,7 @@ function generateTicker($conn) {
             $ticker .= $characters[rand(0, strlen($characters) - 1)];
         }
 
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM studios WHERE ticker = ?");
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM studios WHERE tiker = ?");
         $stmt->execute([$ticker]);
         $exists = $stmt->fetchColumn();
 
