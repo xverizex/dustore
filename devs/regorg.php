@@ -18,7 +18,8 @@ $userId = $user_data['id'];
 $error = null;
 $success = null;
 
-function generateTicker($conn) {
+function generateTicker($conn)
+{
     $length = rand(4, 5);
     $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -31,7 +32,6 @@ function generateTicker($conn) {
         $stmt = $conn->prepare("SELECT COUNT(*) FROM studios WHERE tiker = ?");
         $stmt->execute([$ticker]);
         $exists = $stmt->fetchColumn();
-
     } while ($exists > 0);
 
     return $ticker;
@@ -113,8 +113,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
                         'pre_alpha_program' => $preAlpha,
                         'bank_name' => $bank_name,
                         'BIC' => $BIC,
-                        'acc_num' => $account_number, 
-                        'INN' => $INN 
+                        'acc_num' => $account_number,
+                        'INN' => $INN
                     ];
 
                     $columns = implode(', ', array_keys($data));
@@ -285,7 +285,7 @@ Telegram: <i>" . $data['tg_link'] . "</i>", true, "https://dustore.ru/devs/recen
                             </select>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" class="required">
                             <label for="specialization">Специализация</label>
                             <select id="specialization" name="specialization">
                                 <option value="">Выберите специализацию</option>

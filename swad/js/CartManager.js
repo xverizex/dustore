@@ -9,7 +9,7 @@ class GameCartManager {
     }
 
     async init() {
-        await this.updateCartDisplay();
+        // await this.updateCartDisplay();
         this.bindEvents();
     }
 
