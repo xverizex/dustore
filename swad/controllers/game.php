@@ -34,6 +34,7 @@ class Game
             g.price,
             g.GQI,
             g.status,
+            g.age_rating,
             g.release_date,
             s.name AS studio_name
         FROM games g

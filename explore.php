@@ -7,9 +7,22 @@ $gameController = new Game();
 $games = $gameController->getLatestGames(20);
 
 $games = array_filter($games, function ($game) {
-    // print_r($game);
     return isset($game['status']) && strtolower($game['status']) === 'published';
 });
+
+$adultSection = isset($_GET['adult']) && $_GET['adult'] == 1;
+
+if ($adultSection) {
+    $games = array_filter($games, function ($game) {
+        return isset($game['age_rating']) && intval($game['age_rating']) >= 18;
+    });
+} else {
+    $games = array_filter($games, function ($game) {
+        return !isset($game['age_rating']) || intval($game['age_rating']) < 18;
+    });
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -35,7 +48,21 @@ $games = array_filter($games, function ($game) {
 
         <section class="games-list">
             <div class="container">
+                <?php if (isset($_GET['adult']) && $_GET['adult'] == 1): ?>
+                    <div class="warning-adult">
+                        Внимание! Данный раздел содержит игры, предназначенные только для пользователей старше 18 лет
+                        в соответствии с законодательством РФ.
+                    </div>
+                <?php endif; ?>
                 <div class="games-controls">
+                    <div class="controls-left">
+                        <a href="?adult=0" class="btn-filter <?= (!isset($_GET['adult']) || $_GET['adult'] == 0) ? 'active' : '' ?>">
+                            Все игры
+                        </a>
+                        <a href="?adult=1" class="btn-filter <?= (isset($_GET['adult']) && $_GET['adult'] == 1) ? 'active' : '' ?>">
+                            18+
+                        </a>
+                    </div>
                     <div class="search-bar">
                         <span class="search-icon">🔍</span>
                         <input type="text" placeholder="Введите название игры или тикер разработчика...">
@@ -64,7 +91,7 @@ $games = array_filter($games, function ($game) {
                                 : number_format($game['price'], 0, ',', ' ') . ' ₽';
                         ?>
                             <div class="game-card" onclick="window.location.href='/g/<?= $game['id'] ?>';">
-                                <div class="game-image">
+                                <div class="game-image <?= ($adultSection && $game['age_rating'] >= 18) ? 'blur-adult' : '' ?>">
                                     <img src="<?= !empty($game['path_to_cover'])
                                                     ? htmlspecialchars($game['path_to_cover'])
                                                     : 'https://via.placeholder.com/400x225/74155d/ffffff?text=No+Image' ?>"
@@ -73,6 +100,7 @@ $games = array_filter($games, function ($game) {
                                         <div class="game-badge <?= $badgeClass ?>"><?= $badge ?></div>
                                     <?php endif; ?>
                                 </div>
+
                                 <div class="game-info">
                                     <h3 class="game-title"><?= htmlspecialchars($game['name']) ?></h3>
                                     <p class="game-developer">От <?= htmlspecialchars($game['studio_name']) ?></p>
@@ -94,7 +122,13 @@ $games = array_filter($games, function ($game) {
     </main>
 
     <?php require_once('swad/static/elements/footer.php'); ?>
-
+    <div id="adultModal" class="adult-modal">
+        <div class="adult-modal-content">
+            <h2>Подтверждение возраста</h2>
+            <p>Данный раздел содержит материалы только для пользователей старше 18 лет. Также игры в этом разделе могут содержать контент, который запрещён законодательством РФ. Платформа ни в коем случае такое не пропагандирует.</p>
+            <button id="adultConfirmBtn">Мне есть 18 лет</button>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const gameCards = document.querySelectorAll('.game-card');
@@ -127,6 +161,43 @@ $games = array_filter($games, function ($game) {
                     }
                 });
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdultSection = urlParams.get('adult') == 1;
+
+            if (isAdultSection && !sessionStorage.getItem('adultConfirmed')) {
+                const modal = document.getElementById('adultModal');
+                const btn = document.getElementById('adultConfirmBtn');
+
+                modal.style.display = 'flex';
+
+                // запрет закрытия ESC
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, true);
+
+                // запрет закрытия кликом вне
+                modal.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                btn.addEventListener('click', function() {
+                    sessionStorage.setItem('adultConfirmed', 'true');
+                    modal.style.display = 'none';
+
+                    // убираем размытие с картинок
+                    document.querySelectorAll('.blur-adult').forEach(img => {
+                        img.classList.remove('blur-adult');
+                    });
+                });
+            }
+
+            
         });
     </script>
 </body>
