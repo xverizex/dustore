@@ -12,7 +12,6 @@ if (empty($_COOKIE['temp_id'])) {
     setcookie("temp_id", rand(-10 ** 5, -10 ** 2));
 }
 
-print_r($_COOKIE);
 ?>
 
 <!DOCTYPE html>
