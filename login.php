@@ -81,7 +81,9 @@ require_once('swad/controllers/email_auth.php');
 
             <button type="submit">Зарегистрироваться</button>
         </form>
-
+        <br>
+        <br>
+        <p style="text-align: center;">Продолжая работать с сайтом, вы соглашаетесь с <a href="/privacy">политикой обработки персональных данных</a></p>
     </div>
 
     <script>

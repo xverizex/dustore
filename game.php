@@ -3,7 +3,6 @@ session_start();
 require_once('swad/config.php');
 require_once('swad/controllers/game.php');
 
-
 $db = new Database();
 $pdo = $db->connect();
 
@@ -388,7 +387,7 @@ function formatFileSize($bytes)
 
                                 // предлагаемая валюта платежа
                                 // default payment e-currency
-                                $in_curr = "";
+                                $in_curr = "ru";
 
                                 // язык
                                 // language
@@ -496,25 +495,24 @@ function formatFileSize($bytes)
                                     <h2>ПУБЛИЧНАЯ ОФЕРТА</h2>
 
                                     <div>
-                                        <p><strong>г. <?= htmlspecialchars($game['studio_city'] ?? 'Москва') ?></strong></p>
+                                        <?php $stpd = $studio_payment_data; ?>
+                                        <p><strong>г. <?= htmlspecialchars($stpd['city'] ?? 'Москва') ?></strong></p>
                                         <p><strong><?= date('d.m.Y', strtotime($game['offer_date'] ?? 'now')) ?></strong></p>
                                     </div>
-
                                     <div>
-                                        <p><strong><?= htmlspecialchars($game['studio_name']) ?></strong></p>
-                                        <p>ИНН: <?= htmlspecialchars($game['studio_inn'] ?? 'укажите ИНН') ?></p>
-                                        <p>КПП: <?= htmlspecialchars($game['studio_kpp'] ?? 'укажите КПП') ?></p>
-                                        <p>Юридический адрес: <?= htmlspecialchars($game['studio_legal_address'] ?? 'укажите адрес') ?></p>
-                                        <p>Расчетный счет: <?= htmlspecialchars($game['studio_bank_account'] ?? 'укажите расчетный счет') ?></p>
-                                        <p>Банк: <?= htmlspecialchars($game['studio_bank_name'] ?? 'укажите банк') ?></p>
-                                        <p>БИК: <?= htmlspecialchars($game['studio_bik'] ?? 'укажите БИК') ?></p>
-                                        <p>Корр. счет: <?= htmlspecialchars($game['studio_correspondent_account'] ?? 'укажите корр. счет') ?></p>
+                                        <p><strong><?= htmlspecialchars($stpd['name']) ?></strong></p>
+                                        <p>ИНН: <?= htmlspecialchars($stpd['INN'] ?? 'Разработчик не указал ИНН') ?></p>
+                                        <p>Юридический адрес: <?= htmlspecialchars($stpd['city'] ?? 'Разработчик не указал адрес') ?></p>
+                                        <p>Расчетный счет: <?= htmlspecialchars($stpd['acc_num'] ?? 'Разработчик не указал расчетный счет') ?></p>
+                                        <p>Банк: <?= htmlspecialchars($stpd['bank_name'] ?? 'Разработчик не указал банк') ?></p>
+                                        <p>БИК: <?= htmlspecialchars($stpd['BIC'] ?? 'Разработчик не указал БИК') ?></p>
+                                        <!-- <p>Корр. счет: <?= htmlspecialchars($stpd['studio_correspondent_account'] ?? 'Разработчик не указал корр. счет') ?></p> -->
                                     </div>
 
                                     <div>
                                         <h3>1. ПРЕДМЕТ ОФЕРТЫ</h3>
                                         <p>1.1. <?= htmlspecialchars($game['studio_name']) ?> (далее — «Продавец») предлагает заключить договор розничной купли-продажи цифрового товара (далее — «Договор») на изложенных ниже условиях.</p>
-                                        <p>1.2. Цифровым товаром признается игра «<?= htmlspecialchars($game['title']) ?>» в цифровой форме, не имеющая материального носителя.</p>
+                                        <p>1.2. Цифровым товаром признается игра «<?= htmlspecialchars($game['name']) ?>» в цифровой форме, не имеющая материального носителя.</p>
                                     </div>
 
                                     <div>
@@ -552,11 +550,9 @@ function formatFileSize($bytes)
                                     <div>
                                         <h3>7. РЕКВИЗИТЫ ПРОДАВЦА</h3>
                                         <p><strong><?= htmlspecialchars($game['studio_name']) ?></strong></p>
-                                        <p>ИНН: <?= htmlspecialchars($game['studio_inn'] ?? 'укажите ИНН') ?></p>
-                                        <p>КПП: <?= htmlspecialchars($game['studio_kpp'] ?? 'укажите КПП') ?></p>
-                                        <p>Адрес: <?= htmlspecialchars($game['studio_legal_address'] ?? 'укажите адрес') ?></p>
-                                        <p>Телефон: <?= htmlspecialchars($game['studio_phone'] ?? 'укажите телефон') ?></p>
-                                        <p>Email: <?= htmlspecialchars($game['studio_email'] ?? 'укажите email') ?></p>
+                                        <p>ИНН: <?= htmlspecialchars($stpd['INN'] ?? 'укажите ИНН') ?></p>
+                                        <p>Адрес: <?= htmlspecialchars($stpd['city'] . ", " . $stpd['country'] ?? 'укажите адрес') ?></p>
+                                        <p>Email: <?= htmlspecialchars($stpd['contact_email'] ?? 'укажите email') ?></p>
                                     </div>
                                 </div>
                             </div>

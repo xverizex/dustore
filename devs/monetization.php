@@ -36,16 +36,23 @@ $curr_user = new User();
     $curr_user->checkAuth();
     $studio_id = $_SESSION['studio_id'];
 
-    $stmt = $db->connect()->prepare("SELECT merchant_login, merchant_password, culture, encoding, customer_email, Shp_item FROM studios WHERE id = ?");
+    $stmt = $db->connect()->prepare("SELECT * FROM studios WHERE id = ?");
     $stmt->execute([$studio_id]);
     $pay = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Обработка формы
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $merchant_login      = preg_replace("/[^A-Za-z0-9_-]/", '', $_POST['merchant_login']);
-        $merchant_password   = preg_replace("/[^A-Za-z0-9_-]/", '', $_POST['merchant_password']);
+        $merchant_password   =  $_POST['merchant_password'];
+        if (empty($merchant_password)) {
+            $merchant_password = $pay['merchant_password'];
+        }
         $culture             = preg_replace("/[^A-Za-z]/", '', $_POST['culture']);
         $encoding            = preg_replace("/[^A-Za-z0-9-]/", '', $_POST['encoding']);
+        $bank_name = $_POST['bank_name'] ?? null;
+        $BIC       = $_POST['BIC'] ?? null;
+        $acc_num   = $_POST['acc_num'] ?? null;
+        $INN       = $_POST['INN'] ?? null;
         $customer_email      = filter_var($_POST['customer_email'], FILTER_SANITIZE_EMAIL);
         $Shp_item            = substr($_POST['Shp_item'], 0, 60);
 
@@ -55,7 +62,11 @@ $curr_user = new User();
             culture = :culture,
             encoding = :encoding,
             customer_email = :customer_email,
-            Shp_item = :Shp_item
+            Shp_item = :Shp_item,
+            bank_name = :bank_name,
+            BIC = :BIC,
+            acc_num = :acc_num,
+            INN = :INN
             WHERE id = :id";
 
         try {
@@ -67,7 +78,11 @@ $curr_user = new User();
                 ':encoding' => $encoding,
                 ':customer_email' => $customer_email,
                 ':Shp_item' => $Shp_item,
-                ':id' => $studio_id
+                ':id' => $studio_id,
+                ':bank_name' => $bank_name,
+                ':BIC' => $BIC,
+                ':acc_num' => $acc_num,
+                ':INN' => $INN
             ]);
 
             echo ("<script>window.location.replace('monetization?success=1');</script>");
@@ -102,8 +117,8 @@ $curr_user = new User();
 
                 <form method="POST">
                     <div class="row">
-
                         <div class="col s12 m6">
+                            <h5>Данные <a href="https://robokassa.ru">Robokassa</a>:</h5>
                             <div class="input-field">
                                 <input type="text" name="merchant_login" minlength="3" maxlength="32"
                                     value="<?= htmlspecialchars($pay['merchant_login']) ?>" required>
@@ -138,14 +153,30 @@ $curr_user = new User();
                                 <input type="text" name="encoding" value="<?= htmlspecialchars($pay['encoding']) ?>" maxlength="12">
                                 <label>Кодировка (encoding), по умолчанию UTF-8</label>
                             </div>
-
-                            <div class="input-field">
-                                <input type="text" name="Shp_item" value="<?= htmlspecialchars($pay['Shp_item']) ?>" maxlength="60">
-                                <label>Параметр Shp_item (оставьте пустым)</label>
-                            </div>
-
                         </div>
                     </div>
+
+                    <h5>Банковские реквизиты:</h5>
+                    <div class="input-field">
+                        <input type="text" name="bank_name" value="<?= htmlspecialchars($pay['bank_name']) ?>" maxlength="24">
+                        <label>Название банка</label>
+                    </div>
+
+                    <div class="input-field">
+                        <input type="text" name="BIC" value="<?= htmlspecialchars($pay['BIC']) ?>" maxlength="9">
+                        <label>БИК банка</label>
+                    </div>
+
+                    <div class="input-field">
+                        <input type="text" name="acc_num" value="<?= htmlspecialchars($pay['acc_num']) ?>" maxlength="20">
+                        <label>Номер счёта</label>
+                    </div>
+
+                    <div class="input-field">
+                        <input type="text" name="INN" value="<?= htmlspecialchars($pay['INN']) ?>" maxlength="12">
+                        <label>ИНН</label>
+                    </div>
+
 
                     <div class="row">
                         <div class="col s12 center-align">

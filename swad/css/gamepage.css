@@ -454,7 +454,7 @@ h2:after {
 }
 
 .modal-content {
-    background: var(--gradient2);
+    background: var(--dark);
     margin: 5% auto;
     padding: 30px;
     border-radius: 20px;

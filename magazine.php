@@ -209,8 +209,7 @@
                     rgba(255, 255, 255, 0.02) 0px,
                     rgba(255, 255, 255, 0.02) 2px,
                     transparent 2px,
-                    transparent 4px),
-                url('/swad/static/img/Slice\ 6.jpg');
+                    transparent 4px);
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center center;
@@ -589,40 +588,28 @@
         </div> -->
 
         <div class="shelves-container">
-            <!-- Первая полка -->
             <div class="shelf">
                 <div class="shelf-bar"></div>
                 <div class="books">
-                    <div class="book polychrome" data-id="1" data-title="RE:START" data-text="Самый 1-й выпуск. Должен выйти в декабре" style="background-image: url('/swad/static/img/Slice\ 6.jpg')">
-                        <!-- TODO: в .modal-book указаны стили и background-image: src() -->
-                        <div class="book-cover polychrome">
+                    <div class="book polychrome"
+                        data-id="1"
+                        data-title="RE:START"
+                        data-text="Самый 1-й выпуск. Должен выйти в декабре"
+                        data-cover="/swad/static/img/cover1.jpg">
+                        <div class="book-cover polychrome" style="background-image: url('/swad/static/img/logo_test.png');">
+                            <div class="book-content">
+                                <span class="book-icon">📖</span>
+                                <div class="book-title">RE:START</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Вторая полка
-            <div class="shelf">
-                <div class="shelf-bar"></div>
-                <div class="books">
-                    <div class="book default" data-id="4" data-title="Вишневый сад" data-text="Драма Чехова о конце эпохи, переменах в обществе и неизбежности прогресса." style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 300%22><rect fill=%22%232F4F4F%22 width=%22200%22 height=%22300%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22%23fff%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>🌸</text></svg>')">
-                        <div class="book-cover">
-                            <div class="book-content">
-                                <span class="book-icon">🌸</span>
-                                <div class="book-title">Вишневый<br>сад</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="book default" data-id="5" data-title="Граф Монте-Кристо" data-text="Приключенческий роман Дюма о мести, справедливости и верности." style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 300%22><rect fill=%22%238B4513%22 width=%22200%22 height=%22300%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22%23fff%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>⚔️</text></svg>')">
-                        <div class="book-cover">
-                            <div class="book-content">
-                                <span class="book-icon">⚔️</span>
-                                <div class="book-title">Граф<br>Монте-Кристо</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="book default" data-id="6" data-title="1984" data-text="Антиутопия Оруэлла о тоталитарном обществе и борьбе за свободу мысли." style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 300%22><rect fill=%22%231a1a3e%22 width=%22200%22 height=%22300%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22%23fff%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>👁️</text></svg>')">
-                        <div class="book-cover">
+                    <div class="book default"
+                        data-id="6"
+                        data-title="1984"
+                        data-text="Антиутопия Оруэлла о тоталитарном обществе и борьбе за свободу мысли."
+                        data-cover="/swad/static/img/cover2.jpg">
+                        <div class="book-cover default" style="background-image: url('/swad/static/img/duSToreLogo.png');">
                             <div class="book-content">
                                 <span class="book-icon">👁️</span>
                                 <div class="book-title">1984</div>
@@ -630,7 +617,18 @@
                         </div>
                     </div>
                 </div>
-            </div> -->
+            </div>
+
+            <div class="shelf">
+                <div class="shelf-bar"></div>
+                <div class="books">
+                    <div class="book polychrome" data-id="1" data-title="RE:START" data-text="Самый 1-й выпуск. Должен выйти в декабре">
+                        <!-- TODO: в .modal-book указаны стили и background-image: src() -->
+                        <div class="book-cover polychrome">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -714,12 +712,10 @@
             book.addEventListener('click', () => {
                 const title = book.dataset.title;
                 const text = book.dataset.text;
-                const cover = book.querySelector('.book-cover');
-                const computedStyle = window.getComputedStyle(cover);
-                const background = computedStyle.background || computedStyle.backgroundColor;
+                const coverUrl = book.dataset.cover; // берем уникальную обложку
 
                 modalBody.innerHTML = `
-                    <div class="modal-book" style="background: ${background}"></div>
+                    <div class="modal-book" style="background-image: url('${coverUrl}'); background-size: cover; background-position: center;"></div>
                     <h2>${title}</h2>
                     <p>${text}</p>
                     <button class="modal-btn">Закрыть</button>
@@ -727,11 +723,11 @@
 
                 modal.classList.add('active');
 
-                // Закрытие из кнопки в модале
                 modalBody.querySelector('.modal-btn').addEventListener('click', () => {
                     modal.classList.remove('active');
                 });
             });
+
         });
 
         // Закрытие модального окна

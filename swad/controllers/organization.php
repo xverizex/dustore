@@ -28,4 +28,13 @@ class Organization
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $result;
     }
+
+    public function getPaymentData($studio_id){
+        $query = 'SELECT bank_name, BIC, acc_num, INN FROM studios WHERE id = ?';
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$studio_id]);
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
 }
