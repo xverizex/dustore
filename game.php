@@ -382,7 +382,7 @@ function formatFileSize($bytes)
                                 // sum of order
                                 $out_summ = $game['price'];
 
-                                // тип товара
+                                // id игры
                                 // code of goods
                                 $shp_item = $game_id;
 
@@ -394,9 +394,12 @@ function formatFileSize($bytes)
                                 // language
                                 $culture = "ru";
 
+                                $encrypted_mrh_passwd = bin2hex(xorStrings($mrh_pass1, PASSWD_FOR_PASSWDS));
+
                                 // формирование подписи
                                 // generate signature
-                                $crc  = md5("$mrh_login:$out_summ:$inv_id:$mrh_pass1:Shp_item=$shp_item");
+                                // echo bin2hex($encrypted_mrh_passwd);
+                                $crc  = md5("$mrh_login:$out_summ:$inv_id:$mrh_pass1:Shp_enc_mrh_pass=$encrypted_mrh_passwd:Shp_item=$shp_item");
 
                                 // форма оплаты товара
                                 // payment form
@@ -408,6 +411,7 @@ function formatFileSize($bytes)
                                     "<input type=hidden name=Description value='$inv_desc'>" .
                                     "<input type=hidden name=SignatureValue value=$crc>" .
                                     "<input type=hidden name=Shp_item value='$shp_item'>" .
+                                    "<input type=hidden name=Shp_enc_mrh_pass value='$encrypted_mrh_passwd'>" .
                                     "<input type=hidden name=IncCurrLabel value=$in_curr>" .
                                     "<input type=hidden name=Culture value=$culture>" .
                                     "<input type=hidden name=IsTest value=$IsTest>" .

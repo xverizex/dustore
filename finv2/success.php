@@ -14,7 +14,9 @@ if (empty($_SESSION)) {
 
 // регистрационная информация (пароль #1)
 // registration info (password #1)
-$mrh_pass1 = "UF4oF54w9FNILTdhGzv9";
+// передаётся из url И рассшифровывается
+$mrh_pass1_enc = $_REQUEST["Shp_enc_mrh_pass"];
+$mrh_pass1 = xorStrings(hex2bin($mrh_pass1_enc), PASSWD_FOR_PASSWDS);
 
 // чтение параметров
 // read parameters
@@ -24,7 +26,7 @@ $shp_item = $_REQUEST["Shp_item"];
 $crc = $_REQUEST["SignatureValue"];
 $crc = strtoupper($crc);
 
-$my_crc = strtoupper(md5("$out_summ:$inv_id:$mrh_pass1:Shp_item=$shp_item"));
+$my_crc = strtoupper(md5("$out_summ:$inv_id:$mrh_pass1:Shp_enc_mrh_pass=$mrh_pass1_enc:Shp_item=$shp_item"));
 
 // проверка корректности подписи
 // check signature
@@ -56,6 +58,11 @@ try {
     $stmt = $pdo->prepare("UPDATE payments SET status = 'completed', updated_at = NOW() WHERE id = ?");
     $stmt->execute([$inv_id]);
 
+    if(empty($_SESSION['telegram_id'])){
+        $_SESSION['telegram_id'] = $_COOKIE['temp_id'];
+        $tg_is_empty_warning = '<p class="animate-in delay-1" style="color: coral;">Произошла ошибка, так как вы не вошли в аккаунт. Но не беспокойтесь, оплата прошла и мы зафиксировали вашу покупку. Обратитесь в тех.поддержку</p>';
+    }
+
     $curr_user->updateUserItems($_SESSION['telegram_id'], $shp_item);
 
     $stmt = $pdo->prepare("SELECT * FROM games WHERE id = ?");
@@ -63,6 +70,7 @@ try {
     $item = $stmt->fetch(PDO::FETCH_ASSOC);
 
     $pdo->commit();
+    $_SESSION['telegram_id'] = "";
 } catch (PDOException $e) {
     $pdo->rollBack();
     die('Ошибка при обработке платежа: ' . $e->getMessage());
@@ -241,6 +249,7 @@ try {
     <div class="payment-container">
         <div class="success-icon animate-in">🎉</div>
         <h1 class="animate-in delay-1">Оплата успешна!</h1>
+        <?php echo $tg_is_empty_warning ?>
         <p class="animate-in delay-1">Ваши игры уже в вашей Коллекции. Приятной игры!</p>
 
         <div class="order-details animate-in delay-2">
@@ -267,7 +276,7 @@ try {
         </div>
 
         <div class="animate-in delay-2">
-            <a href="window.location.href='/swad/controllers/download_game.php?game_id=<?= $game_id ?>'" class="btn">Скачать прямо сейчас!</a>
+            <a href="/swad/controllers/download_game.php?game_id=<?= $item['game_zip_url'] ?>'" class="btn">Скачать прямо сейчас!</a>
             <a href="/library" class="btn btn-secondary">Перейти к библиотеке</a>
             <a href="/explore" class="btn btn-secondary">Посмотреть ещё игры</a>
         </div>
