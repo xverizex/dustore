@@ -35,42 +35,27 @@ if ($my_crc != $crc) {
     exit();
 }
 
-// проверка наличия номера счета в истории операций
-// check of number of the order info in history of operations
-$f = @fopen("order.txt", "r+") or die("error");
-
-while (!feof($f)) {
-    $str = fgets($f);
-
-    $str_exp = explode(";", $str);
-    if ($str_exp[0] == "order_num :$inv_id") {
-        echo "Операция прошла успешно\n";
-        echo "Operation of payment is successfully completed\n";
-        echo "\n";
-    }
-}
-fclose($f);
-
+$tg_is_empty_warning = "";
 
 try {
     $pdo->beginTransaction();
 
     $stmt = $pdo->prepare("UPDATE payments SET status = 'completed', updated_at = NOW() WHERE id = ?");
     $stmt->execute([$inv_id]);
-
-    if(empty($_SESSION['telegram_id'])){
-        $_SESSION['telegram_id'] = $_COOKIE['temp_id'];
+    print_r($_SESSION['USERDATA']['id']);
+    if(empty($_SESSION['USERDATA']['id'])){
+        $_SESSION['USERDATA']['id'] = $_COOKIE['temp_id'];
         $tg_is_empty_warning = '<p class="animate-in delay-1" style="color: coral;">Произошла ошибка, так как вы не вошли в аккаунт. Но не беспокойтесь, оплата прошла и мы зафиксировали вашу покупку. Обратитесь в тех.поддержку</p>';
     }
 
-    $curr_user->updateUserItems($_SESSION['telegram_id'], $shp_item);
+    $curr_user->updateUserItems($_SESSION['USERDATA']['id'], $shp_item);
 
     $stmt = $pdo->prepare("SELECT * FROM games WHERE id = ?");
     $stmt->execute([$shp_item]);
     $item = $stmt->fetch(PDO::FETCH_ASSOC);
 
     $pdo->commit();
-    $_SESSION['telegram_id'] = "";
+    // $_SESSION['USERDATA']['id'] = "";
 } catch (PDOException $e) {
     $pdo->rollBack();
     die('Ошибка при обработке платежа: ' . $e->getMessage());

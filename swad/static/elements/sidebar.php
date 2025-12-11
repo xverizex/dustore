@@ -92,11 +92,11 @@ if ($curr_user_org['status'] != 'active') {
     <li class="no-padding">
         <ul class="collapsible collapsible-accordion">
             <li>
-                <a class="collapsible-header">Объявления<i class="material-icons pink-item">campaign</i></a>
+                <a class="collapsible-header">Уведомления<i class="material-icons pink-item">campaign</i></a>
                 <div class="collapsible-body" style="padding: 0;">
                     <ul>
                         <?php if ($curr_user->getUserRole($_SESSION['USERDATA']['telegram_id'], "global") == -1): ?>
-                            <li><a href="addannoun" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">add_alert</i>Создать новое</a></li>
+                            <li><a href="addannoun"><i class="material-icons pink-item">add_alert</i>Создать новое</a></li>
                         <?php endif; ?>
                         <li><a href="allannoun" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">notifications</i>Все</a></li>
                     </ul>

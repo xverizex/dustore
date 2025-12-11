@@ -72,6 +72,20 @@ h2:after {
     transition: all 0.3s ease;
 }
 
+.btn-disabled {
+    display: inline-block;
+    padding: 10px 25px;
+    background: gray;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
 .add-to-cart-btn {
     display: inline-block;
     padding: 10px 25px;

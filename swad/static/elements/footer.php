@@ -38,6 +38,47 @@ function getLastCommitInfo()
 $info = getLastCommitInfo();
 ?>
 
+<head>
+    <style>
+        #notify-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .notify {
+            background: rgba(20, 20, 20, 0.95);
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: #fff;
+            font-family: system-ui, sans-serif;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            transform: translateX(30px);
+            animation: slide-in 0.25s forwards, fade-out 0.4s 4s forwards;
+        }
+
+        @keyframes slide-in {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fade-out {
+            to {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+        }
+    </style>
+
+</head>
 <div class="footer">
     &copy; 2025 DUST STUDIO. Все права защищены.
     <br>
@@ -52,9 +93,63 @@ $info = getLastCommitInfo();
     <!-- <p class="footer-p">Версия платформы: beta-1.11.24#22</p> -->
     <?php if ($info): ?>
         <p class="footer-p">Версия: <strong><?= $info['version'] ?></strong>
-        | <a href="<?= $info['url'] ?>" target="_blank"><?= $info['short'] ?></a>
-        | <?= $info['date'] ?></p>
+            | <a href="<?= $info['url'] ?>" target="_blank"><?= $info['short'] ?></a>
+            | <?= $info['date'] ?></p>
     <?php else: ?>
         Не удалось получить версию
     <?php endif; ?>
 </div>
+<div id="notify-container"></div>
+<style>
+    #notify-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 320px;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .notify {
+        background: rgba(20, 20, 20, 0.95);
+        padding: 14px 16px;
+        border-radius: 12px;
+        color: #fff;
+        font-family: system-ui, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        transform: translateX(30px);
+        animation: slide-in 0.25s forwards, fade-out 0.4s 4s forwards;
+    }
+
+    @keyframes slide-in {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fade-out {
+        to {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+    }
+</style>
+<!-- <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+    });
+</script>
+<script>
+    const source = new EventSource("/swad/controllers/notification_stream.php");
+
+    source.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        notify(data.title, data.message);
+    };
+</script> -->

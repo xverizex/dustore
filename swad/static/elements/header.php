@@ -11,7 +11,6 @@ $curr_user->checkAuth();
 if (empty($_COOKIE['temp_id'])) {
     setcookie("temp_id", rand(-10 ** 5, -10 ** 2));
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -96,7 +95,16 @@ if (empty($_COOKIE['temp_id'])) {
         </div>
         <div class="section right-section">
             <div class="buttons-right">
-                <!-- <button class="button" onclick="location.href='/wallet'"><?= "0 ₽" ?></button> -->
+                <?php
+                $pdo = $db->connect();
+                $stmt = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? AND status = 'unread'");
+                $stmt->execute([$_SESSION['USERDATA']['id']]);
+                $unread_notif_count = sizeof($stmt->fetchAll(PDO::FETCH_ASSOC));
+                if($unread_notif_count > 0){
+                    $unread_notif_count = "+".$unread_notif_count;
+                }
+                ?>
+                <button class="button" onclick="location.href='/notifications'"><?= $unread_notif_count . " 🔔" ?></button>
                 <?php
                 $curr_user->checkAuth();
                 if (empty($_SESSION['USERDATA']['telegram_id'])) {
