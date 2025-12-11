@@ -920,7 +920,7 @@ if ($is_owner) {
         </div>
 
         <div id="tab-reviews" class="tab-content">
-            <div class="profile-card">
+            <div class="profile">
                 <h2 class="section-title">Отзывы пользователя (<?= count($reviews) ?>)</h2>
 
                 <?php if (!empty($reviews)): ?>
