@@ -918,6 +918,7 @@ if ($is_owner) {
                 <?php endif; ?>
             </div>
         </div>
+        
 
         <div id="tab-reviews" class="tab-content">
             <div class="profile-card">
