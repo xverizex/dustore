@@ -32,21 +32,17 @@ function loadSessionUser($user)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
     if ($_POST['action'] === 'login') {
-
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$_POST['email']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && !empty($user['password']) && password_verify($_POST['password'], $user['password'])) {
+            loadSessionUser($user);
 
-            if (!$user['email_verified']) {
-                // $login_error = "⛔ Email не подтверждён! Проверьте почту.";
-                loadSessionUser($user);
-                die(header("Location: /player/" . $_SESSION['USERDATA']['username']));
-            } else {
-                loadSessionUser($user);
-                die(header("Location: /player/" . $_SESSION['USERDATA']['username']));
-            }
+            // Получаем backUrl из POST
+            $redirectUrl = $_POST['backUrl'] ?? '/';
+            header("Location: $redirectUrl");
+            exit;
         } else {
             $login_error = "❌ Неверный email или пароль!";
         }

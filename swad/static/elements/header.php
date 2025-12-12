@@ -11,6 +11,54 @@ $curr_user->checkAuth();
 if (empty($_COOKIE['temp_id'])) {
     setcookie("temp_id", rand(-10 ** 5, -10 ** 2));
 }
+
+// Определяем сегодняшнюю дату
+$today = date("Y-m-d");
+$conn = $db->connect();
+
+// Проверяем, нет ли уже записи на сегодня
+$exists = $conn->prepare("SELECT id FROM daily_stats WHERE date = ?");
+$exists->execute([$today]);
+
+if ($exists->rowCount() <= 0) {
+    /* ---- Получение TOTAL ---- */
+
+    $users_total = $conn->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    $studios_total = $conn->query("SELECT COUNT(*) FROM studios")->fetchColumn();
+    $games_total = $conn->query("SELECT COUNT(*) FROM games")->fetchColumn();
+    $published_total = $conn->query("SELECT COUNT(*) FROM games WHERE status = 'published'")->fetchColumn();
+
+    /* ---- Получение NEW за сутки ---- */
+
+    $users_new = $conn->query("SELECT COUNT(*) FROM users WHERE DATE(added) = '$today'")->fetchColumn();
+    $studios_new = $conn->query("SELECT COUNT(*) FROM studios WHERE DATE(created_at) = '$today'")->fetchColumn();
+    $games_new = $conn->query("SELECT COUNT(*) FROM games WHERE DATE(created_at) = '$today'")->fetchColumn();
+    $published_new = $conn->query("SELECT COUNT(*) FROM games WHERE status='published' AND DATE(created_at)='$today'")->fetchColumn();
+
+    /* ---- Добавляем ---- */
+
+    $insert = $conn->prepare("
+    INSERT INTO daily_stats (
+        date,
+        users_total, users_new,
+        studios_total, studios_new,
+        games_total, games_new,
+        published_total, published_new
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+");
+
+    $insert->execute([
+        $today,
+        $users_total,
+        $users_new,
+        $studios_total,
+        $studios_new,
+        $games_total,
+        $games_new,
+        $published_total,
+        $published_new
+    ]);
+}
 ?>
 
 <!DOCTYPE html>

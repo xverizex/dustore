@@ -1,6 +1,7 @@
 <?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -123,6 +124,52 @@
                         </svg>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <?php
+        require_once('swad/config.php');
+        $db = new Database();
+        $conn = $db->connect();
+        $sql = "SELECT 
+            (SELECT COUNT(*) FROM studios) AS count_user_organization,
+            (SELECT COUNT(*) FROM users) AS count_users,
+            (SELECT COUNT(*) FROM games) AS count_games,
+            (SELECT COUNT(*) FROM games where status = 'published') AS published_games";
+
+        $result = $conn->query($sql);
+        $row = $result->fetchAll();
+
+        $count_user_organization = $row[0]['count_user_organization'];
+        $count_users = $row[0]['count_users'];
+        $count_games = $row[0]['count_games'];
+        $published_games = $row[0]['published_games'];
+        ?>
+        <!-- Статистика -->
+        <section class="stats">
+            <div class="container">
+                <h2>DUSTORE в цифрах</h2>
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $count_user_organization ?></div>
+                        <div class="stat-label">Зарегистрированых студий</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $count_games ?></div>
+                        <div class="stat-label">Всего игр</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $published_games ?></div>
+                        <div class="stat-label">Опубликованных игр</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $count_users ?></div>
+                        <div class="stat-label">Регистраций игроков</div>
+                    </div>
+                </div>
+                <!-- <div class="hero-buttons">
+                    <a href="/stat" class="btn">Подробная статистика</a>
+                </div> -->
             </div>
         </section>
 
@@ -360,49 +407,6 @@
                         </p>
                     </div>
 
-                </div>
-            </div>
-        </section>
-
-        <?php
-        require_once('swad/config.php');
-        $db = new Database();
-        $conn = $db->connect();
-        $sql = "SELECT 
-            (SELECT COUNT(*) FROM studios) AS count_user_organization,
-            (SELECT COUNT(*) FROM users) AS count_users,
-            (SELECT COUNT(*) FROM games) AS count_games,
-            (SELECT COUNT(*) FROM games where status = 'published') AS published_games";
-
-        $result = $conn->query($sql);
-        $row = $result->fetchAll();
-
-        $count_user_organization = $row[0]['count_user_organization'];
-        $count_users = $row[0]['count_users'];
-        $count_games = $row[0]['count_games'];
-        $published_games = $row[0]['published_games'];
-        ?>
-        <!-- Статистика -->
-        <section class="stats">
-            <div class="container">
-                <h2>DUSTORE в цифрах</h2>
-                <div class="stats-container">
-                    <div class="stat-item">
-                        <div class="stat-number"><?= $count_user_organization ?></div>
-                        <div class="stat-label">Зарегистрированых студий</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number"><?= $count_games ?></div>
-                        <div class="stat-label">Всего игр</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number"><?= $published_games ?></div>
-                        <div class="stat-label">Опубликованных игр</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number"><?= $count_users ?></div>
-                        <div class="stat-label">Регистраций игроков</div>
-                    </div>
                 </div>
             </div>
         </section>

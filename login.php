@@ -39,7 +39,10 @@ require_once('swad/controllers/email_auth.php');
             <?php if (!empty($login_error)) echo "<div class='error-message'>$login_error</div>"; ?>
 
             <input type="hidden" name="action" value="login">
-
+            <?php
+            $backUrl = $_GET['backUrl'] ?? "/";
+            ?>
+            <input type="text" name="backUrl" hidden value="<?php echo $backUrl ?>">
             <div class="form-group"><input type="email" name="email" placeholder="Email" required></div>
             <div class="form-group"><input type="password" name="password" placeholder="Пароль" required></div>
 
