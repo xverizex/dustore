@@ -103,6 +103,13 @@ $top_games = $pdo->query("
     LIMIT 10
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+// users online
+$online_history = $pdo->query("
+    SELECT ts, online_count
+    FROM users_online_history
+    ORDER BY ts ASC
+")->fetchAll(PDO::FETCH_ASSOC);
+
 /* ===== ПОДГОТОВКА НАКОПИТЕЛЬНЫХ ДАННЫХ ===== */
 
 function cumulative(array $rows)
@@ -304,6 +311,11 @@ $games_all_time = cumulative($games_all_time);
             <div class="card">
                 <h2>Игры за всё время</h2><canvas id="gamesAll"></canvas>
             </div>
+            <div class="card">
+                <h2>Онлайн за всё время</h2>
+                <canvas id="usersOnlineAll"></canvas>
+            </div>
+
         </div>
 
         <div class="section-2 grid-2">
@@ -366,6 +378,19 @@ $games_all_time = cumulative($games_all_time);
                 labels: <?= json_encode(array_column($genres, 'genre')) ?>,
                 datasets: [{
                     data: <?= json_encode(array_column($genres, 'c')) ?>
+                }]
+            }
+        });
+        new Chart(document.getElementById('usersOnlineAll'), {
+            type: 'line',
+            data: {
+                labels: <?= json_encode(array_column($online_history, 'ts')) ?>,
+                datasets: [{
+                    label: 'Онлайн',
+                    data: <?= json_encode(array_column($online_history, 'online_count')) ?>,
+                    borderColor: '#c32178',
+                    backgroundColor: 'rgba(195,33,120,0.2)',
+                    fill: true,
                 }]
             }
         });

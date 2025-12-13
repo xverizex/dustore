@@ -59,6 +59,25 @@ if ($exists->rowCount() <= 0) {
         $published_new
     ]);
 }
+
+$online_count = (int)$pdo->query("
+    SELECT COUNT(*) FROM users
+    WHERE last_activity >= NOW() - INTERVAL 185 MINUTE
+")->fetchColumn();
+
+// Округляем до часа
+$hour = date('Y-m-d H:00:00');
+
+$stmt = $pdo->prepare("
+    INSERT INTO users_online_history (ts, online_count)
+    VALUES (:ts, :count)
+    ON DUPLICATE KEY UPDATE online_count = :count
+");
+
+$stmt->execute([
+    ':ts' => $hour,
+    ':count' => $online_count
+]);
 ?>
 
 <!DOCTYPE html>
