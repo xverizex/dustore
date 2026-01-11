@@ -7,10 +7,7 @@ require_once('swad/controllers/get_user_activity.php');
 require_once('swad/controllers/organization.php');
 
 $org = new Organization();
-
-// Проверяем, установлена ли passphrase у пользователя
-$has_passphrase = $curr_user->hasPassphrase($_SESSION['USERDATA']['telegram_id']);
-
+$user_id = $_SESSION['USERDATA']['id'];
 // Получение обновленных данных пользователя
 $user_data = $_SESSION['USERDATA'];
 $firstName        = $user_data['first_name'];
@@ -47,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
-            $update_success = $curr_user->updateUsername($telegramID, $new_username);
+            $update_success = $curr_user->updateUsername($user_id, $new_username);
             if ($update_success) {
                 $_SESSION['USERDATA']['username'] = $new_username;
                 $_SESSION['success_message'] = "Имя пользователя успешно обновлено";
@@ -60,68 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else {
             $_SESSION['errors'] = $errors;
-        }
-    } else if (isset($_POST['update_passphrase'])) {
-        $passphrase = trim($_POST['passphrase']);
-        $confirm_passphrase = trim($_POST['confirm_passphrase']);
-        $enable_passphrase = isset($_POST['enable_passphrase']);
-        $errors_pp = [];
-
-        // Получаем текущее состояние passphrase из базы
-        $current_has_passphrase = $curr_user->hasPassphrase($telegramID);
-
-        if ($enable_passphrase) {
-            // Валидация passphrase только если она включена
-            if (empty($passphrase)) {
-                $errors_pp[] = "Passphrase обязательна для заполнения при включении";
-            } elseif (strlen($passphrase) < 8) {
-                $errors_pp[] = "Passphrase должна содержать минимум 8 символов";
-            } elseif (str_word_count($passphrase) < 2) {
-                $errors_pp[] = "Passphrase должна состоять минимум из двух слов";
-            } elseif (!preg_match('/\s/', $passphrase)) {
-                $errors_pp[] = "Passphrase должна содержать пробелы между словами";
-            }
-
-            if ($passphrase !== $confirm_passphrase) {
-                $errors_pp[] = "Passphrase и подтверждение не совпадают";
-            }
-        }
-
-        if (empty($errors_pp)) {
-            if ($enable_passphrase) {
-                // Хеширование и сохранение passphrase в БД
-                $hashed_passphrase = password_hash($passphrase, PASSWORD_DEFAULT);
-                $update_success = $curr_user->updatePassphrase($telegramID, $hashed_passphrase);
-                if ($update_success) {
-                    // Обновляем сессию
-                    $_SESSION['USERDATA']['passphrase'] = $hashed_passphrase;
-                    $_SESSION['success_message_pp'] = $current_has_passphrase ?
-                        "Passphrase успешно обновлена" :
-                        "Passphrase успешно установлена и включена";
-                    echo ("<script>window.location.replace('/me');</script>");
-                    exit;
-                } else {
-                    $errors_pp[] = "Ошибка при установке passphrase";
-                    $_SESSION['errors_pp'] = $errors_pp;
-                }
-            } else {
-                // Отключение passphrase
-                $update_success = $curr_user->updatePassphrase($telegramID, null);
-                if ($update_success) {
-                    // Обновляем сессию
-                    unset($_SESSION['USERDATA']['passphrase']);
-                    $_SESSION['success_message_pp'] = "Passphrase отключена";
-                    // Перенаправляем чтобы избежать повторной отправки формы
-                    echo ("<script>window.location.replace('/me');</script>");
-
-                    exit;
-                } else {
-                    $errors_pp[] = "Ошибка при отключении passphrase";
-                    $_SESSION['errors_pp'] = $errors_pp;
-                }
-            }
-        } else {
-            $_SESSION['errors_pp'] = $errors_pp;
         }
     }
 }
@@ -139,15 +74,59 @@ unset(
     $_SESSION['errors_pp']
 );
 
-// Проверяем, установлена ли passphrase у пользователя
-if (isset($_SESSION['USERDATA']['passphrase'])) {
-    $has_passphrase = true;
-} else {
-    $has_passphrase = $curr_user->hasPassphrase($telegramID);
-    if ($has_passphrase) {
-        $_SESSION['USERDATA']['passphrase'] = true;
+if (isset($_POST['bind_email'])) {
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
+    $confirm = $_POST['confirm_password'];
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Некорректный email";
+    }
+
+    if ($password !== $confirm || strlen($password) < 8) {
+        $errors[] = "Пароль минимум 8 символов и должен совпадать";
+    }
+
+    if ($curr_user->emailExists($email, $_SESSION['USERDATA']['id'])) {
+        $errors[] = "Этот email уже привязан к другому аккаунту";
+    }
+
+    if (empty($errors)) {
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $token = bin2hex(random_bytes(16));
+
+        $curr_user->updateEmailAndPassword($_SESSION['USERDATA']['id'], $email, $hash, $token);
+
+        require_once('swad/controllers/send_email.php');
+        sendMail($email, "Сброс пароля", "Для сброса пароля вооспользуйтесь ссылкой: <a href='https://dustore.ru/recovery?token=" . $token . "'>https://dustore.ru/recovery?token=" . $token . "</a>");
+
+        $_SESSION['success_message_sec'] =
+            "📩 Почта привязана. Подтвердите email для входа по паролю.";
+
+        echo("<script>window.location.href = '/me'</script>");
+        exit;
     }
 }
+
+// echo $curr_user->updateEmailAndPassword(1, "a.livanov@.com", "1233", "hello");
+
+if (isset($_POST['change_password'])) {
+    $new = $_POST['new_password'];
+    $confirm = $_POST['confirm_password'];
+
+    if ($new !== $confirm || strlen($new) < 8) {
+        $errors_sec[] = "Пароль минимум 8 символов и должен совпадать";
+    }
+
+    if (empty($errors_sec)) {
+        $hash = password_hash($new, PASSWORD_BCRYPT);
+        $curr_user->updatePassword($_SESSION['USERDATA']['id'], $hash);
+        $_SESSION['success_message_sec'] = "Пароль успешно обновлён";
+        echo ("<script>window.location.href = '/me'</script>");
+        exit;
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -234,7 +213,7 @@ if (isset($_SESSION['USERDATA']['passphrase'])) {
                     <?php if (!is_null($telegramUsername)): ?>
                         <p>Telegram Username: <a href="https://t.me/<?= $telegramUsername ?>">@<?= $telegramUsername ?></a></p>
                     <?php endif; ?>
-                    <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($user_data['telegram_id'], "global"))); ?></p>
+                    <p>Тип учётной записи: <?= $curr_user->printUserPrivileges($curr_user->getRoleName($curr_user->getUserRole($user_data['id'], "global"))); ?></p>
                 </div>
             </div>
         </div>
@@ -242,72 +221,31 @@ if (isset($_SESSION['USERDATA']['passphrase'])) {
         <div id="security" class="tab-content">
             <div class="info-grid">
                 <div class="info-card">
-                    <h3>Безопасность</h3>
+                    <?php if (empty($user_data['email'])): ?>
+                        <h3>Привязка почты</h3>
+                        <p>Для тех, кто скучает по 2007</p>
 
-                    <?php if (!empty($success_message_pp)): ?>
-                        <div class="success-message"><?= $success_message_pp ?></div>
+                        <form method="POST">
+                            <input type="email" name="email" required placeholder="Email">
+                            <input type="password" name="password" required placeholder="Пароль">
+                            <input type="password" name="confirm_password" required placeholder="Повторите пароль">
+                            <button name="bind_email">Привязать почту</button>
+                        </form>
+                    <?php else: ?>
+
+                        <p>Email: <b><?= htmlspecialchars($user_data['email']) ?></b></p>
+
+                        <?php if (!$user_data['email_verified']): ?>
+                            <div class="error-message">⚠️ Почта не подтверждена</div>
+                        <?php endif; ?>
+
+                        <h3>Смена пароля</h3>
+                        <form method="POST">
+                            <input type="password" name="new_password" required placeholder="Новый пароль">
+                            <input type="password" name="confirm_password" required placeholder="Повторите пароль">
+                            <button name="change_password">Обновить пароль</button>
+                        </form>
                     <?php endif; ?>
-                    <?php if (!empty($errors_pp)): ?>
-                        <div class="error-message">
-                            <?php foreach ($errors_pp as $error): ?>
-                                <p><?= $error ?></p>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <form method="POST" action="">
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="enable_passphrase" id="enable_passphrase"
-                                    <?= $has_passphrase ? 'checked' : '' ?> onchange="togglePassphraseFields()">
-                                Включить вход по ключевой фразе (passphrase)
-                                <?php if ($has_passphrase): ?>
-                                    <span class="status-badge">активна</span>
-                                <?php endif; ?>
-                            </label>
-                        </div>
-
-                        <div id="passphrase_fields" style="<?= $has_passphrase ? 'display: block;' : 'display: none;' ?>">
-                            <div class="form-group">
-                                <label for="passphrase">Passphrase:</label>
-                                <input type="password" id="passphrase" name="passphrase"
-                                    minlength="8"
-                                    title="Минимум 8 символов, состоящих из слов с пробелами">
-                                <small>Минимум 8 символов, должна состоять из нескольких слов с пробелами</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="confirm_passphrase">Подтверждение passphrase:</label>
-                                <input type="password" id="confirm_passphrase" name="confirm_passphrase">
-                            </div>
-                        </div>
-
-                        <button type="submit" name="update_passphrase" class="btn-primary">
-                            <?= $has_passphrase ? 'Обновить настройки' : 'Сохранить настройки' ?>
-                        </button>
-                    </form>
-
-                    <div class="spoiler">
-                        <div class="spoiler-title" onclick="toggleSpoiler(this)">Что такое passphrase и почему это безопаснее? ▼</div>
-                        <div class="spoiler-content">
-                            <p><strong>Passphrase</strong> - это пароль, состоящий из нескольких слов, разделенных пробелами.</p>
-                            <p><strong>Преимущества passphrase:</strong></p>
-                            <ul>
-                                <li>Легче запомнить: "correct horse battery staple" запомнить проще, чем "Tr0ub4d0r&3"</li>
-                                <li>Выше энтропия: больше возможных комбинаций при одинаковой длине</li>
-                                <li>Устойчивость к brute-force атакам: из-за большой длины перебор занимает значительно больше времени</li>
-                                <li>Устойчивость к словарным атакам: использование нескольких случайных слов делает атаку по словарю неэффективной</li>
-                            </ul>
-                            <p><strong>Рекомендации по созданию надежной passphrase:</strong></p>
-                            <ul>
-                                <li>Используйте 4-5 случайных слов</li>
-                                <li>Избегайте распространенных фраз или цитат</li>
-                                <li>Не используйте личную информацию</li>
-                                <li>Рассмотрите добавление цифр или специальных символов между словами</li>
-                            </ul>
-                            <p>Примеры хороших passphrase: "correct horse battery staple", "blue coffee tree window", "purple monkey dishwasher battery"</p>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="info-card">
@@ -325,16 +263,16 @@ if (isset($_SESSION['USERDATA']['passphrase'])) {
             <div class="info-grid">
                 <div class="info-card">
                     <h3>
-                    <?php
-                    // print_r($user_data);
-                    if($curr_user->getUO($userID)){
-                        echo("<h1>Студия " . $curr_user->getUO($userID)[0]['name'] . "</h1>");
-                        echo("<p><a href='/devs/select'>Вход в консоль для разработчиков</a></p>");
-                    }else{
-                        echo ("<h1>У вас ещё нет аккаунта разработчика</h1>");
-                        echo ("<p><a href='/devs/regorg'>Зарегистрируйте его бесплатно!</a></p>");
-                    }
-                    ?>
+                        <?php
+                        // print_r($user_data);
+                        if ($curr_user->getUO($userID)) {
+                            echo ("<h1>Студия " . $curr_user->getUO($userID)[0]['name'] . "</h1>");
+                            echo ("<p><a href='/devs/select'>Вход в консоль для разработчиков</a></p>");
+                        } else {
+                            echo ("<h1>У вас ещё нет аккаунта разработчика</h1>");
+                            echo ("<p><a href='/devs/regorg'>Зарегистрируйте его бесплатно!</a></p>");
+                        }
+                        ?>
                     </h3>
                 </div>
             </div>
@@ -363,48 +301,6 @@ if (isset($_SESSION['USERDATA']['passphrase'])) {
                 element.innerHTML = element.innerHTML.replace('►', '▼');
             }
         }
-
-        function togglePassphraseFields() {
-            const enableCheckbox = document.getElementById('enable_passphrase');
-            const passphraseFields = document.getElementById('passphrase_fields');
-
-            if (enableCheckbox.checked) {
-                passphraseFields.style.display = 'block';
-                // Делаем поля обязательными при включении
-                document.getElementById('passphrase').setAttribute('required', 'required');
-                document.getElementById('confirm_passphrase').setAttribute('required', 'required');
-            } else {
-                passphraseFields.style.display = 'none';
-                // Убираем обязательность полей при выключении
-                document.getElementById('passphrase').removeAttribute('required');
-                document.getElementById('confirm_passphrase').removeAttribute('required');
-                // Очищаем поля
-                document.getElementById('passphrase').value = '';
-                document.getElementById('confirm_passphrase').value = '';
-            }
-        }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            togglePassphraseFields();
-
-            // Добавляем обработчик для подтверждения отключения passphrase
-            const enableCheckbox = document.getElementById('enable_passphrase');
-            const passphraseForm = document.querySelector('form[action=""]');
-
-            if (passphraseForm) {
-                passphraseForm.addEventListener('submit', function(e) {
-                    // Проверяем, отключается ли passphrase
-                    if (!enableCheckbox.checked && <?= $has_passphrase ? 'true' : 'false' ?>) {
-                        if (!confirm('Вы уверены, что хотите отключить passphrase? Это снизит безопасность вашего аккаунта.')) {
-                            e.preventDefault();
-                            enableCheckbox.checked = true;
-                            togglePassphraseFields();
-                        }
-                    }
-                });
-            }
-        });
 
         function confirmLogout() {
             return confirm('Вы уверены, что хотите выйти из аккаунта? Для повторного входа потребуется снова авторизоваться.');

@@ -141,3 +141,67 @@ body {
         margin: 0 0;   
     }
 }
+
+/* ===== ФОРМЫ ===== */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.info-card form {
+    margin-top: 15px;
+}
+
+.info-card input[type="text"],
+.info-card input[type="email"],
+.info-card input[type="password"] {
+    width: 90%;
+    padding: 12px 14px;
+    background: rgba(0, 0, 0, 0);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgb(0, 0, 0);
+    margin-top: 5px;
+    font-size: 15px;
+    border: 1px solid black;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.info-card input::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+.info-card input:focus {
+    border-color: var(--bg-dark2);
+    box-shadow: 0 0 0 2px rgba(255, 248, 55, 0.25);
+}
+
+/* ===== КНОПКИ ===== */
+.info-card button,
+.btn-primary {
+    margin-top: 10px;
+    padding: 12px 18px;
+    background: var(--bg-dark4);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.info-card button:hover,
+.btn-primary:hover {
+    background: #fff95f;
+    transform: translateY(-1px);
+}
+
+/* ===== СООБЩЕНИЯ ===== */
+.error-message {
+    background: rgba(255, 0, 0, 0.15);
+    border-left: 4px solid #ff4d4d;
+    color: white;
+}
+
+.success-message {
+    background: rgba(0, 255, 0, 0.15);
+    border-left: 4px solid #4dff88;
+    color: white;
+}

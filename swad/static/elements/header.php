@@ -14,6 +14,7 @@ if (empty($_COOKIE['temp_id'])) {
 
 // Определяем сегодняшнюю дату
 $today = date("Y-m-d");
+
 $conn = $db->connect();
 
 // Проверяем, нет ли уже записи на сегодня
@@ -78,7 +79,6 @@ $stmt->execute([
     ':count' => $online_count
 ]);
 ?>
-
 <!DOCTYPE html>
 <html lang="ru">
 

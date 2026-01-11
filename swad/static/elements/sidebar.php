@@ -50,7 +50,7 @@ if ($curr_user_org['status'] != 'active') {
 
     <li><a class="subheader">Управление</a></li>
     <li><a href="mystudio"><i class="material-icons pink-item">apartment</i>Моя студия</a></li>
-    <li><a href="staff"><i class="material-icons pink-item">groups</i>Сотрудники</a></li>
+    <li><a href="staff" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">groups</i>Сотрудники</a></li>
     <li><a href="projects"><i class="material-icons pink-item">work</i>Проекты</a></li>
     <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">note_add</i>Рецензии</a></li>
     <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">area_chart</i>Аналитика</a></li>

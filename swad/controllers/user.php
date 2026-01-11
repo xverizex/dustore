@@ -86,7 +86,7 @@ class User
             return $result ? $result['role_id'] : null; 
         } else if ($type == "global") {
             $stmt = $this->db->prepare("
-                SELECT `global_role` FROM users WHERE telegram_id = ?
+                SELECT `global_role` FROM users WHERE id = ?
             ");
             $stmt->execute([$id]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -229,7 +229,7 @@ class User
     {
         try {
             $stmt = $this->db->prepare(
-                "UPDATE users SET username = :username, updated = NOW() WHERE telegram_id = :user_id;"
+                "UPDATE users SET username = :username, updated = NOW() WHERE id = :user_id;"
             );
             $stmt->execute([
                 'username' => $new_username,
@@ -248,7 +248,7 @@ class User
         try {
             if ($hashed_passphrase === null) {
                 $stmt = $this->db->prepare(
-                    "UPDATE users SET passphrase = NULL, updated = NOW() WHERE telegram_id = :user_id;"
+                    "UPDATE users SET passphrase = NULL, updated = NOW() WHERE id = :user_id;"
                 );
                 return $stmt->execute(['user_id' => $userID]);
             }
@@ -385,5 +385,45 @@ class User
             )
         ");
         $stmt->execute([$user_id, $game_id, $user_id, $game_id]);
+    }
+
+    // 06.01.2026 (c) Alexander Livanov
+    public function hasEmail($id): bool
+    {
+        $stmt = $this->db->prepare("SELECT email FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        return !empty($stmt->fetchColumn());
+    }
+
+    public function updateEmailAndPassword($id, $email, $passwordHash, $token)
+    {
+        return $this->db->prepare("
+        UPDATE users SET
+            email = ?,
+            password = ?,
+            email_verified = 0,
+            verification_token = ?
+        WHERE id = ?
+    ")->execute([$email, $passwordHash, $token, $id]);
+    }
+
+    public function updatePassword($id, $passwordHash)
+    {
+        return $this->db->prepare("
+        UPDATE users SET password = ? WHERE id = ?
+    ")->execute([$passwordHash, $id]);
+    }
+
+    public function emailExists(string $email, int $excludeUserId): bool
+    {
+        $stmt = $this->db->prepare(
+            "SELECT id FROM users WHERE email = :email AND id != :id LIMIT 1"
+        );
+        $stmt->execute([
+            ':email' => $email,
+            ':id' => $excludeUserId
+        ]);
+
+        return $stmt->fetch() !== false;
     }
 }

@@ -1,22 +1,25 @@
 <?php
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+require_once(__DIR__ . '/../config.php');
 require __DIR__ . '/../../vendor/autoload.php';
 
-function sendMail($send_to, $subject, $data, $params=""){
+function sendMail($send_to, $subject, $data, $params = "")
+{
     $mail = new PHPMailer(true);
 
     try {
         $mail->CharSet = 'UTF-8';
 
         $mail->isSMTP();
-        $mail->Host       = 'smtp.mail.ru';
+        $mail->Host       = 'sm21.hosting.reg.ru';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'dusty@dustore.ru';
-        $mail->Password   = 'YOnwzU1TeLuLiIt69ffL'; // пароль приложения
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port       = 465;
+        $mail->Password   = EMAIL_PASSWD;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
 
         $mail->setFrom('dusty@dustore.ru', 'Менеджер Дасти');
         $mail->addAddress($send_to);
