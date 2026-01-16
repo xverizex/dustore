@@ -68,7 +68,7 @@ if ($curr_user_org['status'] != 'active') {
     <li>
         <div class="divider"></div>
     </li>
-    <?php if ($curr_user->getUserRole($curr_user_data['telegram_id'], "global") == -1): ?>
+    <?php if ($curr_user->getUserRole($curr_user_data['id'], "global") == -1): ?>
         <li><a class="subheader">Для администраторов</a></li>
         <li class="no-padding">
             <ul class="collapsible collapsible-accordion">
