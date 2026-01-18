@@ -9,7 +9,6 @@ $env = parse_ini_file(__DIR__ . '/../.env');
 // print_r($env);
 
 $dsn = "mysql:host={$env['DB_HOST']};dbname={$env['DB_NAME']};charset={$env['DB_CHARSET']}";
-
 try {
     $pdo = new PDO(
         $dsn,

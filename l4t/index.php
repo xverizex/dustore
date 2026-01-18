@@ -387,7 +387,7 @@ session_start();
             if (el) el.classList.add('active');
         }
 
-        fetch('./core/getall.php')
+        fetch('./api/getall.php')
             .then(res => {
                 if (!res.ok) throw new Error('API error');
                 return res.json();
