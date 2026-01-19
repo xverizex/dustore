@@ -174,7 +174,11 @@ $stmt->execute([
     <button onclick='subscribeToPush()'>
         Subscribe
     </button>
-    <button onclick="fetch('/trigger-push.php')">
+    <button onclick='fetch(" /trigger-push.php", {
+        method: "POST" ,
+        headers: { "Content-Type" : "application/json" },
+        body: JSON.stringify({ subscription: mySubscription, title: "Привет" })
+        });'>
         Push
     </button>
     <div class="top-banner" id="top-banner">
