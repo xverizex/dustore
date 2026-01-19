@@ -174,11 +174,7 @@ $stmt->execute([
     <button onclick='subscribeToPush()'>
         Subscribe
     </button>
-    <button onclick='fetch(" /trigger-push.php", {
-        method: "POST" ,
-        headers: { "Content-Type" : "application/json" },
-        body: JSON.stringify({ subscription: mySubscription, title: "Привет" })
-        });'>
+    <button id="pushBtn">
         Push
     </button>
     <div class="top-banner" id="top-banner">
@@ -382,7 +378,7 @@ $stmt->execute([
             if (!subscription) {
                 subscription = await reg.pushManager.subscribe({
                     userVisibleOnly: true,
-                    applicationServerKey: VAPID_PUBLIC
+                    applicationServerKey: <?php echo "'" . VAPID_PUBLIC_KEY . "'" ?>
                 });
             }
 
@@ -397,6 +393,44 @@ $stmt->execute([
 
             alert("Подписка сохранена");
         }
+    </script>
+    <script>
+        const VAPID_PUBLIC = <?php echo "'" . VAPID_PUBLIC_KEY . "'" ?>
+
+        document.getElementById("pushBtn").addEventListener("click", async () => {
+            // ждём готовности SW
+            const reg = await navigator.serviceWorker.ready;
+
+            // проверяем permission
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                alert("Уведомления запрещены");
+                return;
+            }
+
+            // получаем или создаём подписку
+            let subscription = await reg.pushManager.getSubscription();
+            if (!subscription) {
+                subscription = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: <?php echo "'" . VAPID_PUBLIC_KEY . "'" ?>
+                });
+            }
+
+            // отправляем subscription на сервер
+            await fetch("/trigger-push.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    subscription: subscription,
+                    title: "Привет!"
+                })
+            });
+
+            alert("Push отправлен на это устройство!");
+        });
     </script>
 </body>
 
