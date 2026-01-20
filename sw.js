@@ -49,39 +49,17 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-self.addEventListener("push", (event) => {
-  let data = {};
+self.addEventListener("push", e => {
+  const data = e.data.json();
 
-  if (event.data) {
-    data = event.data.json();
-  }
-
-  const title = data.title || "Новое уведомление";
-  const options = {
-    body: data.body || "Есть обновление",
+  self.registration.showNotification(data.title, {
+    body: data.body,
     icon: "/swad/static/img/logo_new.png",
-    badge: "/swad/static/img/logo_new.png",
-    data: {
-      url: data.url || "/"
-    }
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+    data: { url: data.url }
+  });
 });
 
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-
-  event.waitUntil(
-    clients.matchAll({ type: "window" }).then((clientsArr) => {
-      for (const client of clientsArr) {
-        if (client.url === event.notification.data.url && "focus" in client) {
-          return client.focus();
-        }
-      }
-      return clients.openWindow(event.notification.data.url);
-    })
-  );
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow(e.notification.data.url));
 });

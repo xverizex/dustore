@@ -1,0 +1,10 @@
+{
+  "name": "push-api",
+  "type": "module",
+  "dependencies": {
+    "express": "^4",
+    "web-push": "^3",
+    "dotenv": "^16",
+    "mysql2": "^3"
+  }
+}

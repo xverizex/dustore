@@ -368,70 +368,42 @@ $stmt->execute([
     </script>
     <!-- subscrive to push 19.01.2025 (c) Alexander Livanov -->
     <script>
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+
+            return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        }
+
         async function subscribeToPush() {
             const reg = await navigator.serviceWorker.ready;
 
-            const permission = await Notification.requestPermission();
-            if (permission !== "granted") return;
+            let sub = await reg.pushManager.getSubscription();
 
-            let subscription = await reg.pushManager.getSubscription();
-            if (!subscription) {
-                subscription = await reg.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: <?php echo "'" . VAPID_PUBLIC_KEY . "'" ?>
-                });
+            if (sub) {
+                console.log("Старая подписка найдена, удаляем");
+                await sub.unsubscribe();
             }
 
-            // Отправляем на сервер свою подписку
-            await fetch("/save-subscription.php", {
+            sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array("<?= VAPID_PUBLIC_KEY ?>")
+            });
+
+            await fetch("/api/push/subscribe.php", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(subscription)
+                body: JSON.stringify(sub)
             });
 
-            alert("Подписка сохранена");
+            alert("Push-подписка обновлена");
         }
     </script>
-    <script>
-        const VAPID_PUBLIC = <?php echo '"' . VAPID_PUBLIC_KEY . '"'; ?>
 
-        document.getElementById("pushBtn").addEventListener("click", async () => {
-            // ждём готовности SW
-            const reg = await navigator.serviceWorker.ready;
-
-            // проверяем permission
-            const permission = await Notification.requestPermission();
-            if (permission !== "granted") {
-                alert("Уведомления запрещены");
-                return;
-            }
-
-            // получаем или создаём подписку
-            let subscription = await reg.pushManager.getSubscription();
-            if (!subscription) {
-                subscription = await reg.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: VAPID_PUBLIC
-                });
-            }
-
-            // отправляем subscription на сервер
-            await fetch("/trigger-push.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    subscription: subscription,
-                    title: "Привет!"
-                })
-            });
-
-            alert("Push отправлен на это устройство!");
-        });
-    </script>
 </body>
 
 </html>
