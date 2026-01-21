@@ -312,6 +312,7 @@ $curr_user = new User();
                   <option value="console" <?= $studio_info['specialization'] == 'console' ? 'selected' : '' ?>>Консольные игры</option>
                   <option value="vr" <?= $studio_info['specialization'] == 'vr' ? 'selected' : '' ?>>VR игры</option>
                   <option value="software" <?= $studio_info['specialization'] == 'software' ? 'selected' : '' ?>>ПО и утилиты</option>
+                  <option value="table" <?= $studio_info['specialization'] == 'table' ? 'selected' : '' ?>>Настольные игры</option>
                 </select>
                 <label>Специализация</label>
               </div>

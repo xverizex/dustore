@@ -186,49 +186,6 @@
           </tbody>
         </table>
       </div>
-
-      <!-- Ниже таблицы active -->
-      <div id="map" style="width: 100%; height: 500px; margin-top: 40px;"></div>
-
-      <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
-      <script>
-        ymaps.ready(initMap);
-
-        function initMap() {
-          var map = new ymaps.Map("map", {
-            center: [55.76, 37.64], // Москва как центр
-            zoom: 4,
-            controls: ['zoomControl', 'fullscreenControl']
-          });
-
-          // Данные студий из PHP
-          var studios = [
-            <?php foreach ($active as $org):
-              if (!empty($org['city'])):
-                $name = htmlspecialchars($org['name'], ENT_QUOTES);
-                $city = htmlspecialchars($org['city'], ENT_QUOTES);
-                $email = htmlspecialchars($org['contact_email'], ENT_QUOTES);
-                echo "{name: '{$name}', city: '{$city}', email: '{$email}'},";
-              endif;
-            endforeach; ?>
-          ];
-
-          studios.forEach(function(studio) {
-            ymaps.geocode(studio.city, {
-              results: 1
-            }).then(function(res) {
-              var coord = res.geoObjects.get(0).geometry.getCoordinates();
-              var placemark = new ymaps.Placemark(coord, {
-                balloonContent: `<strong>${studio.name}</strong><br>${studio.city}<br>${studio.email}`
-              }, {
-                preset: 'islands#blueDotIcon'
-              });
-              map.geoObjects.add(placemark);
-            });
-          });
-        }
-      </script>
-
     </section>
   </main>
   <?php require_once('footer.php'); ?>

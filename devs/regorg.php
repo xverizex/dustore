@@ -224,6 +224,7 @@ Telegram: <i>" . $data['tg_link'] . "</i>", true, "https://dustore.ru/devs/recen
                             <select id="country" name="country">
                                 <option value="">Выберите страну</option>
                                 <option value="ru">Россия</option>
+                                <option value="ua">Украина</option>
                                 <option value="by">Беларусь</option>
                                 <option value="kz">Казахстан</option>
                                 <option value="other">Другая</option>
@@ -295,6 +296,7 @@ Telegram: <i>" . $data['tg_link'] . "</i>", true, "https://dustore.ru/devs/recen
                                 <option value="console">Консольные игры</option>
                                 <option value="vr">VR/AR игры</option>
                                 <option value="software">Разработка приложений</option>
+                                <option value="table">Настольные игры</option>
                                 <option value="all">Разные платформы</option>
                             </select>
                         </div>

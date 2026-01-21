@@ -485,6 +485,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <option value="simulator" <?= $project_info['genre'] == 'simulator' ? 'selected' : '' ?>>Симулятор</option>
                   <option value="visnovel" <?= $project_info['genre'] == 'visnovel' ? 'selected' : '' ?>>Визуальная новелла</option>
                   <option value="indie" <?= $project_info['genre'] == 'indie' ? 'selected' : '' ?>>Инди</option>
+                  <option value="table" <?= $project_info['genre'] == 'table' ? 'selected' : '' ?>>Настольная игра</option>
                   <option value="other" <?= $project_info['genre'] == 'other' ? 'selected' : '' ?>>Другое</option>
                 </select>
                 <label>Жанр</label>
