@@ -79,6 +79,7 @@ if ($curr_user_org['status'] != 'active') {
                             <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">person_search</i>Поиск пользователя</a></li>
                             <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">how_to_reg</i>Новые пользователи</a></li>
                             <li><a href="giveach"><i class="material-icons pink-item">star_award</i>Выдать достижение</a></li>
+                            <li><a href="createach"><i class="material-icons pink-item">add_circle</i>Добавить достижение</a></li>
                             <li><a href="recentorgs"><i class="material-icons pink-item">domain_add</i>Новые организации</a></li>
                             <li><a href="" class="disabled-link" aria-disabled="true"><i class="material-icons pink-item">report</i>Репорты</a></li>
                         </ul>

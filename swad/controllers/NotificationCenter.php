@@ -1,5 +1,11 @@
 <?php
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once(__DIR__ . '/../config.php');
+require __DIR__ . '/../../vendor/autoload.php';
+
 class NotificationCenter
 {
     public $db;
@@ -25,7 +31,7 @@ class NotificationCenter
             $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
             $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
             $stmt->execute();
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Error getting notifications: " . $e->getMessage());
@@ -75,6 +81,38 @@ class NotificationCenter
             return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
             error_log("Error marking notification as read: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function sendEmail($send_to, $subject, $body, $params = "")
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->CharSet = 'UTF-8';
+            $mail->isSMTP();
+            $mail->Host       = 'sm21.hosting.reg.ru';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'dusty@dustore.ru';
+            $mail->Password   = EMAIL_PASSWD;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            $mail->setFrom('dusty@dustore.ru', 'Менеджер Дасти');
+            $mail->addAddress($send_to);
+
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body = $body;
+
+            // $mail->SMTPDebug = 2;
+            // $mail->Debugoutput = 'html';
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Ошибка отправки email: {$mail->ErrorInfo}");
             return false;
         }
     }

@@ -174,7 +174,7 @@ $stmt->execute([
     <div id="push-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#333; color:#fff; padding:15px; text-align:center; z-index:1000;">
         🔔 Хотите получать уведомления? Так вы не пропустите ничего нового...
         <button id="enable-push" style="margin-left:10px; padding:5px 10px;">Включить</button>
-        <button id="disable-push" style="margin-left:10px; padding:5px 10px;">Конечно! (нет)</button>
+        <button id="dismiss-push" style="margin-left:10px; padding:5px 10px;">Конечно! (отключить)</button>
     </div>
 
     <script>
@@ -308,10 +308,10 @@ $stmt->execute([
             </div>
             <div class="buttons-left">
                 <button class="button" onclick="location.href='/explore'">Игры</button>
-                <!-- <button class="button" onclick="location.href='https:\/\/media.dustore.ru'">Медиа</button> -->
+                <button class="button disabled-btn tooltip">Ассеты<span class="tooltiptext">Скоро</span></button>
                 <button class="button" onclick="location.href='/about'">О платформе</button>
-                <button class="button" onclick="location.href='/studios'">Разработчики</button>
-                <button class="button" onclick="location.href='/users'">Игроки</button>
+                <button class="button" onclick="location.href='/search'">Пользователи</button>
+                <button class="button disabled-btn tooltip">L4T<span class="tooltiptext">Скоро</span></button>
             </div>
         </div>
         <div class="section center-section">
@@ -453,7 +453,7 @@ $stmt->execute([
             document.getElementById("updateNext").textContent = nextText;
         }
 
-        setUpdateProgress(78, "Следующее обновление: v1.15");
+        setUpdateProgress(92, "Следующее обновление: v1.15.1");
     </script>
     <!-- subscribe to push 19.01.2025 (c) Alexander Livanov -->
     <script>

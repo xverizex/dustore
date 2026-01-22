@@ -123,7 +123,16 @@ $stmt_items = $pdo->prepare("
 $stmt_items->execute([':user_id' => $user['id']]);
 $all_items = $stmt_items->fetchAll(PDO::FETCH_ASSOC);
 
-// Разделяем предметы на игры и коллекционные предметы
+$stmt = $pdo->prepare("
+    SELECT gub.*, b.name, b.description, b.icon_url
+    FROM given_user_badges gub
+    JOIN badges b ON gub.badge_id = b.id
+    WHERE gub.user_id = :user_id
+    ORDER BY gub.awarded_at DESC
+");
+$stmt->execute([':user_id' => $user['id']]);
+$achievements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 $games_collection = [];
 $collectibles = [];
 
@@ -690,6 +699,43 @@ if ($is_owner) {
                 flex: 0 0 100%;
             }
         }
+
+        .achievements-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .achievement-icon {
+            width: 40px;
+            /* размер иконки */
+            height: 40px;
+            border-radius: 50%;
+            /* круглая */
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .achievement-icon:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 8px #ffd700;
+        }
+
+        .achievement-icon-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
     </style>
 </head>
 
@@ -712,10 +758,70 @@ if ($is_owner) {
                 <?php if ($is_owner): ?>
                     <a href="/me" class="edit-profile-btn">Редактировать профиль</a>
                 <?php endif; ?>
+
+                <div class="achievements-container">
+                    <?php foreach ($achievements as $ach): ?>
+                        <?php
+                        $title = htmlspecialchars($ach['name']);
+                        $icon = htmlspecialchars($ach['icon_url'] ?? '🏆'); // можно хранить emoji или путь к картинке
+                        ?>
+                        <div class="achievement-icon"
+                            title="<?= htmlspecialchars($title) ?>"
+                            onclick='showAchievementModal({
+                                    title: <?= json_encode($title) ?>,
+                                    description: <?= json_encode($ach["description"] ?? "") ?>,
+                                    icon: <?= json_encode($ach["icon_url"] ?? "🏆") ?>,
+                                    date: <?= json_encode($ach["awarded_at"] ?? "") ?>
+                                })'>
+                            <?php if (!empty($ach["icon_url"])): ?>
+                                <img src="<?= htmlspecialchars($ach["icon_url"]) ?>" alt="<?= htmlspecialchars($title) ?>" class="achievement-icon-img">
+                            <?php else: ?>
+                                🏆
+                            <?php endif; ?>
+                        </div>
+
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
     </div>
+    <!-- Модальное окно для ачивок -->
+    <div class="modal" id="achievementModal" style="display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: linear-gradient(135deg, #2a3344 0%, #1a1f2e 100%); border-radius: 20px; padding: 30px; max-width: 500px; width: 90%; position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.9); border: 2px solid rgba(255, 215, 0, 0.3);">
+            <button class="close-btn" onclick="closeAchievementModal()" style="position: absolute; top: 15px; right: 15px; background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700; color: #ffd700; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px;">&times;</button>
+            <div id="achievementModalBody"></div>
+        </div>
+    </div>
+    <script>
+        function showAchievementModal(ach) {
+            const modal = document.getElementById('achievementModal');
+            const body = document.getElementById('achievementModalBody');
 
+            body.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 3em; margin-bottom: 15px;"><img src="<?= htmlspecialchars($ach["icon_url"]) ?>" alt="<?= htmlspecialchars($title) ?>" class="achievement-icon-img"></div>
+            <h2 style="color: #ffd700; margin-bottom: 10px;">${ach.title}</h2>
+            <p style="color: #b0b8c1; line-height: 1.5; margin-bottom: 20px;">${ach.description ?? ''}</p>
+            <div style="font-size: 0.9em; color: #888;">
+                Дата получения: ${ach.date ?? ''}
+            </div>
+            <button style="margin-top: 20px; padding: 10px 20px; border:none; border-radius:10px; background: linear-gradient(135deg,#ffd700,#ffbe0b); color:#000; font-weight:bold; cursor:pointer;" onclick="closeAchievementModal()">
+                Закрыть
+            </button>
+        </div>
+    `;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').style.display = 'none';
+        }
+
+        document.getElementById('achievementModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAchievementModal();
+        });
+    </script>
     <div class="container">
         <!-- Вкладки -->
         <div class="tabs">
@@ -918,7 +1024,7 @@ if ($is_owner) {
                 <?php endif; ?>
             </div>
         </div>
-        
+
 
         <div id="tab-reviews" class="tab-content">
             <div class="profile-card">

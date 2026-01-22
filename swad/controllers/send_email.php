@@ -1,5 +1,5 @@
 <?php
-
+// OBSOLETE: MOVED TO NotificationCenter sendMail() method;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
