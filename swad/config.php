@@ -28,9 +28,15 @@ class Database {
 
         try {
             $this->conn = new PDO(
-                'mysql:host=' . $this->get_creds()[0] . ';dbname=' . $this->get_creds()[1],
+                'mysql:host=' . $this->get_creds()[0] . ';dbname=' . $this->get_creds()[1] .
+                    ';charset=utf8mb4',
                 $this->get_creds()[2],
-                $this->get_creds()[3]
+                $this->get_creds()[3],
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+                ]
             );
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
