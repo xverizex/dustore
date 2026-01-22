@@ -113,7 +113,8 @@ if ($adultSection) {
                                         <?php
                                         $avg_rating = $gameController->getAverageRating($game['id'])['avg'];
                                         // print_r($avg_rating);
-                                        $total_reviews = count($gameController->getReviews($game['id']));
+                                        $total_reviews = count($gameController->getReviewsArray($game['id']));
+
                                         $total_downloads = $gameController->getTotalDownloads($game['id']);
                                         ?>
                                         <?php if ($game['GQI'] > 0): ?>

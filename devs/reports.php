@@ -15,7 +15,7 @@
 
 <body>
   <?php require_once('../swad/static/elements/sidebar.php');
-  if ($curr_user->getUserRole($_SESSION['id'], "global") != -1) {
+  if ($curr_user->getUserRole($_SESSION['USERDATA']['id'], "global") != -1) {
     header('Location: select');
     exit();
   }

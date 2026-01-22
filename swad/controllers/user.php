@@ -426,4 +426,17 @@ class User
 
         return $stmt->fetch() !== false;
     }
+
+    // 22.01.2026 (c) Alexander Livanov
+    public function updateProfilePicture($user_id, $url)
+    {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $stmt = $pdo->prepare("UPDATE users SET profile_picture = :pp, updated = NOW() WHERE id = :id");
+        return $stmt->execute([
+            ':pp' => $url,
+            ':id' => $user_id
+        ]);
+    }
 }

@@ -14,4 +14,4 @@ if ($game_id <= 0) {
 $gameController = new Game();
 $reviews = $gameController->getReviews($game_id); // массив отзывов: ['username','avatar','rating','text','date']
 
-echo json_encode(['success' => true, 'reviews' => $reviews]);
+json_encode(['success' => true, 'reviews' => $reviews]);

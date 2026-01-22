@@ -402,24 +402,9 @@ function formatFileSize($bytes)
 
                                 // форма оплаты товара
                                 // payment form
-                                print "<html>" .
-                                    "<form action='https://auth.robokassa.ru/Merchant/Index.aspx' method=POST>" .
-                                    "<input type=hidden name=MerchantLogin value=$mrh_login>" .
-                                    "<input type=hidden name=OutSum value=$out_summ>" .
-                                    "<input type=hidden name=InvId value=$inv_id>" .
-                                    "<input type=hidden name=Description value=$inv_desc>" .
-                                    "<input type=hidden name=SignatureValue value=$crc>" .
-                                    "<input type=hidden name=Shp_item value=$shp_item>" .
-                                    "<input type=hidden name=Shp_enc_mrh_pass value=$encrypted_mrh_passwd>" .
-                                    "<input type=hidden name=IncCurrLabel value=$in_curr>" .
-                                    "<input type=hidden name=Culture value=$culture>" .
-                                    "<input type=hidden name=IsTest value=$IsTest>" .
-                                    "<input type=submit value='Купить' class='btn' style='width: 100%; margin-bottom: 15px;'>" .
-                                    "</form></html>";
-                                    // "<input type=submit value='Купить игру пока нельзя' disabled class='btn-disabled' style='width: 100%; margin-bottom: 15px;'>" .
-                            
-                                //     "<input type=submit value='Купить' class='btn' style='width: 100%; margin-bottom: 15px;'>" .
-                            ?>
+                                print '<script src="https://integrationjs.tbank.ru/integration.js"></script>
+                                        <button onclick="pay(1)">Оплатить</button>';
+                                ?>
 
                                 <!-- <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="location.href='/checkout'">Купить сейчас</button> -->
 
@@ -663,6 +648,8 @@ function formatFileSize($bytes)
 
     <?php require_once('swad/static/elements/footer.php'); ?>
 
+    <script src="https://integrationjs.tbank.ru/integration.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Анимация элементов при загрузке
@@ -742,7 +729,7 @@ function formatFileSize($bytes)
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: `game_id=${gameId}&rating=${rating}`
+                        body: `game_id=${gameId}&rating=${rating}&devEmail=<?= $stpd['contact_email'] ?>`
                     })
                     .then(res => res.json())
                     .then(data => {
@@ -757,82 +744,190 @@ function formatFileSize($bytes)
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            const gameId = <?= $game_id ?>;
+            const gameId = <?= (int)$game_id ?>;
+            const userId = <?= $_SESSION['USERDATA']['id'] ?? 0 ?>;
             const reviewsContainer = document.getElementById('reviews-container');
+            const reviewForm = document.querySelector('.review-form');
+            const reviewText = document.getElementById('review-text');
+            const reviewStars = document.getElementById('review-stars');
+            const submitBtn = document.getElementById('submit-review');
 
-            fetch(`/swad/controllers/get_reviews.php?game_id=${gameId}`)
-                .then(res => res.json())
-                .then(data => {
-                    const reviewsContainer = document.getElementById('reviews-container');
+            if (!reviewsContainer) return;
+
+            console.log('[reviews] start', {
+                gameId
+            });
+
+            fetch(`/swad/controllers/get_reviews.php?game_id=${gameId}`, {
+                    credentials: 'same-origin'
+                })
+                .then(async (res) => {
+                    console.log('[reviews] status', res.status, 'url', res.url);
+                    const text = await res.text();
+                    console.log('[reviews] raw response:', text.slice(0, 300));
+
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('JSON parse failed. Response is not JSON.');
+                    }
+                    return data;
+                })
+                .then((data) => {
+                    console.log('[reviews] json', data);
 
                     if (!data.success) {
                         reviewsContainer.innerHTML = '<p>Не удалось загрузить отзывы.</p>';
                         return;
                     }
 
-                    const reviews = data.reviews;
+                    const reviews = Array.isArray(data.reviews) ? data.reviews : [];
                     if (reviews.length === 0) {
                         reviewsContainer.innerHTML = '<p>Отзывы пока отсутствуют. Будьте первым!</p>';
                     } else {
                         reviewsContainer.innerHTML = '';
-                        const currentUserId = <?= $_SESSION['USERDATA']['id'] ?? 'null' ?>;
-                        let userHasReview = false;
-
-                        reviews.forEach(review => {
-                            if (currentUserId && review.user_id == currentUserId) {
-                                userHasReview = true;
-                            }
+                        reviews.forEach((review) => {
                             const div = document.createElement('div');
                             div.className = 'review-card';
                             div.innerHTML = `
-                    <div class="review-header" >
-                        <div class="review-author">
-                            <div class="author-avatar">
-                                <img style="width: 100%; border-radius: 10000px;" src="${review.profile_picture || '/swad/static/img/logo.svg'}" alt="${review.username}">
+                    <div class="review-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="review-author" style="display:flex; gap:10px; align-items:center;">
+                            <div class="author-avatar" style="width:50px; height:50px; overflow:hidden; border-radius:50%;">
+                                <img style="width:100%; height:100%; object-fit:cover;" src="${review.profile_picture || '/swad/static/img/logo.svg'}">
                             </div>
                             <div>
-                                <h3>${"<a style='color: white;' href='/player/" + review.username + "'>" + review.username + "</a>" || "Аноним"}</h3>
+                                <h3>${escapeHtml(review.username || 'Аноним')}</h3>
                                 <div>★ ${review.rating}</div>
                             </div>
                         </div>
-                        <div class="review-date">${new Date(review.created_at).toLocaleString('ru-RU', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })}</div>
+                        <div class="review-date" style="font-size:0.8rem; opacity:0.7;">
+                            ${new Date(review.created_at).toLocaleString('ru-RU')}
+                        </div>
                     </div>
-                    <p>${review.text}</p>
+                    <p style="margin-top:10px;">${escapeHtml(review.text)}</p>
                 `;
+
+                            // Добавляем ответ разработчика
+                            if (review.developer_reply) {
+                                div.innerHTML += `
+                        <div class="developer-reply" style="margin-top:10px; padding:10px; background: rgba(255,255,255,0.05); border-left: 3px solid #74155d;">
+                            <strong><svg style='vertical-align: middle;'
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#fff"
+                                    stroke-width="1"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    >
+                                    <path d="M5 7.2a2.2 2.2 0 0 1 2.2 -2.2h1a2.2 2.2 0 0 0 1.55 -.64l.7 -.7a2.2 2.2 0 0 1 3.12 0l.7 .7c.412 .41 .97 .64 1.55 .64h1a2.2 2.2 0 0 1 2.2 2.2v1c0 .58 .23 1.138 .64 1.55l.7 .7a2.2 2.2 0 0 1 0 3.12l-.7 .7a2.2 2.2 0 0 0 -.64 1.55v1a2.2 2.2 0 0 1 -2.2 2.2h-1a2.2 2.2 0 0 0 -1.55 .64l-.7 .7a2.2 2.2 0 0 1 -3.12 0l-.7 -.7a2.2 2.2 0 0 0 -1.55 -.64h-1a2.2 2.2 0 0 1 -2.2 -2.2v-1a2.2 2.2 0 0 0 -.64 -1.55l-.7 -.7a2.2 2.2 0 0 1 0 -3.12l.7 -.7a2.2 2.2 0 0 0 .64 -1.55v-1" />
+                                    <path d="M9 12l2 2l4 -4" />
+                                    </svg>
+                                    Официальный ответ разработчика:</strong>
+                            <p>${escapeHtml(review.developer_reply)}</p>
+                            <div style="font-size:0.8rem; opacity:0.7;">${new Date(review.developer_reply_created_at).toLocaleString('ru-RU')}</div>
+                        </div>
+                    `;
+                            }
+
                             reviewsContainer.appendChild(div);
                         });
+                    }
 
-                        // После загрузки отзывов
-                        if (userHasReview) {
-                            const form = document.querySelector('.review-form');
-                            if (form) {
-                                const textarea = form.querySelector('#review-text');
-                                const stars = form.querySelectorAll('#review-stars span');
-                                const button = form.querySelector('#submit-review');
+                    // Проверяем, есть ли отзыв текущего пользователя
+                    if (userId && reviewForm && reviewText && reviewStars) {
+                        const userReview = reviews.find(r => r.user_id == userId);
+                        if (userReview) {
+                            reviewText.value = userReview.text;
+                            selectedRating = userReview.rating;
 
-                                if (textarea) textarea.disabled = true;
-                                stars.forEach(s => s.style.pointerEvents = 'none');
-                                if (button) button.disabled = true;
+                            // Добавляем скрытое поле review-id
+                            let reviewIdInput = document.createElement('input');
+                            reviewIdInput.type = 'hidden';
+                            reviewIdInput.id = 'review-id';
+                            reviewIdInput.value = userReview.id;
+                            reviewForm.appendChild(reviewIdInput);
+                        }
+                    }
 
-                                const notice = document.createElement('p');
-                                notice.textContent = 'Спасибо! Ваш отзыв принят.';
-                                notice.style.color = '#ffcc00';
-                                form.innerHTML = '';
-                                form.appendChild(notice);
-                                location.reload();
-                            }
+                    // Инициализация звёздочек
+                    if (reviewStars) {
+                        reviewStars.innerHTML = '';
+                        let stars = [];
+                        let selectedRating = 10;
+                        for (let i = 1; i <= 10; i++) {
+                            const star = document.createElement('span');
+                            star.textContent = '★';
+                            star.dataset.value = i;
+                            star.style.cursor = 'pointer';
+                            star.addEventListener('mouseover', () => highlightStars(i));
+                            star.addEventListener('mouseout', () => highlightStars(selectedRating));
+                            star.addEventListener('click', () => {
+                                selectedRating = i;
+                                highlightStars(selectedRating);
+                            });
+                            reviewStars.appendChild(star);
+                            stars.push(star);
                         }
 
+                        function highlightStars(n) {
+                            stars.forEach((s, idx) => s.classList.toggle('highlighted', idx < n));
+                        }
+
+                        highlightStars(selectedRating);
                     }
+
+                    // Отправка/редактирование отзыва
+                    if (submitBtn) {
+                        submitBtn.addEventListener('click', () => {
+                            const text = reviewText.value.trim();
+                            if (!text) {
+                                alert('Введите текст отзыва!');
+                                return;
+                            }
+
+                            const reviewIdEl = document.getElementById('review-id');
+                            const isEdit = reviewIdEl && reviewIdEl.value;
+
+                            const url = isEdit ? '/swad/controllers/update_review.php' : '/swad/controllers/submit_review.php';
+                            const body = isEdit ?
+                                `review_id=${encodeURIComponent(reviewIdEl.value)}&rating=${selectedRating}&text=${encodeURIComponent(text)}` :
+                                `game_id=<?= $game_id ?>&rating=${selectedRating}&text=${encodeURIComponent(text)}`;
+
+                            fetch(url, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    },
+                                    body
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) location.reload();
+                                    else alert('Ошибка: ' + (data.error || data.message || 'unknown'));
+                                })
+                                .catch(err => console.error(err));
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error('[reviews] failed', err);
+                    reviewsContainer.innerHTML = '<p>Ошибка при загрузке отзывов (см. консоль).</p>';
                 });
 
+            function escapeHtml(str) {
+                return String(str ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
+            }
         });
+
 
         document.addEventListener('DOMContentLoaded', () => {
             const reviewStars = document.getElementById('review-stars');
@@ -870,63 +965,64 @@ function formatFileSize($bytes)
                         return;
                     }
 
-                    fetch('/swad/controllers/submit_review.php', {
+                    const reviewIdEl = document.getElementById('review-id');
+                    const isEdit = reviewIdEl && reviewIdEl.value;
+
+                    const url = isEdit ? '/swad/controllers/update_review.php' : '/swad/controllers/submit_review.php';
+                    const body = isEdit ?
+                        `review_id=${encodeURIComponent(reviewIdEl.value)}&rating=${selectedRating}&text=${encodeURIComponent(text)}` :
+                        `game_id=<?= $game_id ?>&rating=${selectedRating}&text=${encodeURIComponent(text)}`;
+
+                    fetch(url, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: `game_id=<?= $game_id ?>&rating=${selectedRating}&text=${encodeURIComponent(text)}`
+                            body
                         })
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
-                                // Добавляем отзыв сразу в контейнер
-                                const reviewsContainer = document.getElementById('reviews-container');
-                                const div = document.createElement('div');
-                                div.className = 'review-card';
-                                const now = new Date();
-                                const dateStr = now.toLocaleString('ru-RU', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
-
-                                div.innerHTML = `
-                        <div class="review-header">
-                            <div class="review-author">
-                                <div class="author-avatar">
-                                    <img style="width: 100%; border: 10000px;" src="<?= !empty($_SESSION['USERDATA']['']) ? $_SESSION['USERDATA']['avatar'] : 'swad/static/img/logo.svg' ?>" alt="<?= $_SESSION['USERDATA']['profile_picture'] ?>">
-                                </div>
-                                <div>
-                                    <h3><?= $_SESSION['USERDATA']['username'] ?></h3>
-                                    <div>★ ${selectedRating}</div>
-                                </div>
-                            </div>
-                            <<div class="review-date">${dateStr}</div>
-
-                        </div>
-                        <p>${text}</p>
-                    `;
-                                if (reviewsContainer.querySelector('p')?.textContent.includes('Отзывы пока отсутствуют')) {
-                                    reviewsContainer.innerHTML = '';
-                                }
-                                reviewsContainer.prepend(div);
-
-                                // Очистка формы
-                                document.getElementById('review-text').value = '';
-                                selectedRating = 10;
-                                highlightStars(selectedRating);
                                 location.reload();
                             } else {
-                                alert('Ошибка: ' + data.error);
+                                alert('Ошибка: ' + (data.error || data.message || 'unknown'));
                             }
                         })
                         .catch(err => console.error(err));
                 });
+
             }
         });
+    </script>
+    <script>
+        async function pay(productId) {
+            const res = await fetch('/finv2/create_payment.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    product_id: productId
+                })
+            });
+
+            const data = await res.json();
+
+            if (!data.PaymentURL) {
+                alert('Ошибка оплаты');
+                return;
+            }
+
+            // Вариант 1 — редирект
+            window.location.href = data.PaymentURL;
+
+            // Вариант 2 — iframe через integration.js
+            /*
+            PaymentIntegration.open({
+                paymentId: data.PaymentId
+            });
+            */
+        }
     </script>
 </body>
 

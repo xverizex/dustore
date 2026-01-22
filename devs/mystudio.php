@@ -263,10 +263,22 @@ $curr_user = new User();
 
             <div class="col s12 m6">
               <div class="input-field">
-                <input type="url" name="avatar_link" id="avatar_link"
+                <input type="text" name="avatar_link" id="avatar_link" readonly
                   value="<?= htmlspecialchars($studio_info['avatar_link']) ?>">
-                <label for="avatar_link">Ссылка на аватар</label>
+                <label for="avatar_link">Аватар (URL заполнится автоматически)</label>
               </div>
+
+              <div class="file-field input-field">
+                <div class="btn">
+                  <span>Загрузить аватар</span>
+                  <input type="file" id="studio_avatar_file" accept="image/png,image/jpeg,image/webp">
+                </div>
+                <div class="file-path-wrapper">
+                  <input class="file-path validate" type="text" placeholder="Выберите изображение (JPG/PNG/WEBP)">
+                </div>
+              </div>
+
+              <div id="studio_avatar_upload_status" style="margin-top:8px;"></div>
 
               <div class="preview-container">
                 <?php if (!empty($studio_info['avatar_link'])): ?>
@@ -401,6 +413,53 @@ $curr_user = new User();
       document.querySelector('#description').value = quill.root.innerHTML;
     };
   </script>
+  <script>
+    async function uploadAvatar(file, target) {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('target', target);
+
+      const res = await fetch('/swad/controllers/upload_avatar.php', {
+        method: 'POST',
+        body: fd
+      });
+
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Upload failed');
+      return data.url;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputFile = document.getElementById('studio_avatar_file');
+      const status = document.getElementById('studio_avatar_upload_status');
+
+      inputFile?.addEventListener('change', async () => {
+        const file = inputFile.files?.[0];
+        if (!file) return;
+
+        status.innerHTML = 'Загрузка...';
+
+        try {
+          const url = await uploadAvatar(file, 'studio');
+
+          // ставим URL в поле, обновляем превью
+          const avatarInput = document.getElementById('avatar_link');
+          const preview = document.getElementById('avatar_preview');
+
+          avatarInput.value = url;
+          if (window.M && M.updateTextFields) M.updateTextFields();
+
+          preview.src = url;
+          preview.style.display = 'block';
+
+          status.innerHTML = '<span style="color:green;">✅ Загружено. Не забудьте нажать "Сохранить изменения".</span>';
+        } catch (e) {
+          status.innerHTML = '<span style="color:#a94442;">❌ ' + (e.message || 'Ошибка') + '</span>';
+        }
+      });
+    });
+  </script>
+
 </body>
 
 </html>

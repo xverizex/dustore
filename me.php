@@ -59,6 +59,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['errors'] = $errors;
         }
     }
+    if (isset($_POST['update_profile_picture'])) {
+        $errors_pp = [];
+
+        $url = trim($_POST['profile_picture_url'] ?? '');
+        if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+            $errors_pp[] = "Некорректная ссылка на изображение";
+        }
+
+        if (empty($errors_pp)) {
+            $ok = $curr_user->updateProfilePicture($user_id, $url);
+            if ($ok) {
+                $_SESSION['USERDATA']['profile_picture'] = $url;
+                $_SESSION['success_message_pp'] = "Аватарка обновлена ✅";
+                echo ("<script>window.location.href='/me'</script>");
+                exit;
+            } else {
+                $errors_pp[] = "Ошибка при обновлении аватарки";
+            }
+        }
+
+        $_SESSION['errors_pp'] = $errors_pp;
+        echo ("<script>window.location.href='/me'</script>");
+        exit;
+    }
 }
 
 // Получаем сообщения из сессии и очищаем их
@@ -103,7 +127,7 @@ if (isset($_POST['bind_email'])) {
         $_SESSION['success_message_sec'] =
             "📩 Почта привязана. Подтвердите email для входа по паролю.";
 
-        echo("<script>window.location.href = '/me'</script>");
+        echo ("<script>window.location.href = '/me'</script>");
         exit;
     }
 }
@@ -138,22 +162,98 @@ if (isset($_POST['change_password'])) {
     <title>Dustore - Мой аккаунт</title>
     <link rel="stylesheet" href="swad/css/userprofile.css">
     <?php require_once('swad/controllers/ymcounter.php'); ?>
+    <style>
+        .avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 150px;
+            height: 150px;
+        }
+
+        .profile-picture {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: 0.3s all;
+            display: block;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: 0.3s all;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .avatar-wrapper:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        .upload-btn {
+            color: white;
+            font-size: 14px;
+            padding: 10px 15px;
+            background: #1976d2;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-btn i {
+            font-size: 18px;
+        }
+    </style>
 </head>
 
 <body>
     <?php
     if ($curr_user->checkAuth() > 0) {
-        // echo ("<script>window.location.replace('/login');</script>");
-        // exit;
+        echo ("<script>window.location.replace('/login');</script>");
+        exit;
     }
     ?>
-
     <div class="profile-container">
         <div class="profile-header">
             <?php if (!is_null($profilePicture)): ?>
-                <img src="<?= $profilePicture ?>?v=<?= time() ?>"
-                    class="profile-picture"
-                    alt="Аватар">
+                <div class="avatar-wrapper">
+                    <img id="profileAvatar" src="<?= $profilePicture ?>?v=<?= time() ?>" class="profile-picture" alt="Аватар">
+                    <div class="avatar-overlay">
+                        <label for="avatarInput" class="upload-btn">
+                            <i class="material-icons">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#fff"
+                                    stroke-width="1"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
+                                    <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+                                    <path d="M15 11l.01 0" />
+                                    <path d="M9 11l.01 0" />
+                                </svg>
+                            </i> Изменить
+                        </label>
+                        <input type="file" id="avatarInput" accept="image/png, image/jpeg" style="display:none;">
+                    </div>
+                </div>
+
             <?php endif; ?>
             <div>
                 <h1><?= $firstName . (!is_null($lastName) ? ' ' . $lastName : '') ?></h1>
@@ -420,6 +520,79 @@ if (isset($_POST['change_password'])) {
             background-color: #c9302c;
         }
     </style>
+    <script>
+        const avatarInput = document.getElementById('avatarInput');
+        const profileAvatar = document.getElementById('profileAvatar');
+
+        avatarInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Проверка типа и размера
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                alert('Только JPEG или PNG');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) { // 2 МБ
+                alert('Максимальный размер файла 2 МБ');
+                return;
+            }
+
+            // Сжатие изображения через canvas
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                const maxDim = 500; // максимальная ширина/высота
+                let {
+                    width,
+                    height
+                } = img;
+
+                if (width > height) {
+                    if (width > maxDim) {
+                        height *= maxDim / width;
+                        width = maxDim;
+                    }
+                } else {
+                    if (height > maxDim) {
+                        width *= maxDim / height;
+                        height = maxDim;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('avatar', blob, file.name);
+
+                    try {
+                        const res = await fetch('/swad/controllers/upload_avatar.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            profileAvatar.src = data.url + '?v=' + Date.now(); // обновляем аватар
+                        } else {
+                            alert('Ошибка при загрузке: ' + data.error);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Ошибка загрузки файла');
+                    }
+                }, 'image/jpeg', 0.7); // сжатие JPEG 70%
+            };
+        });
+    </script>
+
 </body>
 
 </html>

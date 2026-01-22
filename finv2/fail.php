@@ -1,15 +1,16 @@
 <?php
-session_start();
-$error_message = $_GET['reason'] ?? 'Неизвестная ошибка';
-$error_messages = [
-    'insufficient_funds' => 'Недостаточно средств на счете',
-    'card_declined' => 'Карта отклонена банком',
-    'timeout' => 'Время операции истекло',
-    'technical' => 'Техническая ошибка',
-    'cancelled' => 'Операция отменена'
+$reason = $_GET['reason'] ?? 'unknown';
+
+$messages = [
+    'cancelled'      => 'Платёж отменён',
+    'not_confirmed'  => 'Платёж не подтверждён банком',
+    'timeout'        => 'Время оплаты истекло',
+    'invalid'        => 'Неверный запрос',
+    'not_found'      => 'Платёж не найден',
+    'unknown'        => 'Техническая ошибка'
 ];
 
-$display_message = $error_messages[$error_message] ?? $error_message;
+$display_message = $messages[$reason] ?? $messages['unknown'];
 ?>
 <!DOCTYPE html>
 <html lang="ru">

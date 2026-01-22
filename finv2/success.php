@@ -1,67 +1,58 @@
 ﻿<?php
 require_once('../swad/config.php');
 require_once('../swad/controllers/user.php');
+require_once('../swad/controllers/TBankPay.php');
+
 session_start();
 
-$db = new Database();
-$pdo = $db->connect();
-
-$curr_user = new User();
-
-if (empty($_SESSION)) {
-    echo ("<script>window.location.href ='/login';</script>");
+$orderId = $_GET['order'] ?? null;
+if (!$orderId) {
+    header('Location: /finv2/fail?reason=invalid');
+    exit;
 }
 
-// регистрационная информация (пароль #1)
-// registration info (password #1)
-// передаётся из url И рассшифровывается
-$mrh_pass1_enc = $_REQUEST["Shp_enc_mrh_pass"];
-$mrh_pass1 = xorStrings(hex2bin($mrh_pass1_enc), PASSWD_FOR_PASSWDS);
+$pay = new TBankPay(
+    '1768985142695DEMO',
+    '2$XMgboHTiyRtE*d'
+);
 
-// чтение параметров
-// read parameters
-$out_summ = $_REQUEST["OutSum"];
-$inv_id = $_GET["InvId"];
-$shp_item = $_REQUEST["Shp_item"];
-$crc = $_REQUEST["SignatureValue"];
-$crc = strtoupper($crc);
+/**
+ * Получаем PaymentId по OrderId
+ */
+$stmt = $pdo->prepare("SELECT * FROM payments WHERE order_id = ?");
+$stmt->execute([$orderId]);
+$payment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$my_crc = strtoupper(md5("$out_summ:$inv_id:$mrh_pass1:Shp_enc_mrh_pass=$mrh_pass1_enc:Shp_item=$shp_item"));
-
-// проверка корректности подписи
-// check signature
-if ($my_crc != $crc) {
-    echo "bad sign\n";
-    exit();
+if (!$payment) {
+    header('Location: /finv2/fail?reason=not_found');
+    exit;
 }
 
-$tg_is_empty_warning = "";
+$state = $pay->getState($payment['payment_id']);
 
-try {
-    $pdo->beginTransaction();
-
-    $stmt = $pdo->prepare("UPDATE payments SET status = 'completed', updated_at = NOW() WHERE id = ?");
-    $stmt->execute([$inv_id]);
-    print_r($_SESSION['USERDATA']['id']);
-    if(empty($_SESSION['USERDATA']['id'])){
-        $_SESSION['USERDATA']['id'] = $_COOKIE['temp_id'];
-        $tg_is_empty_warning = '<p class="animate-in delay-1" style="color: coral;">Произошла ошибка, так как вы не вошли в аккаунт. Но не беспокойтесь, оплата прошла и мы зафиксировали вашу покупку. Обратитесь в тех.поддержку</p>';
-    }
-
-    $curr_user->updateUserItems($_SESSION['USERDATA']['id'], $shp_item);
-
-    $stmt = $pdo->prepare("SELECT * FROM games WHERE id = ?");
-    $stmt->execute([$shp_item]);
-    $item = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    $pdo->commit();
-    // $_SESSION['USERDATA']['id'] = "";
-} catch (PDOException $e) {
-    $pdo->rollBack();
-    die('Ошибка при обработке платежа: ' . $e->getMessage());
+if (($state['Status'] ?? '') !== 'CONFIRMED') {
+    header('Location: /finv2/fail?reason=not_confirmed');
+    exit;
 }
+
+/**
+ * Обновляем платёж (один раз!)
+ */
+if ($payment['status'] !== 'completed') {
+    $pdo->prepare(
+        "UPDATE payments SET status='completed', updated_at=NOW() WHERE id=?"
+    )->execute([$payment['id']]);
+
+    (new User())->updateUserItems(
+        $_SESSION['USERDATA']['id'],
+        $payment['item_id']
+    );
+}
+
+$orderId        = $payment['order_id'];
+$out_summ       = $state['Amount'] / 100;
+$item['name']   = $payment['item_name'];
 ?>
-
 <!DOCTYPE html>
 <html lang="ru">
 

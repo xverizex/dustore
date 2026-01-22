@@ -96,10 +96,50 @@ class Game
 
     public function getReviews($game_id)
     {
-        $stmt = $this->db->connect()->prepare("SELECT u.username, u.profile_picture, r.rating, r.text, r.created_at
-                                  FROM game_reviews r
-                                  JOIN users u ON r.user_id = u.id
-                                  WHERE r.game_id = ?");
+        // 22.01.2026 (c) Alexander Livanov
+        $sql = "
+                SELECT
+                r.id,
+                r.user_id,
+                r.game_id,
+                r.rating,
+                r.text,
+                r.created_at,
+                u.username,
+                u.profile_picture,
+
+                rr.text AS developer_reply,
+                rr.created_at AS developer_reply_created_at
+
+                FROM game_reviews r
+                LEFT JOIN users u ON u.id = r.user_id
+
+                -- подтягиваем игру, чтобы понять студию (developer)
+                JOIN games g ON g.id = r.game_id
+
+                LEFT JOIN review_replies rr 
+                ON rr.review_id = r.id 
+                AND rr.studio_id = g.developer
+
+                WHERE r.game_id = ?
+                ORDER BY r.created_at DESC
+                ";
+        $stmt = $this->db->connect()->prepare($sql);
+        $stmt->execute([$game_id]);
+        $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode(['success' => true, 'reviews' => $reviews]);
+    }
+
+    public function getReviewsArray($game_id)
+    {
+        $db = new Database();
+        $pdo = $db->connect();
+        $stmt = $pdo->prepare("SELECT r.*, u.username, u.profile_picture 
+                           FROM game_reviews r 
+                           LEFT JOIN users u ON r.user_id = u.id 
+                           WHERE r.game_id = ? 
+                           ORDER BY r.created_at DESC");
         $stmt->execute([$game_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
