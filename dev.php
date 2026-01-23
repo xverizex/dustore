@@ -59,10 +59,10 @@ if (!$studio) {
 
                                 $all_projects = $db->Select("SELECT * FROM games WHERE developer = ?", [$studio['id']]);
                                 $all_badges = $db->Select("SELECT 
-                                                                            b.icon,
+                                                                            b.icon_url,
                                                                             b.name AS badge_name,
                                                                             b.description,
-                                                                            b.k AS coefficient,
+                                                                            b.multiplier AS coefficient,
                                                                             sb.awarded_at AS award_date
                                                                         FROM given_badges sb
                                                                         JOIN badges b ON sb.badge_id = b.id
@@ -180,7 +180,7 @@ if (!$studio) {
                             <?php foreach ($all_badges as $badge): ?>
                                 <div style="margin-top: 20px;">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                        <div style="font-size: 2rem;"><?= $badge['icon'] ?></div>
+                                        <div style="font-size: 2rem;"><img src="<?= $badge['icon_url'] ?>" alt="" style="width: 100%; border-radius: 50%"></div>
                                         <div><?= $badge['badge_name'] ?> <span style="font-size: 0.7rem; font-style: italic;"><?= $badge['description'] ?></span></div>
                                     </div>
                                 </div>

@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
   // Обработка основных полей
-  $project_name = preg_replace("/[^A-Za-zА-Яа-яёЁ0-9-_! ]/", '', $_POST['project-name']);
+  $project_name = $_POST['project-name'];
   $genre = $_POST['genre'];
   $description = $_POST['description'];
   $platforms = implode(',', $_POST['platform'] ?? []);

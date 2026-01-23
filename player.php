@@ -705,7 +705,7 @@ if ($is_owner) {
             flex-wrap: wrap;
             gap: 8px;
             margin-top: 10px;
-            justify-content: center;
+            /* justify-content: center; */
             position: relative;
             z-index: 2;
         }
@@ -796,10 +796,10 @@ if ($is_owner) {
         function showAchievementModal(ach) {
             const modal = document.getElementById('achievementModal');
             const body = document.getElementById('achievementModalBody');
-
+            
             body.innerHTML = `
         <div style="text-align: center;">
-            <div style="font-size: 3em; margin-bottom: 15px;"><img src="<?= htmlspecialchars($ach["icon_url"]) ?>" alt="<?= htmlspecialchars($title) ?>" class="achievement-icon-img"></div>
+            <div style="font-size: 3em; margin-bottom: 15px;"><img src="${ach.icon}" alt="<?= htmlspecialchars($title) ?>" class="achievement-icon-img"></div>
             <h2 style="color: #ffd700; margin-bottom: 10px;">${ach.title}</h2>
             <p style="color: #b0b8c1; line-height: 1.5; margin-bottom: 20px;">${ach.description ?? ''}</p>
             <div style="font-size: 0.9em; color: #888;">
