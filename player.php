@@ -747,7 +747,7 @@ if ($is_owner) {
             <div class="user-info">
                 <div class="avatar-wrapper">
                     <div class="avatar-frame">
-                        <img src="/swad/static/img/venok_ng.svg" class="frame-image" alt="">
+                        <!-- <img src="/swad/static/img/venok_ng.svg" class="frame-image" alt=""> -->
                         <img src="<?= !empty($user['profile_picture']) ? htmlspecialchars($user['profile_picture']) : '/swad/static/img/logo.svg' ?>"
                             alt="Аватар" class="user-avatar">
                     </div>
