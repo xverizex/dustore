@@ -317,7 +317,28 @@ $stmt->execute([
         <div class="section center-section">
             <div class="image">
                 <!-- <img src="/swad/static/img/logo_.png" alt="" onclick="location.href='/'"> -->
-                <img src="/swad/static/img/logo_new.png" alt="" onclick="location.href='/'">
+                <!-- <img src="/swad/static/img/logo_new.png" alt="" onclick="location.href='/'">\ -->
+                <img id="dancingCow" style="height: 80px;"
+                    src="https://media.tenor.com/yNy3XaDrdjgAAAAj/polish-dancing-cow-dancing.gif"
+                    alt=""
+                    onclick="location.href='/'">
+
+                <audio id="cowSound" src="/swad/static/img/cow.mp3" preload="auto"></audio>
+
+                <script>
+                    const gif = document.getElementById('dancingCow');
+                    const sound = document.getElementById('cowSound');
+
+                    gif.addEventListener('mouseenter', () => {
+                        sound.currentTime = 0; // перемотка на начало
+                        sound.play().catch(e => console.log('Автовоспроизведение заблокировано', e));
+                    });
+
+                    gif.addEventListener('mouseleave', () => {
+                        sound.pause();
+                        sound.currentTime = 0;
+                    });
+                </script>
             </div>
         </div>
         <div class="section right-section">
@@ -453,7 +474,7 @@ $stmt->execute([
             document.getElementById("updateNext").textContent = nextText;
         }
 
-        setUpdateProgress(92, "Следующее обновление: v1.15.1");
+        setUpdateProgress(0, "Следующее обновление: v1.15.2");
     </script>
     <!-- subscribe to push 19.01.2025 (c) Alexander Livanov -->
     <script>
