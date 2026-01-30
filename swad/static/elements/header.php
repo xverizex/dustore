@@ -317,13 +317,13 @@ $stmt->execute([
         <div class="section center-section">
             <div class="image">
                 <!-- <img src="/swad/static/img/logo_.png" alt="" onclick="location.href='/'"> -->
-                <!-- <img src="/swad/static/img/logo_new.png" alt="" onclick="location.href='/'">\ -->
-                <img id="dancingCow" style="height: 80px;"
+                <img src="/swad/static/img/logo_new.png" alt="" onclick="location.href='/'">\
+                <!-- <img id="dancingCow" style="height: 80px;"
                     src="https://media.tenor.com/yNy3XaDrdjgAAAAj/polish-dancing-cow-dancing.gif"
                     alt=""
                     onclick="location.href='/'">
 
-                <audio id="cowSound" src="/swad/static/img/cow.mp3" preload="auto"></audio>
+                <audio id="cowSound" src="/swad/static/img/cow.mp3" preload="auto"></audio> -->
 
                 <script>
                     const gif = document.getElementById('dancingCow');
