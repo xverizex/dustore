@@ -54,7 +54,7 @@ $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
                         );
                         mask-image: linear-gradient(
                         to bottom,
-                        rgba(0,0,0,.5) 0%,
+                        rgba(0,0,0,1) 60%,
                         rgba(0,0,0,0) 100%
                     );">
                     </div>
