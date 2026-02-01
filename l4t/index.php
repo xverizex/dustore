@@ -3,15 +3,37 @@ session_start();
 require_once('../swad/config.php');
 require_once('../swad/controllers/user.php');
 
-$curr_user = new User;
+$db = new Database();
+$pdo = $db->connect();
 
-if(empty($_SESSION['USERDATA'])){
-    if(empty($_COOKIE['auth_token'])){
-        echo ("<script>window.location.href='/login?backUrl=" . $_SERVER['REQUEST_URI'] . "'</script>");
-    }
+// if (empty($_SESSION['USERDATA'])) {
+//     if (empty($_COOKIE['auth_token'])) {
+//         echo ("<script>window.location.href='/login?backUrl=" . $_SERVER['REQUEST_URI'] . "'</script>");
+//     }
+// }
+
+if (empty($_SESSION['USERDATA'])) {
+    $userdata = ['user not logged in'];
 }
 
 $curr_user = new User();
+
+
+if (!empty($_GET['username'])) {
+    $username = $_GET['username'];
+
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? or telegram_username = ?");
+    $stmt->execute([$_GET['username'], $_GET['username']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $userdata = $user;
+} elseif (!empty($_SESSION['USERDATA']['id'])) {
+    $userdata = $_SESSION['USERDATA'];
+    $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
+} elseif (empty($_GET['username'])) {
+    $userdata["username"] = "Вы не вошли в аккаунт";
+}
+
 
 // bid structure:
 // id, title, author_id, path_to_cover, person_seek, needed_exp, salary_condition
@@ -23,7 +45,7 @@ $bids_array = [
     [4, "Dustore", 4, "/path_to_cover", "Деньги", 1, "non-free"]
 ];
 
-$user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
+// $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
 // print_r($user_orgs);
 ?>
 
@@ -51,7 +73,7 @@ $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
                         border-radius: 10px;
                         /* border: 1px solid red; */
 
-                        background-image: url('<?= $_SESSION['USERDATA']['profile_picture'] ?>');
+                        background-image: url('<?= $userdata['profile_picture'] ?>');
                         background-size: cover;
                         background-position: center;
 
@@ -71,7 +93,7 @@ $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
                     </div>
                 </div>
                 <div class="buttons-container">
-                    <div class="left-side-button active">
+                    <div class="left-side-button">
                         Биржа
                     </div>
                     <hr style="width: 50%; margin-right: 25px; margin-left: 25%; opacity: 20%">
@@ -84,240 +106,224 @@ $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
                 <div class="content-background">
 
                     <!-- ПРОФИЛЬ -->
+                    <?php if ($userdata['username'] != 'Вы не вошли в аккаунт'): ?>
+                        <div class="profile-page">
 
-                    <div class="profile-page">
-
-                        <!-- ВЕРХНИЙ БЛОК: ЮЗЕР -->
-                        <div class="card user-card">
-                            <div class="card-header">
-                                <div>
-                                    <div class="label">Имя пользователя:</div>
-                                    <h2 class="username"><?= "@" . $_SESSION['USERDATA']['telegram_username'] ?? $_SESSION['USERDATA']['username']  ?> <span class="copy" style="font-size: .9rem; color: #ffffff3b;">⧉</span></h2>
-                                </div>
-
-                                <div class="since"><br><br>На платформе с: 23.05.2025</div>
-                            </div>
-
-                            <div class="card-body">
-                                <div class="data-for">
-                                    Данные для L4T
-                                </div>
-                                <div class="card-body-main">
-                                    <div class="left">
-                                        <div class="row">
-                                            <span class="label">Роль:</span><br>
-                                            Руководитель Dust Game Studio, CEO Dustore
-                                        </div>
-
-                                        <div class="row">
-                                            <span class="label">Опыт:</span>
-
-                                            <div class="tags">
-                                                <div class="tag">Программист RenPy 3г.</div>
-                                                <div class="tag">Дизайн UI 1г.</div>
-                                                <div class="tag">Диктор 5л.</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <span class="label">Доп. данные:</span>
-
-                                            <div class="files">
-                                                <div class="file">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="25"
-                                                        height="25"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="#ffffff3b"
-                                                        stroke-width="3"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2" />
-                                                    </svg>
-                                                </div>
-                                                <div class="file">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="25"
-                                                        height="25"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="#ffffff3b"
-                                                        stroke-width="3"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2" />
-                                                    </svg>
-                                                </div>
-                                                <div class="file">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="25"
-                                                        height="25"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="#ffffff3b"
-                                                        stroke-width="3"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path d="M9 15l6 -6" />
-                                                        <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464" />
-                                                        <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463" />
-                                                    </svg>
-
-                                                </div>
-                                                <div class="file add" style="font-weight: bold;">+</div>
-                                            </div>
-                                        </div>
+                            <!-- ВЕРХНИЙ БЛОК: ЮЗЕР -->
+                            <div class="card user-card">
+                                <div class="card-header">
+                                    <div>
+                                        <div class="label">Имя пользователя:</div>
+                                        <h2 class="username"><?php $userdata['username'] != "" ? print($userdata['username']) : print("@" . $userdata['telegram_username']); ?> <span class="copy" style="font-size: .9rem; color: #ffffff3b;">⧉</span></h2>
                                     </div>
+                                    <?php
+                                    $dateString = $userdata['added'];
+                                    $date = new DateTime($dateString);
+                                    $date = $date->format('d.m.Y');
+                                    ?>
+                                    <div class="since"><br><br>На платформе с: <?= $date ?></div>
+                                </div>
 
-                                    <div class="right">
-                                        <div class="projects-right">
-                                            <div class="label" style="vertical-align:top">Проекты:</div>
+                                <div class="card-body">
+                                    <div class="data-for">
+                                        Данные для L4T
+                                    </div>
+                                    <div class="card-body-main">
+                                        <div class="left">
+                                            <div class="row role" data-userid="<?= $userdata['id'] ?>">
+                                                <span class="label">Роль:</span><br>
+                                                <span class="role-text">
+                                                    <?= $userdata['l4t_role'] ?? "Роль не указана" ?>
+                                                </span>
+                                            </div>
 
-                                            <div class="projects">
-                                                <div class="proj"></div>
-                                                <div class="proj"></div>
-                                                <div class="proj add">+</div>
-                                                <div class="proj add">+</div>
+                                            <div class="row">
+                                                <span class="label">Опыт:</span>
+
+                                                <div class="tags">
+                                                    <div class="tag">Программист RenPy 3г.</div>
+                                                    <div class="tag">Дизайн UI 1г.</div>
+                                                    <div class="tag">Диктор 5л.</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <span class="label">Доп. данные:</span>
+
+                                                <div class="files">
+                                                    <div class="file">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="25"
+                                                            height="25"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="#ffffff3b"
+                                                            stroke-width="3"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2" />
+                                                        </svg>
+                                                    </div>
+                                                    <div class="file">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="25"
+                                                            height="25"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="#ffffff3b"
+                                                            stroke-width="3"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2" />
+                                                        </svg>
+                                                    </div>
+                                                    <div class="file">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="25"
+                                                            height="25"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="#ffffff3b"
+                                                            stroke-width="3"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <path d="M9 15l6 -6" />
+                                                            <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464" />
+                                                            <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463" />
+                                                        </svg>
+
+                                                    </div>
+                                                    <div class="file add" style="font-weight: bold;">+</div>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div class="projects-right">
-                                            <div class="label">О себе:   </div>
-                                            <textarea class="about"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- БЛОК СТУДИИ -->
-                        <div class="card user-card">
-                            <div class="card-header">
-                                <div>
-                                    <div class="label">Студия:</div>
-                                    <h2 class="username">Dust Game Studio<span class="copy" style="font-size: .9rem; color: #ffffff3b;"> ⧉</span></h2>
-                                </div>
-
-                                <div class="since"><br><br>Студия на платформе с: 15.02.2025</div>
-                            </div>
-
-                            <div class="card-body">
-                                <div class="data-for">
-                                    Данные для L4T
-                                </div>
-                                <div class="card-body-main">
-                                    <div class="left">
-                                        <div class="row">
-                                            <span class="label">Участники:</span>
+                                        <div class="right">
                                             <div class="projects-right">
-                                                <div class="users-total">
-                                                    7
-                                                </div>
+                                                <div class="label" style="vertical-align:top">Проекты:</div>
 
-                                                <div class="users">
-                                                    <div class="user">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="32"
-                                                            height="32"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="#ffffff3b"
-                                                            stroke-width="1"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="user">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="32"
-                                                            height="32"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="#ffffff3b"
-                                                            stroke-width="1"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                                        </svg>
-
-
-                                                    </div>
-                                                    <div class="user">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="32"
-                                                            height="32"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="#ffffff3b"
-                                                            stroke-width="1"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                                        </svg>
-
-                                                    </div>
-
-                                                    <div class="user">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="32"
-                                                            height="32"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="#ffffff3b"
-                                                            stroke-width="1"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="user">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="32"
-                                                            height="32"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="#ffffff3b"
-                                                            stroke-width="1"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="user more">Ещё</div>
+                                                <div class="projects">
+                                                    <div class="proj"></div>
+                                                    <div class="proj"></div>
+                                                    <div class="proj add">+</div>
+                                                    <div class="proj add">+</div>
                                                 </div>
                                             </div>
 
-                                        </div>
-                                    </div>
-
-                                    <div class="right">
-                                        <div class="info-block">
-                                            Скоро
+                                            <div class="projects-right">
+                                                <div class="label">О себе:   </div>
+                                                <textarea class="about"></textarea>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- БЛОК СТУДИИ -->
+                            <?php
+                            $user_orgs = $curr_user->getUO($userdata['id']);
+                            ?>
+                            <?php if (!empty($user_orgs)): ?>
+                                <div class="card user-card">
+                                    <div class="card-header">
+                                        <div>
+                                            <div class="label">Студия:</div>
+                                            <h2 class="username"><?= $user_orgs[0]['name'] ?><span class="copy" style="font-size: .9rem; color: #ffffff3b;">
+                                                    <a href="/d/<?= $user_orgs[0]['tiker'] ?>" target="_blank">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="16"
+                                                            height="16"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="#ffffff75"
+                                                            stroke-width="1"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" />
+                                                            <path d="M11 13l9 -9" />
+                                                            <path d="M15 4h5v5" />
+                                                        </svg>
+                                                    </a>
+                                                </span></h2>
+                                        </div>
+                                        <?php
+                                        $dateString = $user_orgs[0]['foundation_date'];
+                                        $date = new DateTime($dateString);
+                                        $date = $date->format('d.m.Y');
+                                        ?>
+                                        <div class="since"><br><br>Студия на платформе с: <?= $date ?></div>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div class="data-for">
+                                            Данные для L4T
+                                        </div>
+                                        <div class="card-body-main">
+                                            <div class="left">
+                                                <div class="row">
+                                                    <span class="label">Участники:</span>
+                                                    <div class="projects-right">
+                                                        <div class="users-total">
+                                                            <?php
+                                                            $users = [];
+                                                            ?>
+                                                            <?= count($users); ?>
+                                                        </div>
+
+                                                        <div class="users">
+                                                            <?php foreach ($users as $u): ?>
+                                                                <div class="user">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="32"
+                                                                        height="32"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="#ffffff3b"
+                                                                        stroke-width="1"
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round">
+                                                                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                                                                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                                                                    </svg>
+                                                                </div>
+                                                            <?php endforeach; ?>
+                                                            <!-- <div class="user more">Ещё</div> -->
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="right">
+                                                <div class="info-block">
+                                                    Скоро
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="card user-card">
+                                    <div class="card-header">
+                                        <div>
+                                            <h4 class="username">У пользователя нет ни одной зарегестрированной организации</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                    </div>
+                    <?php else: ?>
+                        <h2 class="username" style="padding: 3rem;">Вы не вошли в аккаунт</h2>
+                    <?php endif; ?>
 
 
                     <!-- БИРЖА -->
-                    <div id="view-market" class="content-view active">
+                    <div id="view-market" class="content-view">
 
                         <div class="content-filter">
                             <div class="filter-item active" data-filter="projects">Проекты</div>
@@ -500,7 +506,7 @@ $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
             });
 
             // ===== ВОССТАНОВЛЕНИЕ ПОСЛЕ F5 =====
-            const savedView = localStorage.getItem("activeView") || "market";
+            const savedView = localStorage.getItem("activeView") || "profile";
             showView(savedView);
 
             const savedSub = localStorage.getItem("createSubTab");
@@ -511,7 +517,66 @@ $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
                 if (btn) btn.click();
             }
 
-            
+
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const roleRow = document.querySelector(".row.role");
+            const roleText = roleRow.querySelector(".role-text");
+            let editing = false;
+
+            roleRow.addEventListener("click", () => {
+                if (editing) return;
+                editing = true;
+
+                const currentText = roleText.textContent;
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = currentText;
+                input.style.width = "100%";
+                roleText.replaceWith(input);
+                input.focus();
+
+                const save = () => {
+                    editing = false;
+                    const newText = input.value;
+
+                    // Возвращаем span
+                    const span = document.createElement("span");
+                    span.className = "role-text";
+                    span.textContent = newText;
+                    input.replaceWith(span);
+
+                    // Отправляем в БД
+                    const userId = roleRow.dataset.userid;
+                    fetch("/swad/controllers/l4t/update_role.php", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                id: userId,
+                                role: newText
+                            })
+                        }).then(res => res.json())
+                        .then(data => {
+                            if (!data.success) alert("Ошибка при сохранении!");
+                        })
+                        .catch(() => alert("Ошибка при сохранении!"));
+                };
+
+                input.addEventListener("blur", save);
+                input.addEventListener("keydown", e => {
+                    if (e.key === "Enter") input.blur();
+                    if (e.key === "Escape") {
+                        editing = false;
+                        const span = document.createElement("span");
+                        span.className = "role-text";
+                        span.textContent = currentText;
+                        input.replaceWith(span);
+                    }
+                });
+            });
         });
     </script>
 </body>

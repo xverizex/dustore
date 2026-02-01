@@ -692,6 +692,17 @@ input:checked + .slider::before {
     margin-bottom: 10px;
 }
 
+.row.role {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.row.role:hover {
+    border: 1px dashed #ffffff80;
+    border-radius: 4px;
+    padding: 4px;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
