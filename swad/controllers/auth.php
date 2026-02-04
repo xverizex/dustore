@@ -47,13 +47,14 @@ function userAuthentication($db, $auth_data)
         // User not found, so create it
         $id = $db->Insert(
             "INSERT INTO `users`
-                (`first_name`, `last_name`, `telegram_id`, `telegram_username`, `telegram_token`, `profile_picture`, `auth_date`, `global_role`)
+                (`first_name`, `last_name`, `telegram_id`, `telegram_username`, `username`, `telegram_token`, `profile_picture`, `auth_date`, `global_role`)
                     values (:first_name, :last_name, :telegram_id, :telegram_username, :telegram_token, :profile_picture, :auth_date, 0)",
             [
                 'first_name'        => $auth_data['first_name'],
                 'last_name'         => $auth_data['last_name'],
                 'telegram_id'       => $auth_data['id'],
                 'telegram_username' => $auth_data['username'],
+                'username'          => $auth_data['username'],
                 'profile_picture'   => $auth_data['photo_url'],
                 'auth_date'         => $auth_data['auth_date'],
                 'telegram_token'    => $token
