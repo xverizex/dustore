@@ -44,23 +44,28 @@ function userAuthentication($db, $auth_data)
 {
     function createNewUser($db, $auth_data, $token)
     {
-        // User not found, so create it
-        $id = $db->Insert(
+        $params = [
+            'first_name'        => $auth_data['first_name'] ?? null,
+            'last_name'         => $auth_data['last_name'] ?? null,
+            'telegram_id'       => $auth_data['id'],
+            'telegram_username' => $auth_data['username'] ?? null,
+            'username'          => $auth_data['username'] ?? null,
+            'profile_picture'   => $auth_data['photo_url'] ?? null,
+            'auth_date'         => $auth_data['auth_date'],
+            'telegram_token'    => $token
+        ];
+
+        $db->Insert(
             "INSERT INTO `users`
-                (`first_name`, `last_name`, `telegram_id`, `telegram_username`, `username`, `telegram_token`, `profile_picture`, `auth_date`, `global_role`)
-                    values (:first_name, :last_name, :telegram_id, :telegram_username, :telegram_token, :profile_picture, :auth_date, 0)",
-            [
-                'first_name'        => $auth_data['first_name'],
-                'last_name'         => $auth_data['last_name'],
-                'telegram_id'       => $auth_data['id'],
-                'telegram_username' => $auth_data['username'],
-                'username'          => $auth_data['username'],
-                'profile_picture'   => $auth_data['photo_url'],
-                'auth_date'         => $auth_data['auth_date'],
-                'telegram_token'    => $token
-            ]
+        (`first_name`, `last_name`, `telegram_id`, `telegram_username`,
+         `username`, `telegram_token`, `profile_picture`, `auth_date`, `global_role`)
+        VALUES
+        (:first_name, :last_name, :telegram_id, :telegram_username,
+         :username, :telegram_token, :profile_picture, :auth_date, 0)",
+            $params
         );
     }
+
 
     function updateExistedUser($db, $auth_data, $token)
     {
@@ -70,14 +75,12 @@ function userAuthentication($db, $auth_data)
                     `last_name`         = :last_name,
                     `telegram_username` = :telegram_username,
                     `telegram_token`    = :telegram_token,
-                    `profile_picture`   = :profile_picture,
                     `auth_date`         = :auth_date
                         WHERE `telegram_id` = :telegram_id",
             [
                 'first_name'        => $auth_data['first_name'],
                 'last_name'         => $auth_data['last_name'],
                 'telegram_username' => $auth_data['username'],
-                'profile_picture'   => $auth_data['photo_url'],
                 'auth_date'         => $auth_data['auth_date'],
                 'telegram_id'       => $auth_data['id'],
                 'telegram_token'    => $token
