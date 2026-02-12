@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../swad/config.php';
-require_once __DIR__ . '/../swad/controllers/User.php';
+require_once __DIR__ . '/../swad/controllers/user.php';
 require_once __DIR__ . '/../swad/controllers/NotificationCenter.php';
 
 $user = new User();

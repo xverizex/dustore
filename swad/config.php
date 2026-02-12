@@ -22,13 +22,13 @@ class Database {
     private $conn;
 
     // DB Connect (PDO)
-    public function connect()
+    public function connect($db_name="dustore")
     {
         $this->conn = null;
 
         try {
             $this->conn = new PDO(
-                'mysql:host=' . $this->get_creds()[0] . ';dbname=' . $this->get_creds()[1] .
+                'mysql:host=' . $this->get_creds()[0] . ';dbname=' . $db_name ?? $this->get_creds()[1] .
                     ';charset=utf8mb4',
                 $this->get_creds()[2],
                 $this->get_creds()[3],

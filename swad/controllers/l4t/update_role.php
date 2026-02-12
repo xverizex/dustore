@@ -4,6 +4,13 @@ require_once('../../config.php');
 
 header('Content-Type: application/json');
 
+if ($_SESSION['USERDATA']['id'] != $targetUserId) {
+    http_response_code(403);
+    echo json_encode(['success' => false]);
+    exit;
+}
+
+
 $db = new Database();
 $pdo = $db->connect();
 
@@ -15,10 +22,19 @@ $role = htmlspecialchars($role, ENT_QUOTES, 'UTF-8');
 
 $userId = (int)$data['id'];
 
+if (
+    !isset($_SESSION['USERDATA']['id']) ||
+    $_SESSION['USERDATA']['id'] !== $userId
+) {
+
+    echo json_encode(["success" => false]);
+    exit;
+}
+
+
 $stmt = $pdo->prepare("UPDATE users SET l4t_role = ? WHERE id = ?");
 $stmt->execute([$role, $userId]);
 
-// ОБНОВЛЯЕМ СЕССИЮ, ИНАЧЕ ПОСЛЕ F5 БУДЕТ СТАРЬЁ
 if (isset($_SESSION['USERDATA'])) {
     $_SESSION['USERDATA']['l4t_role'] = $role;
 }

@@ -5,6 +5,7 @@ require_once('../swad/controllers/user.php');
 
 $db = new Database();
 $pdo = $db->connect();
+$desl4tpdo = $db->connect('desl4t');
 
 // if (empty($_SESSION['USERDATA'])) {
 //     if (empty($_COOKIE['auth_token'])) {
@@ -12,27 +13,45 @@ $pdo = $db->connect();
 //     }
 // }
 
+$my_bids = [];
+
+if (!empty($_SESSION['USERDATA']['id'])) {
+    $stmt = $desl4tpdo->prepare("SELECT * FROM bids WHERE bidder_id = ? ORDER BY created_at DESC");
+
+    $stmt->execute([$_SESSION['USERDATA']['id']]);
+    $my_bids = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// print_r($_SESSION['USERDATA']['id']);
+
 if (empty($_SESSION['USERDATA'])) {
     $userdata = ['user not logged in'];
 }
 
 $curr_user = new User();
-
+$isOwner = false;
 
 if (!empty($_GET['username'])) {
-    $username = $_GET['username'];
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? or telegram_username = ?");
     $stmt->execute([$_GET['username'], $_GET['username']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     $userdata = $user;
+
+    $isOwner = !empty($_SESSION['USERDATA']['id'])
+        && $_SESSION['USERDATA']['id'] == $userdata['id'];
 } elseif (!empty($_SESSION['USERDATA']['id'])) {
+
     $userdata = $_SESSION['USERDATA'];
+
+    $isOwner = true;
+
     $user_orgs = $curr_user->getUO($_SESSION['USERDATA']['id']);
-} elseif (empty($_GET['username'])) {
+} else {
     $userdata["username"] = "Вы не вошли в аккаунт";
 }
+
 
 
 // bid structure:
@@ -57,6 +76,16 @@ $bids_array = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dustore L4T</title>
     <link rel="stylesheet" href="css/main.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        .editable {
+            border-bottom: 1px dashed #666;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -131,17 +160,29 @@ $bids_array = [
                                     <div class="card-body-main">
                                         <div class="left">
                                             <span class="label">Роль:</span><br>
-                                            <div class="row role" data-userid="<?= $userdata['id'] ?>">
+                                            <div class="row role" data-userid="<?= $userdata['id'] ?>" data-editable="<?= $isOwner ? '1' : '0' ?>">
+                                                <?php if ($isOwner): ?>
+                                                    <span class="role-text editable">
+                                                        <?= htmlspecialchars($userdata['l4t_role'] ?? 'Роль не указана') ?>
+                                                    </span>
 
-                                                <span class="role-text">
-                                                    <?= $userdata['l4t_role'] ?? "Роль не указана" ?>
-                                                </span>
+                                                    <input class="role-edit hidden"
+                                                        type="text"
+                                                        maxlength="40"
+                                                        value="<?= htmlspecialchars($userdata['l4t_role'] ?? '') ?>">
+                                                <?php else: ?>
+                                                    <span class="role-text">
+                                                        <?= htmlspecialchars($userdata['l4t_role'] ?? 'Роль не указана') ?>
+                                                    </span>
+                                                <?php endif; ?>
                                             </div>
+
+
 
                                             <div class="row">
                                                 <span class="label">Опыт:</span>
 
-                                                <div class="tags" id="expTags">
+                                                <div class="tags" id="expTags" data-editable="<?= $isOwner ? '1' : '0' ?>">
                                                     <?php
                                                     $exp = json_decode($userdata['l4t_exp'] ?? '[]', true);
                                                     foreach ($exp as $i => $e): ?>
@@ -154,7 +195,10 @@ $bids_array = [
 
                                                 <div id="experience-container"></div>
 
-                                                <button class="tag" id="add-exp-btn">+</button>
+                                                <?php if ($isOwner): ?>
+                                                    <button class="tag" id="addBtn">+</button>
+                                                <?php endif; ?>
+
                                             </div>
 
                                             <div id="expModal" class="modal hidden">
@@ -396,46 +440,78 @@ $bids_array = [
                             </div>
 
                             <!-- сетка 2 на 2 -->
-                            <div class="grid-2x2">
+                            <form action="/swad/controllers/l4t/upsert_bid.php" method="POST">
 
-                                <div class="form-row">
-                                    <label>Я хочу найти:</label>
-                                    <select></select>
+                                <input type="hidden" name="owner_type" id="owner_type">
+                                <input type="hidden" name="bidder_id" id="bidder_id">
+                                <input type="hidden" name="bid_id" id="bid_id">
+
+                                <div class="grid-2x2">
+
+                                    <div class="form-row">
+                                        <label>Я хочу найти:</label>
+                                        <select name="role">
+                                            <option>Unity программист</option>
+                                            <option>CGI художник</option>
+                                            <option>Геймдизайнер</option>
+                                            <option>Саунд дизайнер</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label>Уточнение:</label>
+                                        <select name="spec">
+                                            <option>Junior</option>
+                                            <option>Middle</option>
+                                            <option>Senior</option>
+                                            <option>Любой уровень</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label>Опыт:</label>
+                                        <select name="exp">
+                                            <option>до 1 года</option>
+                                            <option>1–3 года</option>
+                                            <option>3–5 лет</option>
+                                            <option>5+ лет</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label>Условия:</label>
+                                        <select name="cond">
+                                            <option>Оплата за задачу</option>
+                                            <option>Доля в проекте</option>
+                                            <option>Оклад</option>
+                                            <option>Бесплатно/энтузиазм</option>
+                                        </select>
+                                    </div>
+
                                 </div>
 
-                                <div class="form-row">
-                                    <label>Уточнение:</label>
-                                    <select></select>
+                                <div class="form-row full">
+                                    <label>Цель:</label>
+                                    <select name="goal" style="width: 94%;">
+                                        <option>Найти человека в команду</option>
+                                        <option>Консультация</option>
+                                        <option>Разовая работа</option>
+                                    </select>
                                 </div>
 
-                                <div class="form-row">
-                                    <label>Опыт:</label>
-                                    <select></select>
+                                <div class="desc-row">
+                                    <label>Детальное описание:</label>
+
+                                    <div class="desc-wrap">
+                                        <textarea name="details">Ищу бойца в команду для крутого проекта...</textarea>
+
+                                        <button type="submit" class="ok-btn">✓</button>
+                                    </div>
                                 </div>
 
-                                <div class="form-row">
-                                    <label>Условия:</label>
-                                    <select></select>
-                                </div>
+                            </form>
 
-                            </div>
 
-                            <div class="form-row full">
-                                <label>Цель:</label>
-                                <select style="width: 94%;"></select>
-                            </div>
-
-                            <div class="desc-row">
-                                <label style="text-align: right;">Детальное <br> описание:</label>
-
-                                <div class="desc-wrap">
-                                    <textarea></textarea>
-
-                                    <button class="ok-btn" id="ok-btn">
-                                        ✓
-                                    </button>
-                                </div>
-                            </div>
 
                         </div>
 
@@ -443,42 +519,153 @@ $bids_array = [
                         <!-- МОИ ЗАЯВКИ -->
                         <div id="tab-my" class="req-view">
 
-                            <div class="my-bid">
-                                <div class="my-bid-main">
-                                    <div>
-                                        <strong>Unity программист</strong>
-                                        <div class="bid-date">25.01.2026 18:40</div>
-                                    </div>
-                                    <button class="submit-btn edit-btn"
-                                        data-title="Unity программист"
-                                        data-goal="Найти разработчика"
-                                        data-desc="Нужен Unity dev с опытом 3+ года">
-                                        Редактировать
-                                    </button>
-                                </div>
-                            </div>
+                            <?php foreach ($my_bids as $bid): ?>
 
-                            <div class="my-bid">
-                                <div class="my-bid-main">
-                                    <div>
-                                        <strong>CGI художник</strong>
-                                        <div class="bid-date">24.01.2026 12:10</div>
+                                <div class="my-bid">
+                                    <div class="my-bid-main">
+                                        <div>
+                                            <strong><?= htmlspecialchars($bid['search_role']) ?></strong>
+
+                                            <div class="bid-date">
+                                                <?= date('d.m.Y H:i', strtotime($bid['created_at'])) ?>
+
+                                                <span class="stats">
+                                                    👁 <?= $bid['views'] ?> |
+                                                    💬 <?= $bid['responses'] ?>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <button class="submit-btn edit-btn"
+                                            data-id="<?= $bid['id'] ?>"
+                                            data-role="<?= htmlspecialchars($bid['search_role']) ?>"
+                                            data-spec="<?= htmlspecialchars($bid['search_spec']) ?>"
+                                            data-exp="<?= htmlspecialchars($bid['experience']) ?>"
+                                            data-cond="<?= htmlspecialchars($bid['conditions']) ?>"
+                                            data-goal="<?= htmlspecialchars($bid['goal']) ?>"
+                                            data-details="<?= htmlspecialchars($bid['details']) ?>">
+                                            Редактировать
+                                        </button>
                                     </div>
-                                    <button class="submit-btn edit-btn"
-                                        data-title="Unity программист"
-                                        data-goal="Найти разработчика"
-                                        data-desc="Нужен Unity dev с опытом 3+ года">
-                                        Редактировать
-                                    </button>
                                 </div>
-                            </div>
+
+                            <?php endforeach; ?>
+
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <script>
+        const expTags = document.getElementById('expTags');
+        const addBtn = document.getElementById('addBtn');
+
+        const isOwner = document.querySelector('.row.role')?.dataset.editable === "1";
+
+        let expModel = <?= $userdata['l4t_exp'] ?? '[]' ?>;
+
+        const roleRow = document.querySelector('.row.role');
+        const roleText = roleRow.querySelector('.role-text');
+        const roleEdit = roleRow.querySelector('.role-edit');
+
+        function saveRole(value) {
+            fetch("/swad/controllers/l4t/update_role.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id: roleRow.dataset.userid,
+                    role: value
+                })
+            });
+        }
+
+        if (isOwner) {
+
+            roleText.onclick = () => {
+                roleText.classList.add('hidden');
+                roleEdit.classList.remove('hidden');
+                roleEdit.focus();
+            };
+
+            roleEdit.onblur = () => {
+                roleText.textContent = roleEdit.value || 'Роль не указана';
+
+                roleText.classList.remove('hidden');
+                roleEdit.classList.add('hidden');
+
+                saveRole(roleEdit.value);
+            };
+
+            roleEdit.onkeydown = e => {
+                if (e.key === "Enter") roleEdit.blur();
+            };
+
+        }
+
+
+
+        function renderExp() {
+            expTags.innerHTML = '';
+
+            expModel.forEach((e, i) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'tag exp-edit';
+
+                if (isOwner) {
+                    wrap.innerHTML = `
+                <input class="exp-role" value="${e.role}">
+                <input class="exp-years" type="number" min="0" max="50" value="${e.years}">
+                <span class="del-exp" data-i="${i}">×</span>
+            `;
+                } else {
+                    wrap.innerHTML = `
+                <span>${e.role}</span>
+                <span>${e.years}г.</span>
+            `;
+                }
+
+                // 🔥 ВАЖНО — только владельцу вешаем логику редактирования
+                if (isOwner) {
+                    const r = wrap.querySelector('.exp-role');
+                    const y = wrap.querySelector('.exp-years');
+
+                    let blurTimer;
+
+                    function delayedSave() {
+                        clearTimeout(blurTimer);
+
+                        blurTimer = setTimeout(() => {
+                            expModel[i] = {
+                                role: r.value.slice(0, 30),
+                                years: Math.min(50, Math.max(0, parseInt(y.value) || 0))
+                            };
+
+                            saveExp();
+                        }, 200);
+                    }
+
+                    r.onblur = delayedSave;
+                    y.onblur = delayedSave;
+
+                    r.onkeydown = y.onkeydown = e => {
+                        if (e.key === "Enter") {
+                            r.blur();
+                            y.blur();
+                        }
+                    };
+                }
+
+                expTags.appendChild(wrap);
+            });
+        }
+
+
+        renderExp();
+
         document.addEventListener("DOMContentLoaded", () => {
 
             // ===== ОСНОВНЫЕ СТРАНИЦЫ =====
@@ -545,93 +732,114 @@ $bids_array = [
 
 
         });
-        const addBtn = document.getElementById('add-exp-btn');
-        const container = document.getElementById('experience-container');
-        const expTags = document.getElementById('expTags');
 
         // добавление новой строки
-        addBtn.addEventListener('click', () => {
-            const row = document.createElement('div');
-            row.classList.add('exp-row');
-            row.innerHTML = `
-        <input type="text" name="exp_title[]" placeholder="Название опыта">
-        <input type="number" name="exp_years[]" placeholder="Лет" min="0" max="50">
-        <span class="del">×</span>
-    `;
-            container.appendChild(row);
+        if (isOwner) {
+            addBtn.onclick = () => {
+                expModel.push({
+                    role: "Новый опыт",
+                    years: 1
+                });
+                renderExp();
+                saveExp();
+            };
+        }
 
-            row.querySelector('.del').onclick = () => row.remove();
-        });
+
+
 
         // функция сохранения
         function saveExp() {
-            const rows = [...container.querySelectorAll('.exp-row')];
-            const data = rows.map(r => ({
-                role: r.querySelector('input[name="exp_title[]"]').value.slice(0, 30),
-                years: parseInt(r.querySelector('input[name="exp_years[]"]').value) || 0
-            }));
-
             fetch("/swad/controllers/l4t/update_exp.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        exp: data
+                        exp: expModel
                     })
                 })
-                .then(res => res.json())
-                .then(resp => {
-                    if (!resp.success) alert("Ошибка при сохранении опыта");
-                    else {
-                        // очищаем теги и заново рисуем
-                        expTags.innerHTML = '';
-                        data.forEach((e, i) => {
-                            const tag = document.createElement('div');
-                            tag.className = 'tag';
-                            tag.dataset.index = i;
-                            tag.innerHTML = `${e.role} ${e.years}г. <span class="del-exp">×</span>`;
-                            expTags.appendChild(tag);
-                        });
-
-                        // чистим контейнер после сохранения
-                        container.innerHTML = '';
+                .then(r => r.json())
+                .then(d => {
+                    if (!d.success) {
+                        alert("Опыт не сохранился, боец");
+                        return;
                     }
+
+                    renderExp();
                 });
         }
 
         // удаление из тегов
-        expTags.addEventListener('click', e => {
+        expTags.onclick = e => {
             if (!e.target.classList.contains('del-exp')) return;
 
-            const tag = e.target.closest('.tag');
-            const index = tag.dataset.index;
+            const i = e.target.dataset.i;
+            expModel.splice(i, 1);
 
-            const data = [...expTags.querySelectorAll('.tag')]
-                .filter(t => t.dataset.index != index)
-                .map(t => {
-                    const parts = t.textContent.replace("×", "").trim().split(" ");
-                    const years = parseInt(parts.pop());
-                    const role = parts.join(" ");
-                    return {
-                        role,
-                        years
-                    };
-                });
+            saveExp();
+        };
 
-            fetch("/swad/controllers/l4t/update_exp.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    exp: data
+        document.querySelector('.save-role').onclick = () => {
+            const input = document.querySelector('.role-input');
+            const userId = document.querySelector('.row.role').dataset.userid;
+
+            fetch("/swad/controllers/l4t/update_role.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        id: userId,
+                        role: input.value
+                    })
                 })
-            }).then(() => tag.remove());
-        });
+                .then(r => r.json())
+                .then(d => {
+                    if (!d.success) {
+                        alert("Не сохранилось");
+                    }
+                });
+        };
 
-        // сохраняем при потере фокуса в контейнере
-        container.addEventListener('focusout', saveExp);
+
+        const typeToggle = document.getElementById("typeToggle");
+
+        function updateOwner() {
+
+            const isStudio = typeToggle && !typeToggle.checked;
+
+            document.getElementById("owner_type").value =
+                isStudio ? "studio" : "user";
+
+            document.getElementById("owner_id").value =
+                isStudio ?
+                <?= isset($user_orgs[0]['id']) ? (int)$user_orgs[0]['id'] : 'null' ?> :
+                <?= isset($_SESSION['USERDATA']['id']) ? (int)$_SESSION['USERDATA']['id'] : 'null' ?>;
+        }
+
+        typeToggle?.addEventListener("change", updateOwner);
+        updateOwner();
+
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+
+            btn.onclick = () => {
+
+                // переключаемся на вкладку создания
+                document.querySelector('[data-filter="new_reqs"]').click();
+
+                document.getElementById('bid_id').value = btn.dataset.id;
+
+                document.querySelector('[name="role"]').value = btn.dataset.role;
+                document.querySelector('[name="spec"]').value = btn.dataset.spec;
+                document.querySelector('[name="exp"]').value = btn.dataset.exp;
+                document.querySelector('[name="cond"]').value = btn.dataset.cond;
+                document.querySelector('[name="goal"]').value = btn.dataset.goal;
+                document.querySelector('[name="details"]').value = btn.dataset.details;
+
+            };
+
+        });
     </script>
 </body>
 
